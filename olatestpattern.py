@@ -75,34 +75,24 @@ class OLAPattern(OLAThread):
         data_output = array.array('B')
         # calculate device_count
         device_count = self.channel_count / 12
+        # get value set
+        channel_values = {}
+        if self.strobe_state:
+            channel_values = self.config['pattern']['high']
+        else:
+            channel_values = self.config['pattern']['low']
         # for devices generate pattern
         for index in range(0, device_count):
-            if self.strobe_state:
-                data_output.append(10)
-                data_output.append(10)
-                data_output.append(0)
-                data_output.append(0)
-                data_output.append(10)
-                data_output.append(10)
-                data_output.append(0)
-                data_output.append(0)
-                data_output.append(10)
-                data_output.append(10)
-                data_output.append(0)
-                data_output.append(0)
-            else:
-                data_output.append(0)
-                data_output.append(0)
-                data_output.append(10)
-                data_output.append(10)
-                data_output.append(0)
-                data_output.append(0)
-                data_output.append(10)
-                data_output.append(10)
-                data_output.append(0)
-                data_output.append(0)
-                data_output.append(10)
-                data_output.append(10)
+            # for channel_id, channel_value in channel_values.items():
+            # for index in range(0, len(channel_values)):
+            #     channel_id = str(index)
+            #     channel_value = channel_values[channel_id]
+            #     print("ch{}:{}".format(channel_id, channel_value))
+            #     data_output.append(channel_value)
+            for channel_index, channel_value in enumerate(channel_values):
+                # print("ch{}:{}".format(channel_index, channel_value))
+                # print(channel_value)
+                data_output.append(int(channel_value))
         # switch strobe_state
         self.strobe_state = not self.strobe_state
         # send frame
@@ -150,35 +140,242 @@ if __name__ == '__main__':
             'channel_count': 512,
         },
         'pattern': {
-            'high': {
-                '0': 0,
-                '1': 0,
-                '2': 0,
-                '3': 0,
-                '4': 0,
-                '5': 0,
-                '6': 0,
-                '7': 0,
-                '8': 0,
-                '9': 0,
-                '10': 0,
-                '11': 0,
-            },
-            'low': {
-                '0': 0,
-                '1': 0,
-                '2': 0,
-                '3': 0,
-                '4': 0,
-                '5': 0,
-                '6': 0,
-                '7': 0,
-                '8': 0,
-                '9': 0,
-                '10': 0,
-                '11': 0,
-            },
+            'high': [
+                # rgb 1
+                0,
+                255,
+                0,
+                255,
+                0,
+                255,
+                # rgb 2
+                0,
+                255,
+                0,
+                255,
+                0,
+                255,
+                # rgb 3
+                0,
+                255,
+                0,
+                255,
+                0,
+                255,
+                # rgb 4
+                0,
+                255,
+                0,
+                255,
+                0,
+                255,
+                # white 1
+                0,
+                255,
+                0,
+                0,
+                0,
+                0,
+                # white 2
+                0,
+                255,
+                0,
+                0,
+                0,
+                0,
+                # white 3
+                0,
+                255,
+                0,
+                0,
+                0,
+                0,
+                # white 4
+                0,
+                255,
+                0,
+                0,
+                0,
+                0,
+            ],
+            'low': [
+                # rgb 1
+                0,
+                1,
+                0,
+                1,
+                0,
+                1,
+                # rgb 2
+                0,
+                1,
+                0,
+                1,
+                0,
+                1,
+                # rgb 3
+                0,
+                1,
+                0,
+                1,
+                0,
+                1,
+                # rgb 4
+                0,
+                1,
+                0,
+                1,
+                0,
+                1,
+                # white 1
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                # white 2
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                # white 3
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                # white 4
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+            ],
         },
+        # pattern with variable channel ids
+        # 'pattern': {
+        #     'high': {
+        #         # rgb 1
+        #         '0': 0,
+        #         '1': 255,
+        #         '2': 0,
+        #         '3': 255,
+        #         '4': 0,
+        #         '5': 255,
+        #         # rgb 2
+        #         '6': 0,
+        #         '7': 255,
+        #         '8': 0,
+        #         '9': 255,
+        #         '10': 0,
+        #         '11': 255,
+        #         # rgb 3
+        #         '12': 0,
+        #         '13': 255,
+        #         '14': 0,
+        #         '15': 255,
+        #         '16': 0,
+        #         '17': 255,
+        #         # rgb 3
+        #         '18': 0,
+        #         '19': 255,
+        #         '20': 0,
+        #         '21': 255,
+        #         '22': 0,
+        #         '23': 255,
+        #         # white 1
+        #         '24': 0,
+        #         '25': 255,
+        #         '26': 0,
+        #         '27': 0,
+        #         '28': 0,
+        #         '29': 0,
+        #         # white 2
+        #         '30': 0,
+        #         '31': 255,
+        #         '32': 0,
+        #         '33': 0,
+        #         '44': 0,
+        #         '45': 0,
+        #         # white 3
+        #         '46': 0,
+        #         '47': 255,
+        #         '48': 0,
+        #         '49': 0,
+        #         '50': 0,
+        #         '51': 0,
+        #         # white 3
+        #         '52': 0,
+        #         '53': 255,
+        #         '54': 0,
+        #         '55': 0,
+        #         '56': 0,
+        #         '57': 0,
+        #     },
+        #     'low': {
+        #         # rgb 1
+        #         '0': 0,
+        #         '1': 1,
+        #         '2': 0,
+        #         '3': 1,
+        #         '4': 0,
+        #         '5': 1,
+        #         # rgb 2
+        #         '6': 0,
+        #         '7': 1,
+        #         '8': 0,
+        #         '9': 1,
+        #         '10': 0,
+        #         '11': 1,
+        #         # rgb 3
+        #         '12': 0,
+        #         '13': 1,
+        #         '14': 0,
+        #         '15': 1,
+        #         '16': 0,
+        #         '17': 1,
+        #         # rgb 3
+        #         '18': 0,
+        #         '19': 1,
+        #         '20': 0,
+        #         '21': 1,
+        #         '22': 0,
+        #         '23': 1,
+        #         # white 1
+        #         '24': 0,
+        #         '25': 1,
+        #         '26': 0,
+        #         '27': 0,
+        #         '28': 0,
+        #         '29': 0,
+        #         # white 2
+        #         '30': 0,
+        #         '31': 1,
+        #         '32': 0,
+        #         '33': 0,
+        #         '44': 0,
+        #         '45': 0,
+        #         # white 3
+        #         '46': 0,
+        #         '47': 1,
+        #         '48': 0,
+        #         '49': 0,
+        #         '50': 0,
+        #         '51': 0,
+        #         # white 3
+        #         '52': 0,
+        #         '53': 1,
+        #         '54': 0,
+        #         '55': 0,
+        #         '56': 0,
+        #         '57': 0,
+        #     },
+        # },
     }
     my_config = ConfigDict(default_config, filename)
     print("my_config.config: {}".format(my_config.config))
