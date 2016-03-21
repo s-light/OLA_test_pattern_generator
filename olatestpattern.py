@@ -78,31 +78,31 @@ class OLAPattern(OLAThread):
         # for devices generate pattern
         for index in range(0, device_count):
             if self.strobe_state:
-                data_output.append(50)
-                data_output.append(50)
+                data_output.append(10)
+                data_output.append(10)
                 data_output.append(0)
                 data_output.append(0)
-                data_output.append(50)
-                data_output.append(50)
+                data_output.append(10)
+                data_output.append(10)
                 data_output.append(0)
                 data_output.append(0)
-                data_output.append(50)
-                data_output.append(50)
+                data_output.append(10)
+                data_output.append(10)
                 data_output.append(0)
                 data_output.append(0)
             else:
                 data_output.append(0)
                 data_output.append(0)
-                data_output.append(50)
-                data_output.append(50)
+                data_output.append(10)
+                data_output.append(10)
                 data_output.append(0)
                 data_output.append(0)
-                data_output.append(50)
-                data_output.append(50)
+                data_output.append(10)
+                data_output.append(10)
                 data_output.append(0)
                 data_output.append(0)
-                data_output.append(50)
-                data_output.append(50)
+                data_output.append(10)
+                data_output.append(10)
         # switch strobe_state
         self.strobe_state = not self.strobe_state
         # send frame
@@ -142,7 +142,7 @@ if __name__ == '__main__':
     default_config = {
         'system': {
             # 'update_interval': 30,
-            'update_interval': 1000,
+            'update_interval': 2000,
             '16bitMode': False,
         },
         'universe': {
@@ -206,4 +206,4 @@ if __name__ == '__main__':
     print("\nwrite config.")
     my_config.write_to_file()
 
-    # ###########################################
+    ##########################################
