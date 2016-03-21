@@ -71,6 +71,15 @@ class OLAPattern(OLAThread):
         """generate test pattern."""
         # register new event (for correct timing as first thing.)
         self.wrapper.AddEvent(self.update_interval, self._calculate_step)
+        # self._calculate_step_strobe(
+        #     self.config['pattern']['strobe']
+        # )
+        self._calculate_step_channelcheck(
+            self.config['pattern']['channelcheck']
+        )
+
+    def _calculate_step_strobe(self, config):
+        """generate test pattern 'strobe'."""
         # prepare temp array
         data_output = array.array('B')
         # calculate device_count
@@ -78,9 +87,9 @@ class OLAPattern(OLAThread):
         # get value set
         channel_values = {}
         if self.strobe_state:
-            channel_values = self.config['pattern']['high']
+            channel_values = config['high']
         else:
-            channel_values = self.config['pattern']['low']
+            channel_values = config['low']
         # for devices generate pattern
         for index in range(0, device_count):
             # for channel_id, channel_value in channel_values.items():
@@ -95,6 +104,35 @@ class OLAPattern(OLAThread):
                 data_output.append(int(channel_value))
         # switch strobe_state
         self.strobe_state = not self.strobe_state
+        # send frame
+        self.dmx_send_frame(
+            self.config['universe']['output'],
+            data_output
+        )
+
+    def _calculate_step_channelcheck(self, config):
+        """generate test pattern 'channelcheck'."""
+        # prepare temp array
+        data_output = array.array('B')
+
+        if not config.['channel_current']:
+            config.['channel_current'] = 0
+
+        # for devices generate pattern
+        for index in range(0, self.config['universe']['channel_count']):
+            channel_value = 0
+            if index is config.['channel_current']:
+                channel_value = config['on']
+            data_output.append(channel_value)
+
+        if (
+            config.['channel_current'] <
+            self.config['universe']['channel_count']
+        ):
+            config.['channel_current'] = config.['channel_current'] + 1
+        else:
+            config.['channel_current'] = 0
+
         # send frame
         self.dmx_send_frame(
             self.config['universe']['output'],
@@ -140,122 +178,57 @@ if __name__ == '__main__':
             'channel_count': 512,
         },
         'pattern': {
-            'high': [
-                # white 1
-                0,
-                0,
-                0,
-                0,
-                0,
-                255,
-                # white 2
-                0,
-                0,
-                0,
-                0,
-                0,
-                255,
-                # white 3
-                0,
-                0,
-                0,
-                0,
-                0,
-                255,
-                # white 4
-                0,
-                0,
-                0,
-                0,
-                0,
-                255,
-                # rgb 1
-                0,
-                255,
-                0,
-                255,
-                0,
-                255,
-                # rgb 2
-                0,
-                255,
-                0,
-                255,
-                0,
-                255,
-                # rgb 3
-                0,
-                255,
-                0,
-                255,
-                0,
-                255,
-                # rgb 4
-                0,
-                255,
-                0,
-                255,
-                0,
-                255,
-            ],
-            'low': [
-                # white 1
-                0,
-                0,
-                0,
-                0,
-                0,
-                1,
-                # white 2
-                0,
-                0,
-                0,
-                0,
-                0,
-                1,
-                # white 3
-                0,
-                0,
-                0,
-                0,
-                0,
-                1,
-                # white 4
-                0,
-                0,
-                0,
-                0,
-                0,
-                1,
-                # rgb 1
-                0,
-                1,
-                0,
-                1,
-                0,
-                1,
-                # rgb 2
-                0,
-                1,
-                0,
-                1,
-                0,
-                1,
-                # rgb 3
-                0,
-                1,
-                0,
-                1,
-                0,
-                1,
-                # rgb 4
-                0,
-                1,
-                0,
-                1,
-                0,
-                1,
-            ],
+            'channelcheck': {
+                'on': 255,
+                '16bit': True,
+                'wrapp_around_count': 64,
+            },
+            'strobe': {
+                'high': [
+                    # 1
+                    255,
+                    0,
+                    0,
+                    0,
+                    # 2
+                    0,
+                    255,
+                    0,
+                    0,
+                    # 3
+                    0,
+                    0,
+                    255,
+                    0,
+                    # 4
+                    0,
+                    0,
+                    0,
+                    255,
+                ],
+                'low': [
+                    # 1
+                    10000,
+                    0,
+                    0,
+                    0,
+                    # 2
+                    0,
+                    10000,
+                    0,
+                    0,
+                    # 3
+                    0,
+                    0,
+                    10000,
+                    0,
+                    # 4
+                    0,
+                    0,
+                    0,
+                    10000,
+                ],
+            },
         },
         # pattern with variable channel ids
         # 'pattern': {
