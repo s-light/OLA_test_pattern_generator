@@ -115,7 +115,7 @@ class OLAPattern(OLAThread):
         # prepare temp array
         data_output = array.array('B')
 
-        if not config['channel_current']:
+        if not hasattr(config, 'channel_current'):
             config['channel_current'] = 0
 
         # for devices generate pattern
@@ -362,7 +362,7 @@ if __name__ == '__main__':
         raw_input(
             "\n\n" +
             42*'*' +
-            "\nhit a key to stop the mapper\n" +
+            "\nhit a key to stop the pattern generator\n" +
             42*'*' +
             "\n\n"
         )
