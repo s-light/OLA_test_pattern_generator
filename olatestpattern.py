@@ -115,23 +115,23 @@ class OLAPattern(OLAThread):
         # prepare temp array
         data_output = array.array('B')
 
-        if not config.['channel_current']:
-            config.['channel_current'] = 0
+        if not config['channel_current']:
+            config['channel_current'] = 0
 
         # for devices generate pattern
         for index in range(0, self.config['universe']['channel_count']):
             channel_value = 0
-            if index is config.['channel_current']:
+            if index is config['channel_current']:
                 channel_value = config['on']
             data_output.append(channel_value)
 
         if (
-            config.['channel_current'] <
+            config['channel_current'] <
             self.config['universe']['channel_count']
         ):
-            config.['channel_current'] = config.['channel_current'] + 1
+            config['channel_current'] = config['channel_current'] + 1
         else:
-            config.['channel_current'] = 0
+            config['channel_current'] = 0
 
         # send frame
         self.dmx_send_frame(
