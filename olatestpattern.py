@@ -60,6 +60,35 @@ class OLAPattern(OLAThread):
 
         self.channel_current = 0
 
+        # high and low values:
+        # value_low_hb, value_low_lb = self.calculate_16bit_values(
+        #     self.config['system']['value']['low']
+        # )
+        # value_high_hb, value_high_lb = self.calculate_16bit_values(
+        #     self.config['system']['value']['high']
+        # )
+
+    def calculate_16bit_values(self, value):
+        """calculate the low and high part representations of value."""
+        high_byte = 0
+        low_byte = 0
+        if self.config['system']['16bitMode']:
+            high_byte, low_byte = struct.unpack(
+                "<BB",
+                struct.pack("<h", value)
+            )
+        else:
+            if value > 255:
+                # convert 16bit range to 8bit range
+                value = value / 256
+            # check for bounds
+            if value > 255:
+                value = 255
+            if value < 0:
+                value = 0
+            high_byte = value
+        return high_byte, low_byte
+
     def ola_connected(self):
         """register update event callback and switch to running mode."""
         self.wrapper.AddEvent(self.update_interval, self._calculate_step)
@@ -75,30 +104,45 @@ class OLAPattern(OLAThread):
         # register new event (for correct timing as first thing.)
         self.wrapper.AddEvent(self.update_interval, self._calculate_step)
 
-        # pattern = 'strobe'
-        pattern = 'channelcheck'
+        # pattern_name = 'strobe'
+        # pattern_name = 'channelcheck'
+        pattern_name = self.config['system']['pattern_name']
 
-        if pattern is 'strobe':
+        if 'strobe' in pattern_name:
             self._calculate_step_strobe(
                 self.config['pattern']['strobe']
             )
-        elif pattern is 'channelcheck':
+        elif 'channelcheck' in pattern_name:
             self._calculate_step_channelcheck(
                 self.config['pattern']['channelcheck']
             )
 
     def _calculate_step_strobe(self, config):
         """generate test pattern 'strobe'."""
+
         # prepare temp array
         data_output = array.array('B')
+
+        mode_16bit = self.config['system']['16bitMode']
+        value_off_hb, value_off_lb = self.calculate_16bit_values(
+            self.config['system']['value']['off']
+        )
+        value_low_hb, value_low_lb = self.calculate_16bit_values(
+            self.config['system']['value']['low']
+        )
+        value_high_hb, value_high_lb = self.calculate_16bit_values(
+            self.config['system']['value']['high']
+        )
+
         # calculate device_count
         device_count = self.channel_count / 12
+
         # get value set
         channel_values = {}
         if self.strobe_state:
-            channel_values = config['high']
+            channel_values = config[0]
         else:
-            channel_values = config['low']
+            channel_values = config[1]
 
         mode_16bit = self.config['system']['16bitMode']
         # for devices generate pattern
@@ -112,17 +156,24 @@ class OLAPattern(OLAThread):
             for channel_index, channel_value in enumerate(channel_values):
                 # print("ch{}:{}".format(channel_index, channel_value))
                 # print(channel_value)
+                high_byte = value_off_hb
+                low_byte = value_off_lb
+
+                if channel_value is -1:
+                    high_byte = value_off_hb
+                    low_byte = value_off_lb
+                if channel_value is 0:
+                    high_byte = value_low_hb
+                    low_byte = value_low_lb
+                elif channel_value is 1:
+                    high_byte = value_high_hb
+                    low_byte = value_high_lb
+
                 if mode_16bit:
-                    low, high = struct.unpack(
-                        "<BB",
-                        struct.pack("<h", channel_value)
-                    )
-                    # print("high: {}, low: {}".format(high, low))
-                    # print("high: {}, low: {}".format(high, low))
-                    data_output.append(high)
-                    data_output.append(low)
+                    data_output.append(high_byte)
+                    data_output.append(low_byte)
                 else:
-                    data_output.append(chr(channel_value))
+                    data_output.append(high_byte)
 
         # switch strobe_state
         self.strobe_state = not self.strobe_state
@@ -142,28 +193,27 @@ class OLAPattern(OLAThread):
         #     config['channel_current'] = 0
 
         mode_16bit = self.config['system']['16bitMode']
+        value_low_hb, value_low_lb = self.calculate_16bit_values(
+            self.config['system']['value']['low']
+        )
+        value_high_hb, value_high_lb = self.calculate_16bit_values(
+            self.config['system']['value']['high']
+        )
 
         # for devices generate pattern
         for index in range(0, self.config['universe']['channel_count']):
-            low = 0
-            high = 0
             # if index is config['channel_current']:
+            high_byte = value_low_hb
+            low_byte = value_low_lb
             if index is self.channel_current:
-                if mode_16bit:
-                    low, high = struct.unpack(
-                        "<BB",
-                        struct.pack("<h", config['on'])
-                    )
-            data_output.append(high)
-            data_output.append(low)
+                high_byte = value_high_hb
+                low_byte = value_high_lb
+            if mode_16bit:
+                data_output.append(high_byte)
+                data_output.append(low_byte)
+            else:
+                data_output.append(high_byte)
 
-        # if (
-        #     config['channel_current'] <
-        #     config['wrapp_around_count']
-        # ):
-        #     config['channel_current'] = config['channel_current'] + 1
-        # else:
-        #     config['channel_current'] = 0
         if (
             self.channel_current <
             config['wrapp_around_count']
@@ -171,7 +221,6 @@ class OLAPattern(OLAThread):
             self.channel_current = self.channel_current + 1
         else:
             self.channel_current = 0
-
 
         # send frame
         self.dmx_send_frame(
@@ -190,18 +239,29 @@ if __name__ == '__main__':
     print(42*'*')
 
     # parse arguments
+    pattern_name = "channelcheck"
+    pattern_name_in_args = False
     filename = "pattern.json"
     # only use args after script name
     arg = sys.argv[1:]
     if not arg:
         print("using standard values.")
         print(" Allowed parameters:")
-        print("   filename for config file       (default='map.json')")
+        print(
+            "   pattern name  (default='{}', overwrites config file value)"
+            .format(pattern_name)
+        )
+        print(
+            "   filename for config file  (default='{}')"
+            .format(filename)
+        )
         print("")
     else:
-        filename = arg[0]
-        # if len(arg) > 1:
-        #     pixel_count = int(arg[1])
+        pattern_name = arg[0]
+        pattern_name_in_args = True
+        if len(arg) > 1:
+            filename = arg[0]
+            # pixel_count = int(arg[1])
     # print parsed argument values
     print('''values:
         filename :{}
@@ -209,9 +269,16 @@ if __name__ == '__main__':
 
     default_config = {
         'system': {
-            'update_interval': 30,
+            # 'update_interval': 30,
+            'update_interval': 50,
             # 'update_interval': 250,
             '16bitMode': True,
+            'value': {
+                'high': 10000,
+                'low': 256,
+                'off': 0,
+            },
+            'pattern_name': 'channelcheck',
         },
         'universe': {
             'output': 1,
@@ -219,56 +286,55 @@ if __name__ == '__main__':
         },
         'pattern': {
             'channelcheck': {
-                'on': 10000,
                 'wrapp_around_count': 16*5,
-                'channel_current': 0,
+                # 'channel_current': 0,
             },
-            'strobe': {
-                'high': [
+            'strobe': [
+                [
                     # 1
-                    250,
-                    0,
-                    0,
-                    0,
+                    1,
+                    -1,
+                    -1,
+                    -1,
                     # 2
-                    0,
-                    250,
-                    0,
-                    0,
+                    -1,
+                    1,
+                    -1,
+                    -1,
                     # 3
-                    0,
-                    0,
-                    250,
-                    0,
+                    -1,
+                    -1,
+                    1,
+                    -1,
                     # 4
-                    0,
-                    0,
-                    0,
-                    250,
+                    -1,
+                    -1,
+                    -1,
+                    1,
                 ],
-                'low': [
+                [
                     # 1
-                    40,
                     0,
-                    0,
-                    0,
+                    -1,
+                    -1,
+                    -1,
                     # 2
+                    -1,
                     0,
-                    40,
-                    0,
-                    0,
+                    -1,
+                    -1,
                     # 3
+                    -1,
+                    -1,
                     0,
-                    0,
-                    40,
-                    0,
+                    -1,
                     # 4
+                    -1,
+                    -1,
+                    -1,
                     0,
-                    0,
-                    0,
-                    40,
                 ],
-            },
+            ],
         },
         # pattern with variable channel ids
         # 'pattern': {
@@ -391,6 +457,9 @@ if __name__ == '__main__':
         # },
     }
     my_config = ConfigDict(default_config, filename)
+    # overwritte with pattern name from comandline
+    if pattern_name_in_args:
+        my_config.config['system']['pattern_name'] = pattern_name
     print("my_config.config: {}".format(my_config.config))
 
     my_pattern = OLAPattern(my_config.config)
@@ -398,16 +467,54 @@ if __name__ == '__main__':
     my_pattern.start_ola()
 
     # wait for user to hit key.
-    try:
-        raw_input(
-            "\n\n" +
-            42*'*' +
-            "\nhit a key to stop the pattern generator\n" +
-            42*'*' +
-            "\n\n"
+    run = True
+    while run:
+        message = (
+            "\n" +
+            42*'*' + "\n" +
+            "select pattern: \n" +
+            "  'c': channelcheck\n" +
+            "  's': strobe\n" +
+            "set option: \n" +
+            "  'u': update interval 'u:100'\n" +
+            "Ctrl+C or 'q' to stop script\n" +
+            42*'*' + "\n" +
+            "\n"
         )
-    except KeyboardInterrupt:
-        print("\nstop.")
+        try:
+            # python2
+            value = raw_input(message)
+            # python3
+            # value = input(message)
+        except KeyboardInterrupt:
+            print("\nstop script.")
+            run = False
+        else:
+            if "q" in value:
+                run = False
+                print("stop script.")
+            elif "c" in value:
+                my_config.config['system']['pattern_name'] = 'channelcheck'
+                print("switched to channelcheck.")
+            elif "s" in value:
+                my_config.config['system']['pattern_name'] = 'strobe'
+                print("switched to strobe.")
+            elif "u" in value:
+                # try to extract new update interval value
+                start_index = value.find(':')
+                if start_index > -1:
+                    update_interval_new = value[start_index+1:]
+                    try:
+                        update_interval_new = int(update_interval_new)
+                    except Exception as e:
+                        print("input not valid. ({})".format(e))
+                    else:
+                        my_config.config['system']['update_interval'] = (
+                            update_interval_new
+                        )
+                        print("set update_interval to {}.".format(
+                            my_config.config['system']['update_interval']
+                        ))
 
     # blocks untill thread has joined.
     my_pattern.stop_ola()

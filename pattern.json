@@ -1,52 +1,56 @@
 {
     "pattern": {
         "channelcheck": {
-            "channel_current": 0,
-            "on": 10000,
             "wrapp_around_count": 80
         },
-        "strobe": {
-            "high": [
-                250,
-                0,
-                0,
-                0,
-                0,
-                250,
-                0,
-                0,
-                0,
-                0,
-                250,
-                0,
-                0,
-                0,
-                0,
-                250
+        "strobe": [
+            [
+                1,
+                -1,
+                -1,
+                -1,
+                -1,
+                1,
+                -1,
+                -1,
+                -1,
+                -1,
+                1,
+                -1,
+                -1,
+                -1,
+                -1,
+                1
             ],
-            "low": [
-                40,
+            [
                 0,
+                -1,
+                -1,
+                -1,
+                -1,
                 0,
+                -1,
+                -1,
+                -1,
+                -1,
                 0,
-                0,
-                40,
-                0,
-                0,
-                0,
-                0,
-                40,
-                0,
-                0,
-                0,
-                0,
-                40
+                -1,
+                -1,
+                -1,
+                -1,
+                0
             ]
-        }
+        ]
     },
     "system": {
         "16bitMode": true,
-        "update_interval": 30
+        "pattern_name": "channelcheck",
+        "update_interval": 50,
+        "value": {
+            "high": 10000,
+            "low": 256,
+            "off": 0
+        }
     },
     "universe": {
         "channel_count": 512,
