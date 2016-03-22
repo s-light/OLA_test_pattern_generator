@@ -1,56 +1,55 @@
 {
     "pattern": {
         "channelcheck": {
-            "16bit": true,
-            "channel_current": 1,
-            "on": 255,
-            "wrapp_around_count": 64
+            "channel_current": 0,
+            "on": 10000,
+            "wrapp_around_count": 80
         },
         "strobe": {
             "high": [
-                255,
+                250,
                 0,
                 0,
                 0,
                 0,
-                255,
+                250,
                 0,
                 0,
                 0,
                 0,
-                255,
+                250,
                 0,
                 0,
                 0,
                 0,
-                255
+                250
             ],
             "low": [
-                10000,
+                40,
                 0,
                 0,
                 0,
                 0,
-                10000,
+                40,
                 0,
                 0,
                 0,
                 0,
-                10000,
+                40,
                 0,
                 0,
                 0,
                 0,
-                10000
+                40
             ]
         }
     },
     "system": {
-        "16bitMode": false,
-        "update_interval": 2000
+        "16bitMode": true,
+        "update_interval": 30
     },
     "universe": {
         "channel_count": 512,
-        "output": 2
+        "output": 1
     }
 }

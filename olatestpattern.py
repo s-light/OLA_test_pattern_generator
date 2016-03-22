@@ -17,6 +17,7 @@ ola test pattern generator.
 import sys
 import os
 import array
+import struct
 
 from configdict import ConfigDict
 from olathreaded import OLAThread, OLAThread_States
@@ -57,6 +58,8 @@ class OLAPattern(OLAThread):
 
         self.strobe_state = False
 
+        self.channel_current = 0
+
     def ola_connected(self):
         """register update event callback and switch to running mode."""
         self.wrapper.AddEvent(self.update_interval, self._calculate_step)
@@ -71,12 +74,18 @@ class OLAPattern(OLAThread):
         """generate test pattern."""
         # register new event (for correct timing as first thing.)
         self.wrapper.AddEvent(self.update_interval, self._calculate_step)
-        # self._calculate_step_strobe(
-        #     self.config['pattern']['strobe']
-        # )
-        self._calculate_step_channelcheck(
-            self.config['pattern']['channelcheck']
-        )
+
+        # pattern = 'strobe'
+        pattern = 'channelcheck'
+
+        if pattern is 'strobe':
+            self._calculate_step_strobe(
+                self.config['pattern']['strobe']
+            )
+        elif pattern is 'channelcheck':
+            self._calculate_step_channelcheck(
+                self.config['pattern']['channelcheck']
+            )
 
     def _calculate_step_strobe(self, config):
         """generate test pattern 'strobe'."""
@@ -90,6 +99,8 @@ class OLAPattern(OLAThread):
             channel_values = config['high']
         else:
             channel_values = config['low']
+
+        mode_16bit = self.config['system']['16bitMode']
         # for devices generate pattern
         for index in range(0, device_count):
             # for channel_id, channel_value in channel_values.items():
@@ -101,7 +112,18 @@ class OLAPattern(OLAThread):
             for channel_index, channel_value in enumerate(channel_values):
                 # print("ch{}:{}".format(channel_index, channel_value))
                 # print(channel_value)
-                data_output.append(int(channel_value))
+                if mode_16bit:
+                    low, high = struct.unpack(
+                        "<BB",
+                        struct.pack("<h", channel_value)
+                    )
+                    # print("high: {}, low: {}".format(high, low))
+                    # print("high: {}, low: {}".format(high, low))
+                    data_output.append(high)
+                    data_output.append(low)
+                else:
+                    data_output.append(chr(channel_value))
+
         # switch strobe_state
         self.strobe_state = not self.strobe_state
         # send frame
@@ -115,23 +137,41 @@ class OLAPattern(OLAThread):
         # prepare temp array
         data_output = array.array('B')
 
-        if not hasattr(config, 'channel_current'):
-            config['channel_current'] = 0
+        # print(self.channel_current)
+        # if not hasattr(config, 'channel_current'):
+        #     config['channel_current'] = 0
+
+        mode_16bit = self.config['system']['16bitMode']
 
         # for devices generate pattern
         for index in range(0, self.config['universe']['channel_count']):
-            channel_value = 0
-            if index is config['channel_current']:
-                channel_value = config['on']
-            data_output.append(channel_value)
+            low = 0
+            high = 0
+            # if index is config['channel_current']:
+            if index is self.channel_current:
+                if mode_16bit:
+                    low, high = struct.unpack(
+                        "<BB",
+                        struct.pack("<h", config['on'])
+                    )
+            data_output.append(high)
+            data_output.append(low)
 
+        # if (
+        #     config['channel_current'] <
+        #     config['wrapp_around_count']
+        # ):
+        #     config['channel_current'] = config['channel_current'] + 1
+        # else:
+        #     config['channel_current'] = 0
         if (
-            config['channel_current'] <
-            self.config['universe']['channel_count']
+            self.channel_current <
+            config['wrapp_around_count']
         ):
-            config['channel_current'] = config['channel_current'] + 1
+            self.channel_current = self.channel_current + 1
         else:
-            config['channel_current'] = 0
+            self.channel_current = 0
+
 
         # send frame
         self.dmx_send_frame(
@@ -169,64 +209,64 @@ if __name__ == '__main__':
 
     default_config = {
         'system': {
-            # 'update_interval': 30,
-            'update_interval': 2000,
-            '16bitMode': False,
+            'update_interval': 30,
+            # 'update_interval': 250,
+            '16bitMode': True,
         },
         'universe': {
-            'output': 2,
+            'output': 1,
             'channel_count': 512,
         },
         'pattern': {
             'channelcheck': {
-                'on': 255,
-                '16bit': True,
-                'wrapp_around_count': 64,
+                'on': 10000,
+                'wrapp_around_count': 16*5,
+                'channel_current': 0,
             },
             'strobe': {
                 'high': [
                     # 1
-                    255,
+                    250,
                     0,
                     0,
                     0,
                     # 2
                     0,
-                    255,
+                    250,
                     0,
                     0,
                     # 3
                     0,
                     0,
-                    255,
+                    250,
                     0,
                     # 4
                     0,
                     0,
                     0,
-                    255,
+                    250,
                 ],
                 'low': [
                     # 1
-                    10000,
+                    40,
                     0,
                     0,
                     0,
                     # 2
                     0,
-                    10000,
+                    40,
                     0,
                     0,
                     # 3
                     0,
                     0,
-                    10000,
+                    40,
                     0,
                     # 4
                     0,
                     0,
                     0,
-                    10000,
+                    40,
                 ],
             },
         },
