@@ -23,7 +23,7 @@ from configdict import ConfigDict
 from olathreaded import OLAThread, OLAThread_States
 
 
-version = """08.03.2016 12:30 stefan"""
+version = """02.04.2016 19:09 stefan"""
 
 
 ##########################################
@@ -115,6 +115,10 @@ class OLAPattern(OLAThread):
         elif 'channelcheck' in pattern_name:
             self._calculate_step_channelcheck(
                 self.config['pattern']['channelcheck']
+            )
+        elif 'staic' in pattern_name:
+            self._calculate_step_static(
+                self.config['pattern']['static']
             )
 
     def _calculate_step_strobe(self, config):
@@ -228,6 +232,71 @@ class OLAPattern(OLAThread):
             data_output
         )
 
+    def _calculate_step_static(self, config):
+        """generate test pattern 'static'."""
+        # prepare temp array
+        data_output = array.array('B')
+
+        mode_16bit = self.config['system']['16bitMode']
+        value_off_hb, value_off_lb = self.calculate_16bit_values(
+            self.config['system']['value']['off']
+        )
+        value_low_hb, value_low_lb = self.calculate_16bit_values(
+            self.config['system']['value']['low']
+        )
+        value_high_hb, value_high_lb = self.calculate_16bit_values(
+            self.config['system']['value']['high']
+        )
+
+        # calculate device_count
+        device_count = self.channel_count / 12
+
+        # get value set
+        channel_values = {}
+        if self.strobe_state:
+            channel_values = config[0]
+        else:
+            channel_values = config[1]
+
+        mode_16bit = self.config['system']['16bitMode']
+        # for devices generate pattern
+        for index in range(0, device_count):
+            # for channel_id, channel_value in channel_values.items():
+            # for index in range(0, len(channel_values)):
+            #     channel_id = str(index)
+            #     channel_value = channel_values[channel_id]
+            #     print("ch{}:{}".format(channel_id, channel_value))
+            #     data_output.append(channel_value)
+            for channel_index, channel_value in enumerate(channel_values):
+                # print("ch{}:{}".format(channel_index, channel_value))
+                # print(channel_value)
+                high_byte = value_off_hb
+                low_byte = value_off_lb
+
+                if channel_value is -1:
+                    high_byte = value_off_hb
+                    low_byte = value_off_lb
+                if channel_value is 0:
+                    high_byte = value_low_hb
+                    low_byte = value_low_lb
+                elif channel_value is 1:
+                    high_byte = value_high_hb
+                    low_byte = value_high_lb
+
+                if mode_16bit:
+                    data_output.append(high_byte)
+                    data_output.append(low_byte)
+                else:
+                    data_output.append(high_byte)
+
+        # switch strobe_state
+        self.strobe_state = not self.strobe_state
+        # send frame
+        self.dmx_send_frame(
+            self.config['universe']['output'],
+            data_output
+        )
+
 
 ##########################################
 if __name__ == '__main__':
@@ -287,6 +356,10 @@ if __name__ == '__main__':
         'pattern': {
             'channelcheck': {
                 'wrapp_around_count': 16*5,
+                # 'channel_current': 0,
+            },
+            'static': {
+                'channels': [],
                 # 'channel_current': 0,
             },
             'strobe': [
@@ -462,6 +535,7 @@ if __name__ == '__main__':
         my_config.config['system']['pattern_name'] = pattern_name
     print("my_config.config: {}".format(my_config.config))
 
+
     my_pattern = OLAPattern(my_config.config)
 
     my_pattern.start_ola()
@@ -473,48 +547,89 @@ if __name__ == '__main__':
             "\n" +
             42*'*' + "\n" +
             "select pattern: \n" +
-            "  'c': channelcheck\n" +
-            "  's': strobe\n" +
+            "  '1': channelcheck\n" +
+            "  '2': strobe\n" +
+            "  '3': static\n" +
+            "  's': stop\n" +
             "set option: \n" +
             "  'u': update interval 'u:100'\n" +
+            "  'vh': set value high 'vh:22000'\n" +
+            "  'vl': set value low 'vl:22000'\n" +
+            "  'vo': set value off 'vo:22000'\n" +
             "Ctrl+C or 'q' to stop script\n" +
             42*'*' + "\n" +
             "\n"
         )
         try:
             # python2
-            value = raw_input(message)
+            user_input = raw_input(message)
             # python3
-            # value = input(message)
+            # user_input = input(message)
         except KeyboardInterrupt:
             print("\nstop script.")
             run = False
         else:
-            if "q" in value:
-                run = False
-                print("stop script.")
-            elif "c" in value:
-                my_config.config['system']['pattern_name'] = 'channelcheck'
-                print("switched to channelcheck.")
-            elif "s" in value:
-                my_config.config['system']['pattern_name'] = 'strobe'
-                print("switched to strobe.")
-            elif "u" in value:
-                # try to extract new update interval value
-                start_index = value.find(':')
-                if start_index > -1:
-                    update_interval_new = value[start_index+1:]
-                    try:
-                        update_interval_new = int(update_interval_new)
-                    except Exception as e:
-                        print("input not valid. ({})".format(e))
-                    else:
-                        my_config.config['system']['update_interval'] = (
-                            update_interval_new
-                        )
-                        print("set update_interval to {}.".format(
-                            my_config.config['system']['update_interval']
-                        ))
+            if len(user_input) > 0:
+                if "q" in user_input[0]:
+                    run = False
+                    print("stop script.")
+                elif "1" in user_input[0]:
+                    my_config.config['system']['pattern_name'] = 'channelcheck'
+                    print("switched to channelcheck.")
+                elif "2" in user_input[0]:
+                    my_config.config['system']['pattern_name'] = 'strobe'
+                    print("switched to strobe.")
+                elif "3" in user_input[0]:
+                    my_config.config['system']['pattern_name'] = 'static'
+                    print("switched to static.")
+                elif "s" in user_input[0]:
+                    my_config.config['system']['pattern_name'] = 'stop'
+                    print("stopped.")
+                elif "u" in user_input[0]:
+                    # try to extract new update interval value
+                    start_index = user_input.find(':')
+                    if start_index > -1:
+                        update_interval_new = user_input[start_index+1:]
+                        try:
+                            update_interval_new = int(update_interval_new)
+                        except Exception as e:
+                            print("input not valid. ({})".format(e))
+                        else:
+                            my_config.config['system']['update_interval'] = (
+                                update_interval_new
+                            )
+                            print("set update_interval to {}.".format(
+                                my_config.config['system']['update_interval']
+                            ))
+                elif "v" in user_input[0]:
+                    # try to extract new update interval value
+                    start_index = user_input.find(':')
+                    if start_index > -1:
+                        value_new = user_input[start_index+1:]
+                        try:
+                            value_new = int(value_new)
+                        except Exception as e:
+                            print("input not valid. ({})".format(e))
+                        else:
+                            # check for high low or off
+                            value_name = ''
+                            if "h" in user_input:
+                                value_name = 'high'
+                            elif "l" in user_input:
+                                value_name = 'low'
+                            elif "o" in user_input:
+                                value_name = 'off'
+                            try:
+                                my_config.config['system']['value'][value_name] = (
+                                    value_new
+                                )
+                            except Exception as e:
+                                print("input not valid. ({})".format(e))
+                            else:
+                                print("set value {} to {}.".format(
+                                    value_name,
+                                    my_config.config['system']['value'][value_name]
+                                ))
 
     # blocks untill thread has joined.
     my_pattern.stop_ola()

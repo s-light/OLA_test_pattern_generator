@@ -3,6 +3,9 @@
         "channelcheck": {
             "wrapp_around_count": 80
         },
+        "static": {
+            "channels": []
+        },
         "strobe": [
             [
                 1,
@@ -45,9 +48,9 @@
     "system": {
         "16bitMode": true,
         "pattern_name": "channelcheck",
-        "update_interval": 50,
+        "update_interval": 1000,
         "value": {
-            "high": 10000,
+            "high": 480,
             "low": 256,
             "off": 0
         }

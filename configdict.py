@@ -39,6 +39,27 @@ version = """09.03.2016 18:00 stefan"""
 ##########################################
 # functions
 
+def merge_deep(obj_1, obj_2):
+    """
+    merge dicts deeply.
+
+    obj_2 overwrittes keys with same values in obj_1.
+    (if they are dicts its recusive merged.)
+    """
+    # work on obj_1
+    result = obj_1
+    # make copy
+    # result = obj_1.copy()
+    if (isinstance(result, dict) and isinstance(obj_2, dict)):
+        for key in obj_2:
+            if key in result:
+                result[key] = merge_deep(result[key], obj_2[key])
+            else:
+                result[key] = obj_2[key]
+    else:
+        result = obj_2
+    return result
+
 ##########################################
 # classes
 
@@ -58,27 +79,6 @@ class ConfigDict():
                 self.write_to_file()
         else:
             self.config = self.default_config.copy()
-
-    def merge_deep(self, obj_1, obj_2):
-        """
-        merge dicts deeply.
-
-        obj_2 overwrittes keys with same values in obj_1.
-        (if they are dicts its recusive merged.)
-        """
-        # work on obj_1
-        result = obj_1
-        # make copy
-        # result = obj_1.copy()
-        if (isinstance(result, dict) and isinstance(obj_2, dict)):
-            for key in obj_2:
-                if key in result:
-                    result[key] = self.merge_deep(result[key], obj_2[key])
-                else:
-                    result[key] = obj_2[key]
-        else:
-            result = obj_2
-        return result
 
     def set_filename(self, filename):
         """set new filename."""
@@ -211,7 +211,7 @@ class ConfigDict():
 
         # do a merge with the defaults.
         self.config = self.default_config.copy()
-        self.merge_deep(self.config, config_temp)
+        merge_deep(self.config, config_temp)
 
     def _write_to_json_file(self, filename, config):
         with open(filename, 'w') as f:
