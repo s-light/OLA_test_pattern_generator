@@ -28,7 +28,7 @@ import array
 # classes
 
 
-class Pattern(Object):
+class Pattern():
     """Base Pattern Class."""
 
     def __init__(self, config, config_global):
@@ -37,9 +37,10 @@ class Pattern(Object):
         self.config_defaults = {}
         self.config = self.config_defaults.copy()
         merge_deep(self.config, config)
+        print("config: {}".format(self.config))
 
         self.config_global = config_global
-        # print("config: {}".format(self.config))
+        print("config_global: {}".format(self.config_global))
         self.channel_count = config_global['channel_count']
         self.mode_16bit = config_global['mode_16bit']
         self.values = config_global['value']

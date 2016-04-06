@@ -15,7 +15,7 @@ channel check pattern.
 """
 
 
-import pattern
+from pattern import Pattern
 import array
 
 ##########################################

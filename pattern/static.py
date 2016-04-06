@@ -5,7 +5,7 @@
 strobe pattern.
 
     generates a test pattern:
-    strobes all channels between high and low
+    sets all channels to high
 
     history:
         see git commits
@@ -30,8 +30,8 @@ import array
 # classes
 
 
-class Strobe(Pattern):
-    """strobe Pattern Class."""
+class Static(Pattern):
+    """Static Pattern Class."""
 
     def __init__(self, config, config_global):
         """init pattern."""
@@ -46,7 +46,6 @@ class Strobe(Pattern):
         Pattern.__init__(self, config, config_global)
 
         # inits for this pattern
-        self.strobe_state = False
 
     def _calculate_step(self):
         """calculate single step."""
@@ -62,13 +61,7 @@ class Strobe(Pattern):
         # self.config_global[]
         # fill array with meaningfull data according to the pattern :-)
         # .....
-
-        value_off_hb, value_off_lb = self.calculate_16bit_values(
-            self.values['off']
-        )
-        value_low_hb, value_low_lb = self.calculate_16bit_values(
-            self.values['low']
-        )
+        
         value_high_hb, value_high_lb = self.calculate_16bit_values(
             self.values['high']
         )

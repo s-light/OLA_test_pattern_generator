@@ -54,7 +54,7 @@ class OLAPattern(OLAThread):
         self.universe = self.config['universe']['output']
         # self.channel_count = 512
         # self.channel_count = 50
-        self.channel_count = self.config['universe']['channel_count']
+        self.channel_count = self.config['system']['channel_count']
 
         self.strobe_state = False
 
@@ -72,7 +72,7 @@ class OLAPattern(OLAThread):
         """calculate the low and high part representations of value."""
         high_byte = 0
         low_byte = 0
-        if self.config['system']['16bitMode']:
+        if self.config['system']['mode_16bit']:
             high_byte, low_byte = struct.unpack(
                 "<BB",
                 struct.pack("<h", value)
@@ -123,11 +123,10 @@ class OLAPattern(OLAThread):
 
     def _calculate_step_strobe(self, config):
         """generate test pattern 'strobe'."""
-
         # prepare temp array
         data_output = array.array('B')
 
-        mode_16bit = self.config['system']['16bitMode']
+        mode_16bit = self.config['system']['mode_16bit']
         value_off_hb, value_off_lb = self.calculate_16bit_values(
             self.config['system']['value']['off']
         )
@@ -148,7 +147,7 @@ class OLAPattern(OLAThread):
         else:
             channel_values = config[1]
 
-        mode_16bit = self.config['system']['16bitMode']
+        mode_16bit = self.config['system']['mode_16bit']
         # for devices generate pattern
         for index in range(0, device_count):
             # for channel_id, channel_value in channel_values.items():
@@ -196,7 +195,7 @@ class OLAPattern(OLAThread):
         # if not hasattr(config, 'channel_current'):
         #     config['channel_current'] = 0
 
-        mode_16bit = self.config['system']['16bitMode']
+        mode_16bit = self.config['system']['mode_16bit']
         value_low_hb, value_low_lb = self.calculate_16bit_values(
             self.config['system']['value']['low']
         )
@@ -205,7 +204,7 @@ class OLAPattern(OLAThread):
         )
 
         # for devices generate pattern
-        for index in range(0, self.config['universe']['channel_count']):
+        for index in range(0, self.config['system']['channel_count']):
             # if index is config['channel_current']:
             high_byte = value_low_hb
             low_byte = value_low_lb
@@ -237,7 +236,7 @@ class OLAPattern(OLAThread):
         # prepare temp array
         data_output = array.array('B')
 
-        mode_16bit = self.config['system']['16bitMode']
+        mode_16bit = self.config['system']['mode_16bit']
         value_off_hb, value_off_lb = self.calculate_16bit_values(
             self.config['system']['value']['off']
         )
@@ -258,7 +257,7 @@ class OLAPattern(OLAThread):
         else:
             channel_values = config[1]
 
-        mode_16bit = self.config['system']['16bitMode']
+        mode_16bit = self.config['system']['mode_16bit']
         # for devices generate pattern
         for index in range(0, device_count):
             # for channel_id, channel_value in channel_values.items():
@@ -341,17 +340,17 @@ if __name__ == '__main__':
             # 'update_interval': 30,
             'update_interval': 50,
             # 'update_interval': 250,
-            '16bitMode': True,
+            'mode_16bit': True,
             'value': {
                 'high': 10000,
                 'low': 256,
                 'off': 0,
             },
             'pattern_name': 'channelcheck',
+            'channel_count': 512,
         },
         'universe': {
             'output': 1,
-            'channel_count': 512,
         },
         'pattern': {
             'channelcheck': {
@@ -409,125 +408,6 @@ if __name__ == '__main__':
                 ],
             ],
         },
-        # pattern with variable channel ids
-        # 'pattern': {
-        #     'high': {
-        #         # rgb 1
-        #         '0': 0,
-        #         '1': 255,
-        #         '2': 0,
-        #         '3': 255,
-        #         '4': 0,
-        #         '5': 255,
-        #         # rgb 2
-        #         '6': 0,
-        #         '7': 255,
-        #         '8': 0,
-        #         '9': 255,
-        #         '10': 0,
-        #         '11': 255,
-        #         # rgb 3
-        #         '12': 0,
-        #         '13': 255,
-        #         '14': 0,
-        #         '15': 255,
-        #         '16': 0,
-        #         '17': 255,
-        #         # rgb 3
-        #         '18': 0,
-        #         '19': 255,
-        #         '20': 0,
-        #         '21': 255,
-        #         '22': 0,
-        #         '23': 255,
-        #         # white 1
-        #         '24': 0,
-        #         '25': 255,
-        #         '26': 0,
-        #         '27': 0,
-        #         '28': 0,
-        #         '29': 0,
-        #         # white 2
-        #         '30': 0,
-        #         '31': 255,
-        #         '32': 0,
-        #         '33': 0,
-        #         '44': 0,
-        #         '45': 0,
-        #         # white 3
-        #         '46': 0,
-        #         '47': 255,
-        #         '48': 0,
-        #         '49': 0,
-        #         '50': 0,
-        #         '51': 0,
-        #         # white 3
-        #         '52': 0,
-        #         '53': 255,
-        #         '54': 0,
-        #         '55': 0,
-        #         '56': 0,
-        #         '57': 0,
-        #     },
-        #     'low': {
-        #         # rgb 1
-        #         '0': 0,
-        #         '1': 1,
-        #         '2': 0,
-        #         '3': 1,
-        #         '4': 0,
-        #         '5': 1,
-        #         # rgb 2
-        #         '6': 0,
-        #         '7': 1,
-        #         '8': 0,
-        #         '9': 1,
-        #         '10': 0,
-        #         '11': 1,
-        #         # rgb 3
-        #         '12': 0,
-        #         '13': 1,
-        #         '14': 0,
-        #         '15': 1,
-        #         '16': 0,
-        #         '17': 1,
-        #         # rgb 3
-        #         '18': 0,
-        #         '19': 1,
-        #         '20': 0,
-        #         '21': 1,
-        #         '22': 0,
-        #         '23': 1,
-        #         # white 1
-        #         '24': 0,
-        #         '25': 1,
-        #         '26': 0,
-        #         '27': 0,
-        #         '28': 0,
-        #         '29': 0,
-        #         # white 2
-        #         '30': 0,
-        #         '31': 1,
-        #         '32': 0,
-        #         '33': 0,
-        #         '44': 0,
-        #         '45': 0,
-        #         # white 3
-        #         '46': 0,
-        #         '47': 1,
-        #         '48': 0,
-        #         '49': 0,
-        #         '50': 0,
-        #         '51': 0,
-        #         # white 3
-        #         '52': 0,
-        #         '53': 1,
-        #         '54': 0,
-        #         '55': 0,
-        #         '56': 0,
-        #         '57': 0,
-        #     },
-        # },
     }
     my_config = ConfigDict(default_config, filename)
     # overwritte with pattern name from comandline
@@ -535,6 +415,43 @@ if __name__ == '__main__':
         my_config.config['system']['pattern_name'] = pattern_name
     print("my_config.config: {}".format(my_config.config))
 
+    ##########################################
+    # load patterns
+
+    # dir_current = os.path.dirname(os.path.abspath(__file__))
+    # lib_path = os.path.join(dir_current, '../pattern/')
+    # sys.path.append(lib_path)
+    try:
+        # import pattern plugins
+        from pattern.strobe import Strobe
+        from pattern.channelcheck import Channelcheck
+        from pattern.static import Static
+    except Exception as e:
+        raise
+    else:
+        pattern_list = [
+            'channelcheck',
+            'strobe',
+            'static',
+        ]
+
+        pattern = {}
+        # for pattern_name in pattern_list:
+        pattern_name = 'channelcheck'
+        pattern[pattern_name] = Channelcheck(
+            my_config.config['pattern'][pattern_name],
+            my_config.config['system']
+        )
+        pattern_name = 'strobe'
+        pattern[pattern_name] = Strobe(
+            my_config.config['pattern'][pattern_name],
+            my_config.config['system']
+        )
+        pattern_name = 'static'
+        pattern[pattern_name] = Static(
+            my_config.config['pattern'][pattern_name],
+            my_config.config['system']
+        )
 
     my_pattern = OLAPattern(my_config.config)
 
@@ -543,13 +460,19 @@ if __name__ == '__main__':
     # wait for user to hit key.
     run = True
     while run:
+
+        message_patterns = ""
+        # for index, value in iter(pattern_list):
+        for value in pattern_list:
+            index = pattern_list.index(value)
+            # print(index, value)
+            message_patterns += "  '{}' {}\n".format(index+1, value)
+
         message = (
             "\n" +
             42*'*' + "\n" +
             "select pattern: \n" +
-            "  '1': channelcheck\n" +
-            "  '2': strobe\n" +
-            "  '3': static\n" +
+            message_patterns +
             "  's': stop\n" +
             "set option: \n" +
             "  'u': update interval 'u:100'\n" +
@@ -570,18 +493,10 @@ if __name__ == '__main__':
             run = False
         else:
             if len(user_input) > 0:
+
                 if "q" in user_input[0]:
                     run = False
                     print("stop script.")
-                elif "1" in user_input[0]:
-                    my_config.config['system']['pattern_name'] = 'channelcheck'
-                    print("switched to channelcheck.")
-                elif "2" in user_input[0]:
-                    my_config.config['system']['pattern_name'] = 'strobe'
-                    print("switched to strobe.")
-                elif "3" in user_input[0]:
-                    my_config.config['system']['pattern_name'] = 'static'
-                    print("switched to static.")
                 elif "s" in user_input[0]:
                     my_config.config['system']['pattern_name'] = 'stop'
                     print("stopped.")
@@ -620,7 +535,8 @@ if __name__ == '__main__':
                             elif "o" in user_input:
                                 value_name = 'off'
                             try:
-                                my_config.config['system']['value'][value_name] = (
+                                my_config.config['system']
+                                ['value'][value_name] = (
                                     value_new
                                 )
                             except Exception as e:
@@ -628,9 +544,22 @@ if __name__ == '__main__':
                             else:
                                 print("set value {} to {}.".format(
                                     value_name,
-                                    my_config.config['system']['value'][value_name]
+                                    my_config.config['system']
+                                    ['value'][value_name]
                                 ))
-
+                else:
+                    # check for integer
+                    try:
+                        pattern_index = int(user_input)
+                    except Exception as e:
+                        print("input not valid. ({})".format(e))
+                    else:
+                        my_config.config['system']['pattern_name'] = (
+                            pattern_list[pattern_index-1]
+                        )
+                        print("switched to {}.".format(
+                            pattern_list[pattern_index-1]
+                        ))
     # blocks untill thread has joined.
     my_pattern.stop_ola()
 

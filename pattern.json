@@ -47,6 +47,8 @@
     },
     "system": {
         "16bitMode": true,
+        "channel_count": 512,
+        "mode_16bit": true,
         "pattern_name": "channelcheck",
         "update_interval": 1000,
         "value": {
