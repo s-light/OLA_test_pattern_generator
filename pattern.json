@@ -50,10 +50,10 @@
         "channel_count": 512,
         "mode_16bit": true,
         "pattern_name": "channelcheck",
-        "update_interval": 1000,
+        "update_interval": 500,
         "value": {
-            "high": 480,
-            "low": 256,
+            "high": 1000,
+            "low": 1,
             "off": 0
         }
     },

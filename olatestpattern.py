@@ -49,12 +49,12 @@ class OLAPattern(OLAThread):
         self.config = config
         # print("config: {}".format(self.config))
 
-        self.update_interval = self.config['system']['update_interval']
-
-        self.universe = self.config['universe']['output']
+        # this does not work. the link to main config is lost..
+        # self.update_interval = self.config['system']['update_interval']
+        # self.universe = self.config['universe']['output']
         # self.channel_count = 512
         # self.channel_count = 50
-        self.channel_count = self.config['system']['channel_count']
+        # self.channel_count = self.config['system']['channel_count']
 
         self.strobe_state = False
 
@@ -73,9 +73,11 @@ class OLAPattern(OLAThread):
         high_byte = 0
         low_byte = 0
         if self.config['system']['mode_16bit']:
-            high_byte, low_byte = struct.unpack(
+            if value > 65535:
+                value = 65535
+            low_byte, high_byte = struct.unpack(
                 "<BB",
-                struct.pack("<h", value)
+                struct.pack("<H", value)
             )
         else:
             if value > 255:
@@ -91,7 +93,10 @@ class OLAPattern(OLAThread):
 
     def ola_connected(self):
         """register update event callback and switch to running mode."""
-        self.wrapper.AddEvent(self.update_interval, self._calculate_step)
+        self.wrapper.AddEvent(
+            self.config['system']['update_interval'],
+            self._calculate_step
+        )
         # python3 syntax
         # super().ola_connected()
         # python2 syntax
@@ -102,7 +107,18 @@ class OLAPattern(OLAThread):
     def _calculate_step(self):
         """generate test pattern."""
         # register new event (for correct timing as first thing.)
-        self.wrapper.AddEvent(self.update_interval, self._calculate_step)
+        self.wrapper.AddEvent(
+            self.config['system']['update_interval'],
+            self._calculate_step
+        )
+        # print(
+        #     "self.config['system']['update_interval']",
+        #     self.config['system']['update_interval']
+        # )
+        # print(
+        #     "self.update_interval",
+        #     self.update_interval
+        # )
 
         # pattern_name = 'strobe'
         # pattern_name = 'channelcheck'
@@ -138,7 +154,7 @@ class OLAPattern(OLAThread):
         )
 
         # calculate device_count
-        device_count = self.channel_count / 12
+        device_count = self.config['system']['channel_count'] / 12
 
         # get value set
         channel_values = {}
@@ -248,7 +264,7 @@ class OLAPattern(OLAThread):
         )
 
         # calculate device_count
-        device_count = self.channel_count / 12
+        device_count = self.config['system']['channel_count'] / 12
 
         # get value set
         channel_values = {}
@@ -342,7 +358,7 @@ if __name__ == '__main__':
             # 'update_interval': 250,
             'mode_16bit': True,
             'value': {
-                'high': 10000,
+                'high': 1000,
                 'low': 256,
                 'off': 0,
             },
@@ -422,6 +438,7 @@ if __name__ == '__main__':
     # lib_path = os.path.join(dir_current, '../pattern/')
     # sys.path.append(lib_path)
     try:
+        # https://docs.python.org/3/library/importlib.html#importlib.import_module
         # import pattern plugins
         from pattern.strobe import Strobe
         from pattern.channelcheck import Channelcheck
@@ -461,27 +478,35 @@ if __name__ == '__main__':
     run = True
     while run:
 
-        message_patterns = ""
+        message_list = ""
         # for index, value in iter(pattern_list):
         for value in pattern_list:
             index = pattern_list.index(value)
             # print(index, value)
-            message_patterns += "  '{}' {}\n".format(index+1, value)
+            selected = ' '
+            if my_config.config['system']['pattern_name'] == value:
+                selected = '>'
+            message_list += " {}'{}' {}\n".format(selected, index+1, value)
 
         message = (
             "\n" +
             42*'*' + "\n" +
             "select pattern: \n" +
-            message_patterns +
+            message_list +
             "  's': stop\n" +
             "set option: \n" +
-            "  'u': update interval 'u:100'\n" +
-            "  'vh': set value high 'vh:22000'\n" +
-            "  'vl': set value low 'vl:22000'\n" +
-            "  'vo': set value off 'vo:22000'\n" +
+            "  'u': update interval 'u:{update_interval}'\n" +
+            "  'vh': set value high 'vh:{vhigh}'\n" +
+            "  'vl': set value low 'vl:{vlow}'\n" +
+            "  'vo': set value off 'vo:{voff}'\n" +
             "Ctrl+C or 'q' to stop script\n" +
             42*'*' + "\n" +
             "\n"
+        ).format(
+            update_interval=my_config.config['system']['update_interval'],
+            vhigh=my_config.config['system']['value']['high'],
+            vlow=my_config.config['system']['value']['low'],
+            voff=my_config.config['system']['value']['off'],
         )
         try:
             # python2
@@ -492,74 +517,93 @@ if __name__ == '__main__':
             print("\nstop script.")
             run = False
         else:
-            if len(user_input) > 0:
+            try:
+                if len(user_input) > 0:
 
-                if "q" in user_input[0]:
-                    run = False
-                    print("stop script.")
-                elif "s" in user_input[0]:
-                    my_config.config['system']['pattern_name'] = 'stop'
-                    print("stopped.")
-                elif "u" in user_input[0]:
-                    # try to extract new update interval value
-                    start_index = user_input.find(':')
-                    if start_index > -1:
-                        update_interval_new = user_input[start_index+1:]
-                        try:
-                            update_interval_new = int(update_interval_new)
-                        except Exception as e:
-                            print("input not valid. ({})".format(e))
-                        else:
-                            my_config.config['system']['update_interval'] = (
-                                update_interval_new
-                            )
-                            print("set update_interval to {}.".format(
-                                my_config.config['system']['update_interval']
-                            ))
-                elif "v" in user_input[0]:
-                    # try to extract new update interval value
-                    start_index = user_input.find(':')
-                    if start_index > -1:
-                        value_new = user_input[start_index+1:]
-                        try:
-                            value_new = int(value_new)
-                        except Exception as e:
-                            print("input not valid. ({})".format(e))
-                        else:
-                            # check for high low or off
-                            value_name = ''
-                            if "h" in user_input:
-                                value_name = 'high'
-                            elif "l" in user_input:
-                                value_name = 'low'
-                            elif "o" in user_input:
-                                value_name = 'off'
+                    if "q" in user_input[0]:
+                        run = False
+                        print("stop script.")
+                    elif "s" in user_input[0]:
+                        my_config.config['system']['pattern_name'] = 'stop'
+                        print("stopped.")
+                    elif "u" in user_input[0]:
+                        # try to extract new update interval value
+                        start_index = user_input.find(':')
+                        if start_index > -1:
+                            update_interval_new = user_input[start_index+1:]
                             try:
-                                my_config.config['system']
-                                ['value'][value_name] = (
-                                    value_new
-                                )
+                                update_interval_new = int(update_interval_new)
                             except Exception as e:
                                 print("input not valid. ({})".format(e))
                             else:
-                                print("set value {} to {}.".format(
-                                    value_name,
+                                my_config.config['system']\
+                                    ['update_interval'] = (
+                                        update_interval_new
+                                    )
+                                print("set update_interval to {}.".format(
                                     my_config.config['system']
-                                    ['value'][value_name]
+                                    ['update_interval']
                                 ))
-                else:
-                    # check for integer
-                    try:
-                        pattern_index = int(user_input)
-                    except Exception as e:
-                        print("input not valid. ({})".format(e))
+                    elif "v" in user_input[0]:
+                        # try to extract new update interval value
+                        start_index = user_input.find(':')
+                        if start_index > -1:
+                            value_new = user_input[start_index+1:]
+                            try:
+                                value_new = int(value_new)
+                            except ValueError as e:
+                                print("input not valid. ({})".format(e))
+                                raise(e)
+                            else:
+                                # bound value
+                                if value_new > 65535:
+                                    value_new = 65535
+                                # check for high low or off
+                                value_name = ''
+                                if "h" in user_input:
+                                    value_name = 'high'
+                                elif "l" in user_input:
+                                    value_name = 'low'
+                                elif "o" in user_input:
+                                    value_name = 'off'
+                                try:
+                                    my_config.config['system']['value']\
+                                        [value_name] = value_new
+                                except ValueError as e:
+                                    print("input not valid. ({})".format(e))
+                                else:
+                                    print("set value {} to {}.".format(
+                                        value_name,
+                                        my_config.config['system']
+                                        ['value'][value_name]
+                                    ))
                     else:
-                        my_config.config['system']['pattern_name'] = (
-                            pattern_list[pattern_index-1]
-                        )
-                        print("switched to {}.".format(
-                            pattern_list[pattern_index-1]
-                        ))
+                        # check for integer
+                        try:
+                            pattern_index = int(user_input)
+                        except ValueError as e:
+                            print("input not valid. ({})".format(e))
+                        else:
+                            # print("pattern_list.count = {}".format(
+                            #     len(pattern_list)
+                            # ))
+
+                            if (
+                                (pattern_index > 0) and
+                                (pattern_index <= len(pattern_list))
+                            ):
+                                my_config.config['system']['pattern_name'] = (
+                                    pattern_list[pattern_index-1]
+                                )
+                                print("switched to {}.".format(
+                                    pattern_list[pattern_index-1]
+                                ))
+                            else:
+                                print("not a valid index.")
+            except Exception as e:
+                print("unknown error: {}".format(e))
+                run = False
+                print("stop script.")
     # blocks untill thread has joined.
     my_pattern.stop_ola()
 

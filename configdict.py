@@ -2,7 +2,7 @@
 # coding=utf-8
 
 """
-simple package to read and write configs in dict format to file.
+simple package to read and write configs in dict format from/to file.
 
     supports two formats:
         json (preferred)
@@ -30,7 +30,7 @@ except:
     # print("loaded python2 ConfigParser")
 
 
-version = """09.03.2016 18:00 stefan"""
+version = """10.05.2016 12:50 stefan"""
 
 
 ##########################################
@@ -41,7 +41,7 @@ version = """09.03.2016 18:00 stefan"""
 
 def merge_deep(obj_1, obj_2):
     """
-    merge dicts deeply.
+    Merge dicts deeply.
 
     obj_2 overwrittes keys with same values in obj_1.
     (if they are dicts its recusive merged.)
@@ -55,33 +55,58 @@ def merge_deep(obj_1, obj_2):
             if key in result:
                 result[key] = merge_deep(result[key], obj_2[key])
             else:
+                # this adds the key to the dict
                 result[key] = obj_2[key]
     else:
         result = obj_2
     return result
 
+
+def extend_deep(obj_1, obj_2):
+    """
+    Extend dicts deeply.
+
+    extends obj_1 with content of obj_2 if not allready there.
+    """
+    # work on obj_1
+    if (isinstance(obj_1, dict) and isinstance(obj_2, dict)):
+        for key in obj_2:
+            if key not in obj_1:
+                # key from obj_2 not found in obj_1
+                # so add key:
+                obj_1[key] = obj_2[key]
+            else:
+                # key is available.
+                # test deeply if extension is needed:
+                extend_deep(obj_1[key], obj_2[key])
+    else:
+        pass
+        # don't overriede!
+        # obj_1 = obj_2
+
 ##########################################
 # classes
+
 
 class ConfigDict():
     """abstract the reading / writing of configuration parameters."""
 
-    def __init__(self, default_config={}, filename=None):
-        """initialize config to defaults."""
-        self.default_config = default_config
+    def __init__(self, config_defaults={}, filename=None):
+        """Initialize config to defaults."""
+        self.config_defaults = config_defaults
         self.filename = filename
         self.config = {}
         if self.filename is not None:
             if os.path.isfile(filename):
                 self.read_from_file()
             else:
-                self.config = self.default_config.copy()
+                self.config = self.config_defaults.copy()
                 self.write_to_file()
         else:
-            self.config = self.default_config.copy()
+            self.config = self.config_defaults.copy()
 
     def set_filename(self, filename):
-        """set new filename."""
+        """Set new filename."""
         self.filename = filename
 
     def _read_from_json_file(self, filename):
@@ -123,7 +148,7 @@ class ConfigDict():
     #     return value
 
     def _convert_string_to_None(self, value_str):
-        """test if string is None."""
+        """Test if string is None."""
         value = None
         value_str = value_str.strip()
         if value_str in ["None", "none", "NONE", "Null", "NULL", "null"]:
@@ -134,7 +159,7 @@ class ConfigDict():
         return value
 
     def _try_to_interpret_string(self, value_str):
-        """try to interprete string as something meaningfull."""
+        """Try to interprete string as something meaningfull."""
         value = None
         try:
             value = json.loads(value_str)
@@ -148,7 +173,7 @@ class ConfigDict():
         return value
 
     def _configparser_get_converted(self, cp, section, option):
-        """get option and try to convert it to a meaningfull datatype."""
+        """Get option and try to convert it to a meaningfull datatype."""
         # with this we try to convert the value to a meaningfull value..
         value = None
         try:
@@ -174,6 +199,7 @@ class ConfigDict():
         return value
 
     def _read_from_ini_file(self, filename):
+        """Read form ini file and combine sections."""
         config_temp = {}
         cp = ConfigParser()
         with open(self.filename, 'r') as f:
@@ -197,7 +223,7 @@ class ConfigDict():
         return config_temp
 
     def read_from_file(self, filename=None):
-        """read configuration from file."""
+        """Read configuration from file."""
         if filename is not None:
             self.filename = filename
         config_temp = {}
@@ -209,9 +235,10 @@ class ConfigDict():
             else:
                 config_temp = self._read_from_ini_file(self.filename)
 
-        # do a merge with the defaults.
-        self.config = self.default_config.copy()
-        merge_deep(self.config, config_temp)
+        # extend config with defaults
+        self.config = config_temp
+        extend_deep(self.config, self.config_defaults.copy())
+
 
     def _write_to_json_file(self, filename, config):
         with open(filename, 'w') as f:
@@ -259,7 +286,7 @@ class ConfigDict():
             f.closed
 
     def write_to_file(self, filename=None):
-        """write configuration to file."""
+        """Write configuration to file."""
         if filename is not None:
             self.filename = filename
         if self.filename is not None:
@@ -275,6 +302,15 @@ class ConfigDict():
                     self.filename,
                     self.config
                 )
+
+    def get_formated(self):
+        """Return config as Formated string."""
+        return json.dumps(
+            self.config,
+            sort_keys=True,
+            indent=4,
+            separators=(',', ': ')
+        )
 
 ##########################################
 if __name__ == '__main__':
@@ -303,7 +339,7 @@ if __name__ == '__main__':
         filename: {}
     '''.format(filename))
 
-    default_config = {
+    config_defaults = {
         'hello': {
             'world': 1,
             'space': 42,
@@ -323,7 +359,7 @@ if __name__ == '__main__':
         },
         'blubber': ['water', 'air'],
     }
-    my_config = ConfigDict(default_config, filename)
+    my_config = ConfigDict(config_defaults, filename)
     print("my_config.config: {}".format(my_config.config))
 
     # wait for user to hit key.
