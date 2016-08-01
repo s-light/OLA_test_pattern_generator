@@ -129,6 +129,7 @@ class OLAPattern(OLAThread):
             # https://docs.python.org/3/library/importlib.html#importlib.import_module
             # import pattern plugins
             from pattern.strobe import Strobe
+            from pattern.rainbow import Rainbow
             from pattern.channelcheck import Channelcheck
             from pattern.static import Static
         except Exception as e:

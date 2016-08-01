@@ -4,6 +4,7 @@
         "channelcheck": {
             "wrapp_around_count": 80
         },
+        "rainbow": {},
         "static": {
             "channels": []
         },

@@ -19,7 +19,10 @@ import os
 import sys
 import time
 import threading
-from enum import Enum, unique
+# for python2:
+# pip install enum34
+from enum import Enum
+from enum import unique
 import array
 import socket
 
