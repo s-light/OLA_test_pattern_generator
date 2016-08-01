@@ -1,0 +1,32 @@
+# based on examples & infos found at
+# https://learn.adafruit.com/running-programs-automatically-on-your-tiny-computer/systemd-writing-and-enabling-a-service
+# https://medium.com/@johannes_gehrs/getting-started-with-systemd-on-debian-jessie-e024758ca63d
+# https://www.freedesktop.org/wiki/Software/systemd/NetworkTarget/
+# https://www.freedesktop.org/software/systemd/man/systemd.unit.html#Before=
+
+# copy to target with:
+#   sudo cp pattern_generator.service /etc/systemd/system/
+# enable service
+#   sudo systemctl enable pattern_generator.service
+# start
+#   sudo systemctl start pattern_generator.service
+# check status
+#   sudo systemctl status pattern_generator.service
+# disable service
+#   sudo systemctl disable pattern_generator.service
+# remove service file:
+#   sudo rm /etc/systemd/system/pattern_generator.service
+
+[Unit]
+Description=POE+ Linienleuchte Device Service. Manages device configuration and webconfigserver.
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python2 /home/light/OLA_test_pattern_generator/olatestpattern.py -c /home/light/OLA_test_pattern_generator/pattern.json
+StandardOutput=null
+# if process exits (with fail or success) restart it.
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+Alias=device_manager.service
