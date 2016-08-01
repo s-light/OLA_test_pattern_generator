@@ -67,6 +67,7 @@ class OLAPattern(OLAThread):
         'pattern': {
             'channelcheck': {},
             'static': {},
+            'rainbow': {},
             'strobe': {},
         },
     }
@@ -135,6 +136,7 @@ class OLAPattern(OLAThread):
         else:
             self.pattern_list = [
                 'channelcheck',
+                'rainbow',
                 'strobe',
                 'static',
             ]
@@ -143,6 +145,11 @@ class OLAPattern(OLAThread):
             # for pattern_name in pattern_list:
             pattern_name = 'channelcheck'
             self.pattern[pattern_name] = Channelcheck(
+                self.config['pattern'][pattern_name],
+                self.config['system']
+            )
+            pattern_name = 'rainbow'
+            self.pattern[pattern_name] = Rainbow(
                 self.config['pattern'][pattern_name],
                 self.config['system']
             )
@@ -249,6 +256,10 @@ class OLAPattern(OLAThread):
                 self._calculate_step_channelcheck(
                     self.config['pattern']['channelcheck']
                 )
+            elif 'rainbow' in pattern_name:
+                self._calculate_step_rainbow(
+                    self.config['pattern']['rainbow']
+                )
             elif 'staic' in pattern_name:
                 self._calculate_step_static(
                     self.config['pattern']['static']
@@ -324,6 +335,51 @@ class OLAPattern(OLAThread):
 
     def _calculate_step_channelcheck(self, config):
         """generate test pattern 'channelcheck'."""
+        # prepare temp array
+        data_output = array.array('B')
+
+        # print(self.channel_current)
+        # if not hasattr(config, 'channel_current'):
+        #     config['channel_current'] = 0
+
+        mode_16bit = self.config['system']['mode_16bit']
+        value_low_hb, value_low_lb = self.calculate_16bit_values(
+            self.config['system']['value']['low']
+        )
+        value_high_hb, value_high_lb = self.calculate_16bit_values(
+            self.config['system']['value']['high']
+        )
+
+        # for devices generate pattern
+        for index in range(0, self.config['system']['channel_count']):
+            # if index is config['channel_current']:
+            high_byte = value_low_hb
+            low_byte = value_low_lb
+            if index is self.channel_current:
+                high_byte = value_high_hb
+                low_byte = value_high_lb
+            if mode_16bit:
+                data_output.append(high_byte)
+                data_output.append(low_byte)
+            else:
+                data_output.append(high_byte)
+
+        if (
+            self.channel_current <
+            config['wrapp_around_count']
+        ):
+            self.channel_current = self.channel_current + 1
+        else:
+            self.channel_current = 0
+
+        # send frame
+        self.dmx_send_frame(
+            self.config['universe']['output'],
+            data_output
+        )
+
+    def _calculate_step_rainbow(self, config):
+        """generate test pattern 'rainbow'."""
         # prepare temp array
         data_output = array.array('B')
 
