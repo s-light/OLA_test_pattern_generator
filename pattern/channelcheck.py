@@ -15,7 +15,7 @@ channel check pattern.
 """
 
 
-from pattern import Pattern
+import pattern
 import array
 
 ##########################################
@@ -30,7 +30,7 @@ import array
 # classes
 
 
-class Channelcheck(Pattern):
+class Channelcheck(pattern.Pattern):
     """channelcheck Pattern Class."""
 
     def __init__(self, config, config_global):
@@ -43,7 +43,7 @@ class Channelcheck(Pattern):
         # python2 syntax
         # super(Pattern, self).__init__()
         # explicit call
-        Pattern.__init__(self, config, config_global)
+        pattern.Pattern.__init__(self, config, config_global)
 
         # inits for this pattern
         self.channel_current = 0

@@ -36,7 +36,7 @@ class Static(Pattern):
     def __init__(self, config, config_global):
         """init pattern."""
         self.config_defaults = {
-            'xxx': 0
+            "channels": [],
         }
         # python3 syntax
         # super().__init__()
@@ -61,7 +61,7 @@ class Static(Pattern):
         # self.config_global[]
         # fill array with meaningfull data according to the pattern :-)
         # .....
-        
+
         value_high_hb, value_high_lb = self.calculate_16bit_values(
             self.values['high']
         )
@@ -70,11 +70,7 @@ class Static(Pattern):
         device_count = self.channel_count / 12
 
         # get value set
-        channel_values = {}
-        if self.strobe_state:
-            channel_values = config[0]
-        else:
-            channel_values = config[1]
+        channel_values = self.config["channels"]
 
         # for devices generate pattern
         for index in range(0, device_count):
@@ -105,9 +101,6 @@ class Static(Pattern):
                     data_output.append(low_byte)
                 else:
                     data_output.append(high_byte)
-
-        # switch strobe_state
-        self.strobe_state = not self.strobe_state
 
         return data_output
 

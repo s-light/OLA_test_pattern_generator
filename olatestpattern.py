@@ -60,6 +60,7 @@ class OLAPattern(OLAThread):
             },
             'pattern_name': 'channelcheck',
             'channel_count': 512,
+            'pixel_count': 42,
         },
         'universe': {
             'output': 1,
@@ -181,29 +182,6 @@ class OLAPattern(OLAThread):
         #     self.config['system']['value']['high']
         # )
 
-    def calculate_16bit_values(self, value):
-        """calculate the low and high part representations of value."""
-        high_byte = 0
-        low_byte = 0
-        if self.config['system']['mode_16bit']:
-            if value > 65535:
-                value = 65535
-            low_byte, high_byte = struct.unpack(
-                "<BB",
-                struct.pack("<H", value)
-            )
-        else:
-            if value > 255:
-                # convert 16bit range to 8bit range
-                value = value / 256
-            # check for bounds
-            if value > 255:
-                value = 255
-            if value < 0:
-                value = 0
-            high_byte = value
-        return high_byte, low_byte
-
     def ola_connected(self):
         """register update event callback and switch to running mode."""
         self.wrapper.AddEvent(
@@ -249,254 +227,43 @@ class OLAPattern(OLAThread):
         #     print("pattern_name: {}".format(pattern_name))
 
         if pattern_name:
-            if 'strobe' in pattern_name:
-                self._calculate_step_strobe(
-                    self.config['pattern']['strobe']
+            if pattern_name in self.pattern:
+                # send frame
+                self.dmx_send_frame(
+                    self.config['universe']['output'],
+                    self.pattern[pattern_name]._calculate_step()
                 )
-            elif 'channelcheck' in pattern_name:
-                self._calculate_step_channelcheck(
-                    self.config['pattern']['channelcheck']
-                )
-            elif 'rainbow' in pattern_name:
-                self._calculate_step_rainbow(
-                    self.config['pattern']['rainbow']
-                )
-            elif 'staic' in pattern_name:
-                self._calculate_step_static(
-                    self.config['pattern']['static']
-                )
-        else:
-            # time.sleep(1)
-            pass
 
-    def _calculate_step_strobe(self, config):
-        """generate test pattern 'strobe'."""
-        # prepare temp array
-        data_output = array.array('B')
-
-        mode_16bit = self.config['system']['mode_16bit']
-        value_off_hb, value_off_lb = self.calculate_16bit_values(
-            self.config['system']['value']['off']
-        )
-        value_low_hb, value_low_lb = self.calculate_16bit_values(
-            self.config['system']['value']['low']
-        )
-        value_high_hb, value_high_lb = self.calculate_16bit_values(
-            self.config['system']['value']['high']
-        )
-
-        # calculate device_count
-        device_count = self.config['system']['channel_count'] / 12
-
-        # get value set
-        channel_values = {}
-        if self.strobe_state:
-            channel_values = config[0]
-        else:
-            channel_values = config[1]
-
-        mode_16bit = self.config['system']['mode_16bit']
-        # for devices generate pattern
-        for index in range(0, device_count):
-            # for channel_id, channel_value in channel_values.items():
-            # for index in range(0, len(channel_values)):
-            #     channel_id = str(index)
-            #     channel_value = channel_values[channel_id]
-            #     print("ch{}:{}".format(channel_id, channel_value))
-            #     data_output.append(channel_value)
-            for channel_index, channel_value in enumerate(channel_values):
-                # print("ch{}:{}".format(channel_index, channel_value))
-                # print(channel_value)
-                high_byte = value_off_hb
-                low_byte = value_off_lb
-
-                if channel_value is -1:
-                    high_byte = value_off_hb
-                    low_byte = value_off_lb
-                if channel_value is 0:
-                    high_byte = value_low_hb
-                    low_byte = value_low_lb
-                elif channel_value is 1:
-                    high_byte = value_high_hb
-                    low_byte = value_high_lb
-
-                if mode_16bit:
-                    data_output.append(high_byte)
-                    data_output.append(low_byte)
-                else:
-                    data_output.append(high_byte)
-
-        # switch strobe_state
-        self.strobe_state = not self.strobe_state
-        # send frame
-        self.dmx_send_frame(
-            self.config['universe']['output'],
-            data_output
-        )
-
-    def _calculate_step_channelcheck(self, config):
-        """generate test pattern 'channelcheck'."""
-        # prepare temp array
-        data_output = array.array('B')
-
-        # print(self.channel_current)
-        # if not hasattr(config, 'channel_current'):
-        #     config['channel_current'] = 0
-
-        mode_16bit = self.config['system']['mode_16bit']
-        value_low_hb, value_low_lb = self.calculate_16bit_values(
-            self.config['system']['value']['low']
-        )
-        value_high_hb, value_high_lb = self.calculate_16bit_values(
-            self.config['system']['value']['high']
-        )
-
-        # for devices generate pattern
-        for index in range(0, self.config['system']['channel_count']):
-            # if index is config['channel_current']:
-            high_byte = value_low_hb
-            low_byte = value_low_lb
-            if index is self.channel_current:
-                high_byte = value_high_hb
-                low_byte = value_high_lb
-            if mode_16bit:
-                data_output.append(high_byte)
-                data_output.append(low_byte)
-            else:
-                data_output.append(high_byte)
-
-        if (
-            self.channel_current <
-            config['wrapp_around_count']
-        ):
-            self.channel_current = self.channel_current + 1
-        else:
-            self.channel_current = 0
-
-        # send frame
-        self.dmx_send_frame(
-            self.config['universe']['output'],
-            data_output
-        )
-
-    def _calculate_step_rainbow(self, config):
-        """generate test pattern 'rainbow'."""
-        # prepare temp array
-        data_output = array.array('B')
-
-        # print(self.channel_current)
-        # if not hasattr(config, 'channel_current'):
-        #     config['channel_current'] = 0
-
-        mode_16bit = self.config['system']['mode_16bit']
-        value_low_hb, value_low_lb = self.calculate_16bit_values(
-            self.config['system']['value']['low']
-        )
-        value_high_hb, value_high_lb = self.calculate_16bit_values(
-            self.config['system']['value']['high']
-        )
-
-        # for devices generate pattern
-        for index in range(0, self.config['system']['channel_count']):
-            # if index is config['channel_current']:
-            high_byte = value_low_hb
-            low_byte = value_low_lb
-            if index is self.channel_current:
-                high_byte = value_high_hb
-                low_byte = value_high_lb
-            if mode_16bit:
-                data_output.append(high_byte)
-                data_output.append(low_byte)
-            else:
-                data_output.append(high_byte)
-
-        if (
-            self.channel_current <
-            config['wrapp_around_count']
-        ):
-            self.channel_current = self.channel_current + 1
-        else:
-            self.channel_current = 0
-
-        # send frame
-        self.dmx_send_frame(
-            self.config['universe']['output'],
-            data_output
-        )
-
-    def _calculate_step_static(self, config):
-        """generate test pattern 'static'."""
-        # prepare temp array
-        data_output = array.array('B')
-
-        mode_16bit = self.config['system']['mode_16bit']
-        value_off_hb, value_off_lb = self.calculate_16bit_values(
-            self.config['system']['value']['off']
-        )
-        value_low_hb, value_low_lb = self.calculate_16bit_values(
-            self.config['system']['value']['low']
-        )
-        value_high_hb, value_high_lb = self.calculate_16bit_values(
-            self.config['system']['value']['high']
-        )
-
-        # calculate device_count
-        device_count = self.config['system']['channel_count'] / 12
-
-        # get value set
-        channel_values = {}
-        if self.strobe_state:
-            channel_values = config[0]
-        else:
-            channel_values = config[1]
-
-        mode_16bit = self.config['system']['mode_16bit']
-        # for devices generate pattern
-        for index in range(0, device_count):
-            # for channel_id, channel_value in channel_values.items():
-            # for index in range(0, len(channel_values)):
-            #     channel_id = str(index)
-            #     channel_value = channel_values[channel_id]
-            #     print("ch{}:{}".format(channel_id, channel_value))
-            #     data_output.append(channel_value)
-            for channel_index, channel_value in enumerate(channel_values):
-                # print("ch{}:{}".format(channel_index, channel_value))
-                # print(channel_value)
-                high_byte = value_off_hb
-                low_byte = value_off_lb
-
-                if channel_value is -1:
-                    high_byte = value_off_hb
-                    low_byte = value_off_lb
-                if channel_value is 0:
-                    high_byte = value_low_hb
-                    low_byte = value_low_lb
-                elif channel_value is 1:
-                    high_byte = value_high_hb
-                    low_byte = value_high_lb
-
-                if mode_16bit:
-                    data_output.append(high_byte)
-                    data_output.append(low_byte)
-                else:
-                    data_output.append(high_byte)
-
-        # switch strobe_state
-        self.strobe_state = not self.strobe_state
-        # send frame
-        self.dmx_send_frame(
-            self.config['universe']['output'],
-            data_output
-        )
+        # if pattern_name:
+        #     if 'strobe' in pattern_name:
+        #         self._calculate_step_strobe(
+        #             self.config['pattern']['strobe']
+        #         )
+        #     elif 'channelcheck' in pattern_name:
+        #         self._calculate_step_channelcheck(
+        #             self.config['pattern']['channelcheck']
+        #         )
+        #     elif 'rainbow' in pattern_name:
+        #         self._calculate_step_rainbow(
+        #             self.config['pattern']['rainbow']
+        #         )
+        #     elif 'staic' in pattern_name:
+        #         self._calculate_step_static(
+        #             self.config['pattern']['static']
+        #         )
+        # else:
+        #     # time.sleep(1)
+        #     pass
 
 
 ##########################################
 def handle_userinput(user_input):
+    global flag_run
     if "q" in user_input[0]:
         flag_run = False
         print("stop script.")
     elif "s" in user_input[0]:
-        my_config.config['system']['pattern_name'] = 'stop'
+        my_pattern.config['system']['pattern_name'] = 'stop'
         print("stopped.")
     elif "u" in user_input[0]:
         # try to extract new update interval value

@@ -36,7 +36,45 @@ class Strobe(Pattern):
     def __init__(self, config, config_global):
         """init pattern."""
         self.config_defaults = {
-            'xxx': 0
+            'xxx': 0,
+            "list": [
+                [
+                    1,
+                    -1,
+                    -1,
+                    -1,
+                    -1,
+                    1,
+                    -1,
+                    -1,
+                    -1,
+                    -1,
+                    1,
+                    -1,
+                    -1,
+                    -1,
+                    -1,
+                    1
+                ],
+                [
+                    0,
+                    -1,
+                    -1,
+                    -1,
+                    -1,
+                    0,
+                    -1,
+                    -1,
+                    -1,
+                    -1,
+                    0,
+                    -1,
+                    -1,
+                    -1,
+                    -1,
+                    0
+                ]
+            ],
         }
         # python3 syntax
         # super().__init__()
@@ -79,9 +117,9 @@ class Strobe(Pattern):
         # get value set
         channel_values = {}
         if self.strobe_state:
-            channel_values = config[0]
+            channel_values = self.config["list"][0]
         else:
-            channel_values = config[1]
+            channel_values = self.config["list"][1]
 
         # for devices generate pattern
         for index in range(0, device_count):
