@@ -51,11 +51,11 @@
         "16bitMode": true,
         "channel_count": 512,
         "mode_16bit": true,
-        "pattern_name": "channelcheck",
-        "pixel_count": 42,
-        "update_interval": 500,
+        "pattern_name": "rainbow",
+        "pixel_count": 20,
+        "update_interval": 50,
         "value": {
-            "high": 60000,
+            "high": 10000,
             "low": 5,
             "off": 0
         }

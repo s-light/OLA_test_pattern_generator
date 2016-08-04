@@ -121,7 +121,7 @@ class Rainbow(pattern.Pattern):
 
         channel_stepsize = 3
         if self.mode_16bit:
-            channel_stepsize = 6
+            channel_stepsize = 8
 
         # for devices generate pattern
         for pixel_index in range(0, self.pixel_count):
@@ -148,6 +148,8 @@ class Rainbow(pattern.Pattern):
                 data_output.append(g_lb)
                 data_output.append(b_hb)
                 data_output.append(b_lb)
+                data_output.append(0)
+                data_output.append(0)
             else:
                 data_output.append(r_hb)
                 data_output.append(g_hb)

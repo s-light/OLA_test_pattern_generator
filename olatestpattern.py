@@ -259,13 +259,13 @@ class OLAPattern(OLAThread):
 ##########################################
 def handle_userinput(user_input):
     global flag_run
-    if "q" in user_input[0]:
+    if user_input == "q":
         flag_run = False
         print("stop script.")
-    elif "s" in user_input[0]:
+    elif user_input == "s":
         my_pattern.config['system']['pattern_name'] = 'stop'
         print("stopped.")
-    elif "u" in user_input[0]:
+    elif user_input.startswith("ui"):
         # try to extract new update interval value
         start_index = user_input.find(':')
         if start_index > -1:
@@ -284,7 +284,25 @@ def handle_userinput(user_input):
                     my_pattern.config['system']
                     ['update_interval']
                 ))
-    elif "v" in user_input[0]:
+    elif user_input.startswith("uo"):
+        # try to extract universe value
+        start_index = user_input.find(':')
+        if start_index > -1:
+            universe_output_new = \
+                user_input[start_index+1:]
+            try:
+                universe_output_new = \
+                    int(universe_output_new)
+            except Exception as e:
+                print("input not valid. ({})".format(e))
+            else:
+                my_pattern.config['universe']['output'] = (
+                        universe_output_new
+                    )
+                print("set universe_output to {}.".format(
+                    my_pattern.config['universe']['output']
+                ))
+    elif user_input.startswith("v"):
         # try to extract new update interval value
         start_index = user_input.find(':')
         if start_index > -1:
@@ -300,11 +318,11 @@ def handle_userinput(user_input):
                     value_new = 65535
                 # check for high low or off
                 value_name = ''
-                if "h" in user_input:
+                if user_input.startswith("vh"):
                     value_name = 'high'
-                elif "l" in user_input:
+                elif user_input.startswith("vl"):
                     value_name = 'low'
-                elif "o" in user_input:
+                elif user_input.startswith("vo"):
                     value_name = 'off'
                 try:
                     my_pattern.config['system']['value'][value_name] = \
@@ -438,7 +456,8 @@ if __name__ == '__main__':
                 message_list +
                 "  's': stop\n" +
                 "set option: \n" +
-                "  'u': update interval 'u:{update_interval}'\n" +
+                "  'ui': update interval 'u:{update_interval}'\n" +
+                "  'uo': set universe output 'uo:{universe_output}'\n" +
                 "  'vh': set value high 'vh:{vhigh}'\n" +
                 "  'vl': set value low 'vl:{vlow}'\n" +
                 "  'vo': set value off 'vo:{voff}'\n" +
@@ -447,6 +466,7 @@ if __name__ == '__main__':
                 "\n"
             ).format(
                 update_interval=my_pattern.config['system']['update_interval'],
+                universe_output=my_pattern.config['universe']['output'],
                 vhigh=my_pattern.config['system']['value']['high'],
                 vlow=my_pattern.config['system']['value']['low'],
                 voff=my_pattern.config['system']['value']['off'],
