@@ -505,8 +505,9 @@ if __name__ == '__main__':
     # blocks untill thread has joined.
     my_pattern.stop_ola()
 
-    # as last thing we save the current configuration.
-    print("\nwrite config.")
-    my_pattern.my_config.write_to_file()
+    if args.interactive:
+        # as last thing we save the current configuration.
+        print("\nwrite config.")
+        my_pattern.my_config.write_to_file()
 
     ##########################################
