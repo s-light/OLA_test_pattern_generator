@@ -18,7 +18,7 @@
 #   sudo rm /etc/systemd/system/pattern_generator.service
 
 [Unit]
-Description=POE+ Linienleuchte Device Service. Manages device configuration and webconfigserver.
+Description=pattern generator service
 After=network.target
 
 [Service]
