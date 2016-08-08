@@ -457,7 +457,7 @@ if __name__ == '__main__':
                 message_list +
                 "  's': stop\n" +
                 "set option: \n" +
-                "  'ui': update interval 'ui:{update_interval}'\n" +
+                "  'ui': update interval 'ui:{update_interval} ({update_frequency}Hz)'\n" +
                 "  'uo': set universe output 'uo:{universe_output}'\n" +
                 "  'vh': set value high 'vh:{vhigh}'\n" +
                 "  'vl': set value low 'vl:{vlow}'\n" +
@@ -466,6 +466,9 @@ if __name__ == '__main__':
                 42*'*' + "\n" +
                 "\n"
             ).format(
+                update_frequency=(
+                    1000.0/my_pattern.config['system']['update_interval']
+                ),
                 update_interval=my_pattern.config['system']['update_interval'],
                 universe_output=my_pattern.config['universe']['output'],
                 vhigh=my_pattern.config['system']['value']['high'],
