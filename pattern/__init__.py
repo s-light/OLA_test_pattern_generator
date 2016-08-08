@@ -95,6 +95,13 @@ def map_01_to_16bit(value):
     return result
 
 
+def map_16bit_to_01(value):
+    """Map value from 0-65535 range to 0-1 range."""
+    result = None
+    result = map_bound(value, 0, 65535, 0, 1)
+    return result
+
+
 ##########################################
 # classes
 

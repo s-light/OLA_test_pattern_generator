@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 # coding=utf-8
 
 """
@@ -100,7 +100,7 @@ class Rainbow(pattern.Pattern):
 
         hue = self.hue_current
         saturation = 1
-        value = 1
+        value = pattern.map_16bit_to_01(self.values['high'])
         # print("hue: {}".format(hue))
 
         # in seconds

@@ -51,12 +51,12 @@
         "16bitMode": true,
         "channel_count": 512,
         "mode_16bit": true,
-        "pattern_name": "static",
+        "pattern_name": "rainbow",
         "pattern_repeate": true,
         "pixel_count": 20,
-        "update_interval": 1000,
+        "update_interval": 50,
         "value": {
-            "high": 65535,
+            "high": 100,
             "low": 5,
             "off": 0
         }
