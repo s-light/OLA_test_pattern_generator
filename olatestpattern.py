@@ -61,6 +61,7 @@ class OLAPattern(OLAThread):
             'pattern_name': 'channelcheck',
             'channel_count': 512,
             'pixel_count': 42,
+            'pattern_repeate': True,
         },
         'universe': {
             'output': 1,
@@ -456,7 +457,7 @@ if __name__ == '__main__':
                 message_list +
                 "  's': stop\n" +
                 "set option: \n" +
-                "  'ui': update interval 'u:{update_interval}'\n" +
+                "  'ui': update interval 'ui:{update_interval}'\n" +
                 "  'uo': set universe output 'uo:{universe_output}'\n" +
                 "  'vh': set value high 'vh:{vhigh}'\n" +
                 "  'vl': set value low 'vl:{vlow}'\n" +

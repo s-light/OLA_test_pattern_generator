@@ -2,10 +2,10 @@
 # coding=utf-8
 
 """
-strobe pattern.
+static pattern.
 
     generates a test pattern:
-    sets all channels to high
+    sets all channels to high value
 
     history:
         see git commits
@@ -66,41 +66,16 @@ class Static(Pattern):
             self.values['high']
         )
 
-        # calculate device_count
-        device_count = self.channel_count / 12
-
-        # get value set
-        channel_values = self.config["channels"]
-
         # for devices generate pattern
-        for index in range(0, device_count):
-            # for channel_id, channel_value in channel_values.items():
-            # for index in range(0, len(channel_values)):
-            #     channel_id = str(index)
-            #     channel_value = channel_values[channel_id]
-            #     print("ch{}:{}".format(channel_id, channel_value))
-            #     data_output.append(channel_value)
-            for channel_index, channel_value in enumerate(channel_values):
-                # print("ch{}:{}".format(channel_index, channel_value))
-                # print(channel_value)
-                high_byte = value_off_hb
-                low_byte = value_off_lb
+        for index in range(0, self.channel_count):
+            high_byte = value_high_hb
+            low_byte = value_high_lb
 
-                if channel_value is -1:
-                    high_byte = value_off_hb
-                    low_byte = value_off_lb
-                if channel_value is 0:
-                    high_byte = value_low_hb
-                    low_byte = value_low_lb
-                elif channel_value is 1:
-                    high_byte = value_high_hb
-                    low_byte = value_high_lb
-
-                if self.mode_16bit:
-                    data_output.append(high_byte)
-                    data_output.append(low_byte)
-                else:
-                    data_output.append(high_byte)
+            if self.mode_16bit:
+                data_output.append(high_byte)
+                data_output.append(low_byte)
+            else:
+                data_output.append(high_byte)
 
         return data_output
 
