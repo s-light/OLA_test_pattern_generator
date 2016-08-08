@@ -102,6 +102,7 @@ class Rainbow(pattern.Pattern):
         saturation = 1
         value = pattern.map_16bit_to_01(self.values['high'])
         # print("hue: {}".format(hue))
+        # print("value: {}".format(value))
 
         # in seconds
         cycle_duration = self.config["cycle_duration"]

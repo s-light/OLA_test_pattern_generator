@@ -54,9 +54,9 @@
         "pattern_name": "rainbow",
         "pattern_repeate": true,
         "pixel_count": 20,
-        "update_interval": 50,
+        "update_interval": 25,
         "value": {
-            "high": 100,
+            "high": 10,
             "low": 5,
             "off": 0
         }
