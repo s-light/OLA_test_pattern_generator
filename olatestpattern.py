@@ -50,7 +50,7 @@ class OLAPattern(OLAThread):
     default_config = {
         'system': {
             # 'update_interval': 30,
-            'update_interval': 50,
+            'update_interval': 500,
             # 'update_interval': 250,
             'mode_16bit': True,
             'value': {
@@ -69,10 +69,12 @@ class OLAPattern(OLAThread):
         'pattern': {
             'channelcheck': {},
             'static': {},
-            'rainbow': {},
+            'gradient': {},
             'strobe': {},
         },
     }
+
+    path_script = os.path.dirname(os.path.abspath(__file__))
 
     def __init__(self, filename, verbose=False):
         """init mapper things."""
@@ -88,7 +90,8 @@ class OLAPattern(OLAThread):
             # remember config file name
             config_name = os.path.basename(filename)
             # create path on base of script dir.
-            path_to_config = os.path.join(self.path_script, "config")
+            # path_to_config = os.path.join(self.path_script, "config")
+            path_to_config = self.path_script
             filename = os.path.join(path_to_config, config_name)
 
         # read config file:
@@ -131,7 +134,7 @@ class OLAPattern(OLAThread):
             # https://docs.python.org/3/library/importlib.html#importlib.import_module
             # import pattern plugins
             from pattern.strobe import Strobe
-            from pattern.rainbow import Rainbow
+            from pattern.gradient import Gradient
             from pattern.channelcheck import Channelcheck
             from pattern.static import Static
         except Exception as e:
@@ -139,7 +142,7 @@ class OLAPattern(OLAThread):
         else:
             self.pattern_list = [
                 'channelcheck',
-                'rainbow',
+                'gradient',
                 'strobe',
                 'static',
             ]
@@ -151,8 +154,8 @@ class OLAPattern(OLAThread):
                 self.config['pattern'][pattern_name],
                 self.config['system']
             )
-            pattern_name = 'rainbow'
-            self.pattern[pattern_name] = Rainbow(
+            pattern_name = 'gradient'
+            self.pattern[pattern_name] = Gradient(
                 self.config['pattern'][pattern_name],
                 self.config['system']
             )
@@ -244,9 +247,9 @@ class OLAPattern(OLAThread):
         #         self._calculate_step_channelcheck(
         #             self.config['pattern']['channelcheck']
         #         )
-        #     elif 'rainbow' in pattern_name:
-        #         self._calculate_step_rainbow(
-        #             self.config['pattern']['rainbow']
+        #     elif 'gradient' in pattern_name:
+        #         self._calculate_step_gradient(
+        #             self.config['pattern']['gradient']
         #         )
         #     elif 'staic' in pattern_name:
         #         self._calculate_step_static(
@@ -302,6 +305,29 @@ def handle_userinput(user_input):
                     )
                 print("set universe_output to {}.".format(
                     my_pattern.config['universe']['output']
+                ))
+    elif user_input.startswith("mo"):
+        # try to extract universe value
+        start_index = user_input.find(':')
+        if start_index > -1:
+            mode_16bit_new = \
+                user_input[start_index+1:]
+            try:
+                try:
+                    mode_16bit_new = int(mode_16bit_new)
+                except Exception as e:
+                    if mode_16bit_new.startswith("False"):
+                        mode_16bit_new = False
+                else:
+                    mode_16bit_new = bool(mode_16bit_new)
+            except Exception as e:
+                print("input not valid. ({})".format(e))
+            else:
+                my_pattern.config['system']['mode_16bit'] = (
+                        mode_16bit_new
+                    )
+                print("set mode_16bit to {}.".format(
+                    my_pattern.config['system']['mode_16bit']
                 ))
     elif user_input.startswith("v"):
         # try to extract new update interval value
@@ -459,6 +485,7 @@ if __name__ == '__main__':
                 "set option: \n" +
                 "  'ui': update interval 'ui:{update_interval} ({update_frequency}Hz)'\n" +
                 "  'uo': set universe output 'uo:{universe_output}'\n" +
+                "  'mo': set mode_16bit 'mo:{mode_16bit}'\n" +
                 "  'vh': set value high 'vh:{vhigh}'\n" +
                 "  'vl': set value low 'vl:{vlow}'\n" +
                 "  'vo': set value off 'vo:{voff}'\n" +
@@ -471,6 +498,7 @@ if __name__ == '__main__':
                 ),
                 update_interval=my_pattern.config['system']['update_interval'],
                 universe_output=my_pattern.config['universe']['output'],
+                mode_16bit=my_pattern.config['system']['mode_16bit'],
                 vhigh=my_pattern.config['system']['value']['high'],
                 vlow=my_pattern.config['system']['value']['low'],
                 voff=my_pattern.config['system']['value']['off'],
