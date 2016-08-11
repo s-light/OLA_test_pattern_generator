@@ -13,9 +13,10 @@ pattern base class.
         ~ all fine :-)
 """
 
-from configdict import merge_deep
 import array
 import struct
+
+import configdict
 
 ##########################################
 # globals
@@ -114,8 +115,9 @@ class Pattern():
         # merge config with defaults
         if not self.config_defaults:
             self.config_defaults = {}
-        self.config = self.config_defaults.copy()
-        merge_deep(self.config, config)
+        # extend config with defaults
+        self.config = config
+        configdict.extend_deep(self.config, self.config_defaults.copy())
         # print("config: {}".format(self.config))
 
         self.config_global = config_global
