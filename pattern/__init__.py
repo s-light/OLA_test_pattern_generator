@@ -103,6 +103,29 @@ def map_16bit_to_01(value):
     return result
 
 
+def calculate_16bit_values(value, mode_16bit=False):
+    """Calculate the low and high part representations of value."""
+    high_byte = 0
+    low_byte = 0
+    if mode_16bit:
+        if value > 65535:
+            value = 65535
+        low_byte, high_byte = struct.unpack(
+            "<BB",
+            struct.pack("<H", value)
+        )
+    else:
+        if value > 255:
+            # convert 16bit range to 8bit range
+            value = value / 256
+        # check for bounds
+        if value > 255:
+            value = 255
+        if value < 0:
+            value = 0
+        high_byte = value
+    return high_byte, low_byte
+
 ##########################################
 # classes
 
@@ -111,7 +134,7 @@ class Pattern():
     """Base Pattern Class."""
 
     def __init__(self, config, config_global):
-        """init pattern."""
+        """Init pattern."""
         # merge config with defaults
         if not self.config_defaults:
             self.config_defaults = {}
@@ -127,31 +150,15 @@ class Pattern():
         self.mode_16bit = config_global['mode_16bit']
         self.values = config_global['value']
 
-    def calculate_16bit_values(self, value):
-        """calculate the low and high part representations of value."""
+    def _calculate_16bit_values(self, value):
+        """Calculate the low and high part representations of value."""
         high_byte = 0
         low_byte = 0
-        if self.mode_16bit:
-            if value > 65535:
-                value = 65535
-            low_byte, high_byte = struct.unpack(
-                "<BB",
-                struct.pack("<H", value)
-            )
-        else:
-            if value > 255:
-                # convert 16bit range to 8bit range
-                value = value / 256
-            # check for bounds
-            if value > 255:
-                value = 255
-            if value < 0:
-                value = 0
-            high_byte = value
+        high_byte, low_byte = calculate_16bit_values(value, self.mode_16bit)
         return high_byte, low_byte
 
     def _calculate_step(self):
-        """calculate single step."""
+        """Calculate single step."""
         # prepare temp array
         data_output = array.array('B')
         # available attributes:

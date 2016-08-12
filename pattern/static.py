@@ -34,7 +34,7 @@ class Static(Pattern):
     """Static Pattern Class."""
 
     def __init__(self, config, config_global):
-        """init pattern."""
+        """Init pattern."""
         self.config_defaults = {
             "channels": [],
         }
@@ -48,7 +48,7 @@ class Static(Pattern):
         # inits for this pattern
 
     def _calculate_step(self):
-        """calculate single step."""
+        """Calculate single step."""
         # prepare temp array
         data_output = array.array('B')
         # available attributes:
@@ -62,7 +62,7 @@ class Static(Pattern):
         # fill array with meaningfull data according to the pattern :-)
         # .....
 
-        value_high_hb, value_high_lb = self.calculate_16bit_values(
+        value_high_hb, value_high_lb = self._calculate_16bit_values(
             self.values['high']
         )
 

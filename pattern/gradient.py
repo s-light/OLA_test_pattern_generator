@@ -35,7 +35,7 @@ class Gradient(pattern.Pattern):
     """Gradient Pattern Class."""
 
     def __init__(self, config, config_global):
-        """init pattern."""
+        """Init pattern."""
         self.config_defaults = {
             "cycle_duration": 10,
             "position_current": 0,
@@ -124,7 +124,6 @@ class Gradient(pattern.Pattern):
                     )
                 result["position"] = pixel_position
 
-
         return result
 
     def _calculate_step(self):
@@ -194,7 +193,7 @@ class Gradient(pattern.Pattern):
             for color_name in self.config["color_channels"]:
 
                 # calculate high and low byte
-                hb, lb = self.calculate_16bit_values(
+                hb, lb = self._calculate_16bit_values(
                     pattern.map_01_to_16bit(
                         channel_values[color_name]
                     )
@@ -214,13 +213,13 @@ class Gradient(pattern.Pattern):
             #
             # r, g, b = colorsys.hsv_to_rgb(pixel_hue, saturation, value)
             #
-            # r_hb, r_lb = self.calculate_16bit_values(
+            # r_hb, r_lb = self._calculate_16bit_values(
             #     pattern.map_01_to_16bit(r)
             # )
-            # g_hb, g_lb = self.calculate_16bit_values(
+            # g_hb, g_lb = self._calculate_16bit_values(
             #     pattern.map_01_to_16bit(g)
             # )
-            # b_hb, b_lb = self.calculate_16bit_values(
+            # b_hb, b_lb = self._calculate_16bit_values(
             #     pattern.map_01_to_16bit(b)
             # )
             #

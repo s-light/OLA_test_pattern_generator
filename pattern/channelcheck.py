@@ -31,12 +31,12 @@ import array
 
 
 class Channelcheck(pattern.Pattern):
-    """channelcheck Pattern Class."""
+    """Channelcheck pattern Class."""
 
     def __init__(self, config, config_global):
-        """init pattern."""
+        """Init pattern."""
         self.config_defaults = {
-            'wrapp_around_count': 0
+            'wrapp_around_count': 40
         }
         # python3 syntax
         # super().__init__()
@@ -49,7 +49,7 @@ class Channelcheck(pattern.Pattern):
         self.channel_current = 0
 
     def _calculate_step(self):
-        """calculate single step."""
+        """Calculate single step."""
         # prepare temp array
         data_output = array.array('B')
         # available attributes:
@@ -63,10 +63,10 @@ class Channelcheck(pattern.Pattern):
         # fill array with meaningfull data according to the pattern :-)
         # .....
 
-        value_low_hb, value_low_lb = self.calculate_16bit_values(
+        value_low_hb, value_low_lb = self._calculate_16bit_values(
             self.values['low']
         )
-        value_high_hb, value_high_lb = self.calculate_16bit_values(
+        value_high_hb, value_high_lb = self._calculate_16bit_values(
             self.values['high']
         )
 
@@ -91,7 +91,6 @@ class Channelcheck(pattern.Pattern):
             self.channel_current = self.channel_current + 1
         else:
             self.channel_current = 0
-
 
         return data_output
 
