@@ -52,19 +52,19 @@ class Gradient(pattern.Pattern):
                     "blue": 1,
                 },
                 {
-                    "position": 0.25,
+                    "position": 0.3,
                     "red": 1,
                     "green": 0,
                     "blue": 0,
                 },
                 {
-                    "position": 0.5,
+                    "position": 0.7,
                     "red": 0,
                     "green": 1,
                     "blue": 0,
                 },
                 {
-                    "position": 0.75,
+                    "position": 1,
                     "red": 0,
                     "green": 0,
                     "blue": 1,
@@ -117,8 +117,8 @@ class Gradient(pattern.Pattern):
                 for color_name in self.config["color_channels"]:
                     result[color_name] = pattern.map(
                         pixel_position,
-                        0,
-                        1,
+                        stops_list[list_index-1]["position"],
+                        stops_list[list_index]["position"],
                         stops_list[list_index-1][color_name],
                         stops_list[list_index][color_name],
                     )
@@ -169,9 +169,13 @@ class Gradient(pattern.Pattern):
         # write position_current back:
         self.config["position_current"] = position_current
 
+        # print("position_current", position_current)
+
         channel_stepsize = color_channels_count
         if self.mode_16bit:
             channel_stepsize = color_channels_count*2
+
+        # print("****")
 
         # for devices generate pattern
         for pixel_index in range(0, self.pixel_count):
@@ -183,12 +187,45 @@ class Gradient(pattern.Pattern):
             # check for wrap around
             if pixel_position > 1.0:
                 pixel_position -= 1.0
+                # print("handle wrap around")
+
+            # print("pixel_position", pixel_position)
 
             # calculate current values
             channel_values = self._calculate_current_channel_values(
                 pixel_position
             )
+            # print(
+            #     "pixel_position {:<19}"
+            #     " -> "
+            #     # "channel_values", channel_values
+            #     "pos {:<19}"
+            #     "red {:<19}"
+            #     "green {:<19}"
+            #     "blue {:<19}".format(
+            #         pixel_position,
+            #         channel_values["position"],
+            #         channel_values["red"],
+            #         channel_values["green"],
+            #         channel_values["blue"]
+            #     )
+            # )
 
+            # debug_string = (
+            #     "pixel_position {:<19}"
+            #     " -> "
+            #     # "channel_values", channel_values
+            #     # "pos {:<19}"
+            #     # "red {:<19}"
+            #     # "green {:<19}"
+            #     "blue {:<19}".format(
+            #         pixel_position,
+            #         # channel_values["position"],
+            #         # channel_values["red"],
+            #         # channel_values["green"],
+            #         channel_values["blue"]
+            #     )
+            # )
             # set all channels
             for color_name in self.config["color_channels"]:
 
@@ -198,12 +235,24 @@ class Gradient(pattern.Pattern):
                         channel_values[color_name]
                     )
                 )
+                # if color_name.startswith("blue"):
+                #     debug_string += (
+                #         "{:>6}: "
+                #         "h {:>3} "
+                #         "l {:>3}".format(
+                #             color_name,
+                #             hb,
+                #             lb
+                #         )
+                #     )
                 # write data
                 if self.mode_16bit:
                     data_output.append(hb)
                     data_output.append(lb)
                 else:
                     data_output.append(hb)
+
+            # print(debug_string)
 
             # old easy rainbow :-)
             # saturation = 1

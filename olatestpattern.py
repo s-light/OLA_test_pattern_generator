@@ -29,7 +29,7 @@ from configdict import ConfigDict
 from olathreaded import OLAThread, OLAThread_States
 
 
-version = """01.08.2016 19:09 stefan"""
+version = """12.08.2016 10:09 stefan"""
 
 
 ##########################################
@@ -134,6 +134,7 @@ class OLAPattern(OLAThread):
             # https://docs.python.org/3/library/importlib.html#importlib.import_module
             # import pattern plugins
             from pattern.strobe import Strobe
+            from pattern.rainbow import Rainbow
             from pattern.gradient import Gradient
             from pattern.channelcheck import Channelcheck
             from pattern.static import Static
@@ -142,6 +143,7 @@ class OLAPattern(OLAThread):
         else:
             self.pattern_list = [
                 'channelcheck',
+                'rainbow',
                 'gradient',
                 'strobe',
                 'static',
@@ -151,6 +153,11 @@ class OLAPattern(OLAThread):
             # for pattern_name in pattern_list:
             pattern_name = 'channelcheck'
             self.pattern[pattern_name] = Channelcheck(
+                self.config['pattern'][pattern_name],
+                self.config['system']
+            )
+            pattern_name = 'rainbow'
+            self.pattern[pattern_name] = Rainbow(
                 self.config['pattern'][pattern_name],
                 self.config['system']
             )
@@ -329,6 +336,10 @@ def handle_userinput(user_input):
                 print("set mode_16bit to {}.".format(
                     my_pattern.config['system']['mode_16bit']
                 ))
+    elif user_input.startswith("sc"):
+        # try to extract universe value
+            print("\nwrite config.")
+            my_pattern.my_config.write_to_file()
     elif user_input.startswith("v"):
         # try to extract new update interval value
         start_index = user_input.find(':')
@@ -478,19 +489,21 @@ if __name__ == '__main__':
 
             message = (
                 "\n" +
-                42*'*' + "\n" +
+                42*'*' + "\n"
                 "select pattern: \n" +
                 message_list +
-                "  's': stop\n" +
-                "set option: \n" +
-                "  'ui': update interval 'ui:{update_interval} ({update_frequency}Hz)'\n" +
-                "  'uo': set universe output 'uo:{universe_output}'\n" +
-                "  'mo': set mode_16bit 'mo:{mode_16bit}'\n" +
-                "  'vh': set value high 'vh:{vhigh}'\n" +
-                "  'vl': set value low 'vl:{vlow}'\n" +
-                "  'vo': set value off 'vo:{voff}'\n" +
+                "  's': stop\n"
+                "set option: \n"
+                "  'ui': update interval "
+                "'ui:{update_interval} ({update_frequency}Hz)'\n"
+                "  'uo': set universe output 'uo:{universe_output}'\n"
+                "  'mo': set mode_16bit 'mo:{mode_16bit}'\n"
+                "  'vh': set value high 'vh:{vhigh}'\n"
+                "  'vl': set value low 'vl:{vlow}'\n"
+                "  'vo': set value off 'vo:{voff}'\n"
+                "  'sc': save config 'sc'\n"
                 "Ctrl+C or 'q' to stop script\n" +
-                42*'*' + "\n" +
+                42*'*' + "\n"
                 "\n"
             ).format(
                 update_frequency=(
@@ -537,9 +550,9 @@ if __name__ == '__main__':
     # blocks untill thread has joined.
     my_pattern.stop_ola()
 
-    if args.interactive:
-        # as last thing we save the current configuration.
-        print("\nwrite config.")
-        my_pattern.my_config.write_to_file()
+    # if args.interactive:
+    #     # as last thing we save the current configuration.
+    #     print("\nwrite config.")
+    #     my_pattern.my_config.write_to_file()
 
     ##########################################

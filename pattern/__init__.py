@@ -107,23 +107,23 @@ def calculate_16bit_values(value, mode_16bit=False):
     """Calculate the low and high part representations of value."""
     high_byte = 0
     low_byte = 0
-    if mode_16bit:
-        if value > 65535:
-            value = 65535
-        low_byte, high_byte = struct.unpack(
-            "<BB",
-            struct.pack("<H", value)
-        )
-    else:
-        if value > 255:
-            # convert 16bit range to 8bit range
-            value = value / 256
-        # check for bounds
-        if value > 255:
-            value = 255
-        if value < 0:
-            value = 0
-        high_byte = value
+    # if mode_16bit:
+    if value > 65535:
+        value = 65535
+    low_byte, high_byte = struct.unpack(
+        "<BB",
+        struct.pack("<H", value)
+    )
+    # else:
+    #     if value > 255:
+    #         # convert 16bit range to 8bit range
+    #         value = value / 256
+    #     # check for bounds
+    #     if value > 255:
+    #         value = 255
+    #     if value < 0:
+    #         value = 0
+    #     high_byte = value
     return high_byte, low_byte
 
 ##########################################
