@@ -2,10 +2,10 @@
 # coding=utf-8
 
 """
-gradient pattern.
+rainbow pattern.
 
     generates a test pattern:
-    gradient
+    rainbow
 
     history:
         see git commits
@@ -31,14 +31,19 @@ import colorsys
 # classes
 
 
-class Gradient(pattern.Pattern):
-    """Gradient Pattern Class."""
+class Rainbow(pattern.Pattern):
+    """Rainbow Pattern Class."""
 
     def __init__(self, config, config_global):
         """Init pattern."""
         self.config_defaults = {
             "cycle_duration": 10,
             "position_current": 0,
+            "color_channels": [
+                "red",
+                "green",
+                "blue",
+            ],
         }
         # python3 syntax
         # super().__init__()
@@ -117,13 +122,13 @@ class Gradient(pattern.Pattern):
 
             # print(debug_string)
 
-            # old easy rainbow :-)
+            hue = pixel_position
             saturation = 1
             value = pattern.map_16bit_to_01(self.values['high'])
             # print("hue: {}".format(hue))
             # print("value: {}".format(value))
 
-            r, g, b = colorsys.hsv_to_rgb(pixel_hue, saturation, value)
+            r, g, b = colorsys.hsv_to_rgb(hue, saturation, value)
 
             r_hb, r_lb = self._calculate_16bit_values(
                 pattern.map_01_to_16bit(r)

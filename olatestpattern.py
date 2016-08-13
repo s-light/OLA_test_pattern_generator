@@ -68,9 +68,10 @@ class OLAPattern(OLAThread):
         },
         'pattern': {
             'channelcheck': {},
-            'static': {},
+            'rainbow': {},
             'gradient': {},
             'strobe': {},
+            'static': {},
         },
     }
 
