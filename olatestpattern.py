@@ -61,7 +61,8 @@ class OLAPattern(OLAThread):
             'pattern_name': 'channelcheck',
             'channel_count': 512,
             'pixel_count': 42,
-            'pattern_repeate': True,
+            'repeate_count': 4,
+            'repeate_snake': True,
         },
         'universe': {
             'output': 1,
@@ -207,6 +208,35 @@ class OLAPattern(OLAThread):
         # explicit call
         OLAThread.ola_connected(self)
 
+    def _handle_repeat(self, channels):
+        "Handle all pattern repeating things"
+        pixel_count = self.config['system']['pixel_count']
+        repeate_count = self.config['system']['repeate_count']
+        repeate_snake = self.config['system']['repeate_snake']
+
+        # print("pixel_count:", pixel_count)
+        # print("repeate_snake:", repeate_snake)
+        # print("repeate_count:", repeate_count)
+
+        if repeate_count > 0:
+            for repeate_index in range(1, repeate_count):
+                # print("repeate_index:", repeate_index)
+                # normal direction
+                # = snake forward
+                pixel_range = range(0, pixel_count)
+                # if repeate_snake and ((repeate_index % 2) > 0):
+                if repeate_snake:
+                    # print("repeate_snake:", repeate_snake)
+                    if ((repeate_index % 2) > 0):
+                        # print("(repeate_index % 2):", (repeate_index % 2))
+                        # snake back
+                        pixel_range = range(pixel_count-1, -1, -1)
+                # print("pixel_range:", pixel_range)
+                for pixel_index in pixel_range:
+                    # print("append:", pixel_index)
+                    channels.append(channels[pixel_index])
+        return channels
+
     def _calculate_step(self):
         """generate test pattern."""
         # register new event (for correct timing as first thing.)
@@ -240,10 +270,18 @@ class OLAPattern(OLAThread):
 
         if pattern_name:
             if pattern_name in self.pattern:
+                # calculate channel values for pattern
+                channels = self.pattern[pattern_name]._calculate_step()
+                # print(42*'*')
+                # print('channels len', len(channels))
+                # print('channels', channels)
+                channels_rep = self._handle_repeat(channels)
+                # print('channels_rep len', len(channels_rep))
+                # print('channels_rep', channels_rep)
                 # send frame
                 self.dmx_send_frame(
                     self.config['universe']['output'],
-                    self.pattern[pattern_name]._calculate_step()
+                    channels_rep
                 )
 
         # if pattern_name:

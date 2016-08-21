@@ -71,7 +71,8 @@ class Channelcheck(pattern.Pattern):
         )
 
         # for devices generate pattern
-        for index in range(0, self.channel_count):
+        # for index in range(0, self.channel_count):
+        for index in range(0, self.pixel_count):
             # if index is channel_current:
             high_byte = value_low_hb
             low_byte = value_low_lb
@@ -86,7 +87,7 @@ class Channelcheck(pattern.Pattern):
 
         if (
             self.channel_current <
-            self.config['wrapp_around_count']
+            self.config['wrapp_around_count']-1
         ):
             self.channel_current = self.channel_current + 1
         else:
