@@ -145,10 +145,25 @@ class Pattern():
 
         self.config_global = config_global
         # print("config_global: {}".format(self.config_global))
-        self.channel_count = config_global['channel_count']
-        self.pixel_count = config_global['pixel_count']
-        self.mode_16bit = config_global['mode_16bit']
+        # self.channel_count = config_global['channel_count']
+        # self.pixel_count = config_global['pixel_count']
+        # self.mode_16bit = config_global['mode_16bit']
         self.values = config_global['value']
+
+    @property
+    def channel_count(self):
+        """Shortcut to channel_count."""
+        return self.config_global['channel_count']
+
+    @property
+    def pixel_count(self):
+        """Shortcut to pixel_count."""
+        return self.config_global['pixel_count']
+
+    @property
+    def mode_16bit(self):
+        """Shortcut to mode_16bit."""
+        return self.config_global['mode_16bit']
 
     def _calculate_16bit_values(self, value):
         """Calculate the low and high part representations of value."""

@@ -213,7 +213,7 @@ class OLAPattern(OLAThread):
         pixel_count = self.config['system']['pixel_count']
         repeate_count = self.config['system']['repeate_count']
         repeate_snake = self.config['system']['repeate_snake']
-
+        channels_count = len(channels)
         # print("pixel_count:", pixel_count)
         # print("repeate_snake:", repeate_snake)
         # print("repeate_count:", repeate_count)
@@ -223,19 +223,19 @@ class OLAPattern(OLAThread):
                 # print("repeate_index:", repeate_index)
                 # normal direction
                 # = snake forward
-                pixel_range = range(0, pixel_count)
+                pixel_range = range(0, channels_count)
                 # if repeate_snake and ((repeate_index % 2) > 0):
                 if repeate_snake:
                     # print("repeate_snake:", repeate_snake)
                     if ((repeate_index % 2) > 0):
                         # print("(repeate_index % 2):", (repeate_index % 2))
                         # snake back
-                        pixel_range = range(pixel_count-1, -1, -1)
+                        pixel_range = range(channels_count-1, -1, -1)
                 # print("pixel_range:", pixel_range)
-                for pixel_index in pixel_range:
-                    # print("append:", pixel_index)
+                for channel_index in pixel_range:
+                    # print("append:", channel_index)
                     try:
-                        value = channels[pixel_index]
+                        value = channels[channel_index]
                     except Exception as e:
                         print('error:', e)
                     else:
@@ -278,11 +278,16 @@ class OLAPattern(OLAThread):
                 # calculate channel values for pattern
                 channels = self.pattern[pattern_name]._calculate_step()
                 # print(42*'*')
+                temp_channel_len = len(channels)
                 # print('channels len', len(channels))
                 # print('channels', channels)
                 channels_rep = self._handle_repeat(channels)
                 # print('channels_rep len', len(channels_rep))
                 # print('channels_rep', channels_rep)
+                print("channels len: {:5>}; {:5>}".format(
+                    temp_channel_len,
+                    len(channels)
+                ))
                 # send frame
                 self.dmx_send_frame(
                     self.config['universe']['output'],
