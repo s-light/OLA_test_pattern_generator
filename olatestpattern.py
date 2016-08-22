@@ -234,7 +234,12 @@ class OLAPattern(OLAThread):
                 # print("pixel_range:", pixel_range)
                 for pixel_index in pixel_range:
                     # print("append:", pixel_index)
-                    channels.append(channels[pixel_index])
+                    try:
+                        value = channels[pixel_index]
+                    except Exception as e:
+                        print('error:', e)
+                    else:
+                        channels.append(value)
         return channels
 
     def _calculate_step(self):
@@ -351,6 +356,65 @@ def handle_userinput(user_input):
                     )
                 print("set universe_output to {}.".format(
                     my_pattern.config['universe']['output']
+                ))
+    elif user_input.startswith("pc"):
+        # try to extract pixel count
+        start_index = user_input.find(':')
+        if start_index > -1:
+            value_new = \
+                user_input[start_index+1:]
+            try:
+                value_new = \
+                    int(value_new)
+            except Exception as e:
+                print("input not valid. ({})".format(e))
+            else:
+                my_pattern.config['system']['pixel_count'] = (
+                        value_new
+                    )
+                print("set pixel_count to {}.".format(
+                    my_pattern.config['system']['pixel_count']
+                ))
+    elif user_input.startswith("rc"):
+        # try to extract repeate count
+        start_index = user_input.find(':')
+        if start_index > -1:
+            value_new = \
+                user_input[start_index+1:]
+            try:
+                value_new = \
+                    int(value_new)
+            except Exception as e:
+                print("input not valid. ({})".format(e))
+            else:
+                my_pattern.config['system']['repeate_count'] = (
+                        value_new
+                    )
+                print("set repeate_count to {}.".format(
+                    my_pattern.config['system']['repeate_count']
+                ))
+    elif user_input.startswith("rs"):
+        # try to extract repeate_snake
+        start_index = user_input.find(':')
+        if start_index > -1:
+            mode_value_new = \
+                user_input[start_index+1:]
+            try:
+                try:
+                    mode_value_new = int(mode_value_new)
+                except Exception as e:
+                    if mode_value_new.startswith("False"):
+                        mode_value_new = False
+                else:
+                    mode_value_new = bool(mode_value_new)
+            except Exception as e:
+                print("input not valid. ({})".format(e))
+            else:
+                my_pattern.config['system']['repeate_snake'] = (
+                        mode_value_new
+                    )
+                print("set repeate_snake to {}.".format(
+                    my_pattern.config['system']['repeate_snake']
                 ))
     elif user_input.startswith("mo"):
         # try to extract universe value
@@ -536,6 +600,9 @@ if __name__ == '__main__':
                 "  'ui': update interval "
                 "'ui:{update_interval} ({update_frequency}Hz)'\n"
                 "  'uo': set universe output 'uo:{universe_output}'\n"
+                "  'pc': set pixel count 'pc:{pixel_count}'\n"
+                "  'rc': set repeate count 'rc:{repeate_count}'\n"
+                "  'rs': set repeate snake 'rs:{repeate_snake}'\n"
                 "  'mo': set mode_16bit 'mo:{mode_16bit}'\n"
                 "  'vh': set value high 'vh:{vhigh}'\n"
                 "  'vl': set value low 'vl:{vlow}'\n"
@@ -549,6 +616,9 @@ if __name__ == '__main__':
                     1000.0/my_pattern.config['system']['update_interval']
                 ),
                 update_interval=my_pattern.config['system']['update_interval'],
+                pixel_count=my_pattern.config['system']['pixel_count'],
+                repeate_count=my_pattern.config['system']['repeate_count'],
+                repeate_snake=my_pattern.config['system']['repeate_snake'],
                 universe_output=my_pattern.config['universe']['output'],
                 mode_16bit=my_pattern.config['system']['mode_16bit'],
                 vhigh=my_pattern.config['system']['value']['high'],

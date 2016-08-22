@@ -36,7 +36,7 @@ class Channelcheck(pattern.Pattern):
     def __init__(self, config, config_global):
         """Init pattern."""
         self.config_defaults = {
-            'wrapp_around_count': 40
+            'x': 42
         }
         # python3 syntax
         # super().__init__()
@@ -87,7 +87,7 @@ class Channelcheck(pattern.Pattern):
 
         if (
             self.channel_current <
-            self.config['wrapp_around_count']-1
+            self.pixel_count-1
         ):
             self.channel_current = self.channel_current + 1
         else:
