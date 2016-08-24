@@ -161,6 +161,26 @@ class Pattern():
         return self.config_global['pixel_count']
 
     @property
+    def repeate_count(self):
+        """Shortcut to repeate_count."""
+        return self.config_global['repeate_count']
+
+    @property
+    def repeate_snake(self):
+        """Shortcut to repeate_snake."""
+        return self.config_global['repeate_snake']
+
+    @property
+    def color_channels(self):
+        """Shortcut to color_channels."""
+        return self.config_global['color_channels']
+
+    @property
+    def update_interval(self):
+        """Shortcut to update_interval."""
+        return self.config_global['update_interval']
+
+    @property
     def mode_16bit(self):
         """Shortcut to mode_16bit."""
         return self.config_global['mode_16bit']
@@ -178,8 +198,13 @@ class Pattern():
         data_output = array.array('B')
         # available attributes:
         # global things
-        # self.mode_16bit
         # self.channel_count
+        # self.pixel_count
+        # self.repeate_count
+        # self.repeate_snake
+        # self.color_channels
+        # self.update_interval
+        # self.mode_16bit
         # self.values['off']
         # self.values['low']
         # self.values['high']
@@ -196,7 +221,7 @@ if __name__ == '__main__':
     print(42*'*')
     print(__doc__)
     print(42*'*')
-    print("This Module has now stand alone functionality.")
+    print("This Module has no stand alone functionality.")
     print(42*'*')
 
     ##########################################

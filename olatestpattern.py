@@ -63,6 +63,11 @@ class OLAPattern(OLAThread):
             'pixel_count': 42,
             'repeate_count': 4,
             'repeate_snake': True,
+            "color_channels": [
+                "red",
+                "green",
+                "blue",
+            ],
         },
         'universe': {
             'output': 1,
@@ -209,7 +214,9 @@ class OLAPattern(OLAThread):
         OLAThread.ola_connected(self)
 
     def _handle_repeat(self, channels):
-        "Handle all pattern repeating things"
+        """Handle all pattern repeating things."""
+        # this does not work. we have to use the pixel information.
+        # otherwiese color-order will get mixed up..
         pixel_count = self.config['system']['pixel_count']
         repeate_count = self.config['system']['repeate_count']
         repeate_snake = self.config['system']['repeate_snake']
@@ -278,20 +285,20 @@ class OLAPattern(OLAThread):
                 # calculate channel values for pattern
                 channels = self.pattern[pattern_name]._calculate_step()
                 # print(42*'*')
-                temp_channel_len = len(channels)
+                # temp_channel_len = len(channels)
                 # print('channels len', len(channels))
                 # print('channels', channels)
-                channels_rep = self._handle_repeat(channels)
+                # channels_rep = self._handle_repeat(channels)
                 # print('channels_rep len', len(channels_rep))
                 # print('channels_rep', channels_rep)
-                print("channels len: {:5>}; {:5>}".format(
-                    temp_channel_len,
-                    len(channels)
-                ))
+                # print("channels len: {:5>}; {:5>}".format(
+                #     temp_channel_len,
+                #     len(channels)
+                # ))
                 # send frame
                 self.dmx_send_frame(
                     self.config['universe']['output'],
-                    channels_rep
+                    channels
                 )
 
         # if pattern_name:
@@ -408,7 +415,9 @@ def handle_userinput(user_input):
                 try:
                     mode_value_new = int(mode_value_new)
                 except Exception as e:
-                    if mode_value_new.startswith("False"):
+                    if mode_value_new.startswith("True"):
+                        mode_value_new = True
+                    else:
                         mode_value_new = False
                 else:
                     mode_value_new = bool(mode_value_new)
@@ -422,24 +431,26 @@ def handle_userinput(user_input):
                     my_pattern.config['system']['repeate_snake']
                 ))
     elif user_input.startswith("mo"):
-        # try to extract universe value
+        # try to extract mode_16bit value
         start_index = user_input.find(':')
         if start_index > -1:
-            mode_16bit_new = \
+            mode_value_new = \
                 user_input[start_index+1:]
             try:
                 try:
-                    mode_16bit_new = int(mode_16bit_new)
+                    mode_value_new = int(mode_value_new)
                 except Exception as e:
-                    if mode_16bit_new.startswith("False"):
-                        mode_16bit_new = False
+                    if mode_value_new.startswith("True"):
+                        mode_value_new = True
+                    else:
+                        mode_value_new = False
                 else:
-                    mode_16bit_new = bool(mode_16bit_new)
+                    mode_value_new = bool(mode_value_new)
             except Exception as e:
                 print("input not valid. ({})".format(e))
             else:
                 my_pattern.config['system']['mode_16bit'] = (
-                        mode_16bit_new
+                        mode_value_new
                     )
                 print("set mode_16bit to {}.".format(
                     my_pattern.config['system']['mode_16bit']

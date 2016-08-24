@@ -39,11 +39,6 @@ class Gradient(pattern.Pattern):
         self.config_defaults = {
             "cycle_duration": 10,
             "position_current": 0,
-            "color_channels": [
-                "red",
-                "green",
-                "blue",
-            ],
             "stops": [
                 {
                     "position": 0,
@@ -78,11 +73,8 @@ class Gradient(pattern.Pattern):
         # explicit call
         pattern.Pattern.__init__(self, config, config_global)
 
-        # inits for this pattern
-        self.hue_current = 0.0
-
     def _calculate_current_channel_values(self, pixel_position):
-        """Calculate current channel values."""
+        """Calculate current pixel values."""
         # calculate value:
         # input:
         #     current position
@@ -114,7 +106,7 @@ class Gradient(pattern.Pattern):
                 result = stops_list[list_index].copy()
             else:
                 # interpolate all colors
-                for color_name in self.config["color_channels"]:
+                for color_name in self.color_channels:
                     result[color_name] = pattern.map(
                         pixel_position,
                         stops_list[list_index-1]["position"],
@@ -132,9 +124,13 @@ class Gradient(pattern.Pattern):
         data_output = array.array('B')
         # available attributes:
         # global things (readonly)
-        # self.mode_16bit
         # self.channel_count
         # self.pixel_count
+        # self.repeate_count
+        # self.repeate_snake
+        # self.color_channels
+        # self.update_interval
+        # self.mode_16bit
         # self.values['off']
         # self.values['low']
         # self.values['high']
@@ -146,42 +142,47 @@ class Gradient(pattern.Pattern):
 
         position_current = self.config["position_current"]
 
-        color_channels = self.config["color_channels"]
-        color_channels_count = len(color_channels)
+        color_channels_count = len(self.color_channels)
+        if self.mode_16bit:
+            color_channels_count = color_channels_count * 2
 
-        # in seconds
-        cycle_duration = self.config["cycle_duration"]
-        # convert to ms
-        cycle_duration = cycle_duration * 1000
-        # in ms
-        update_interval = self.config_global["update_interval"]
+        # in milliseconds
+        cycle_duration = self.config["cycle_duration"] * 1000
 
+        # calculate stepsize
         # step_count = cycle_duration / update_interval
         # cycle_duration = 1
         # update_interval = position_stepsize
-        position_stepsize = 1.0 * update_interval / cycle_duration
+        position_stepsize = 1.0 * self.update_interval / cycle_duration
 
+        # initilaize our data array to the maximal possible size:
+        total_channel_count = (
+            self.pixel_count *
+            color_channels_count *
+            self.repeate_count
+        )
+
+        for index in range(0, total_channel_count):
+            data_output.append(0)
+
+        # calculate new position
         position_current = position_current + position_stepsize
-
+        # check for upper bound
         if position_current >= 1:
             position_current = 0.0
-
         # write position_current back:
         self.config["position_current"] = position_current
-
         # print("position_current", position_current)
 
-        channel_stepsize = color_channels_count
-        if self.mode_16bit:
-            channel_stepsize = color_channels_count*2
+        # channel_stepsize = color_channels_count
+        # if self.mode_16bit:
+        #     channel_stepsize = color_channels_count*2
 
         # print("****")
 
-        # for devices generate pattern
+        # generate values for every pixel
         for pixel_index in range(0, self.pixel_count):
-            # map hue to pixel position
-            # pixel_count = 1
-            # pixel_index = pixel_position_step
+            # map gradient to pixel position
             pixel_position_step = 1.0 * pixel_index / self.pixel_count
             pixel_position = position_current + pixel_position_step
             # check for wrap around
@@ -226,65 +227,49 @@ class Gradient(pattern.Pattern):
             #         channel_values["blue"]
             #     )
             # )
-            # set all channels
-            for color_name in self.config["color_channels"]:
-
-                # calculate high and low byte
-                hb, lb = self._calculate_16bit_values(
-                    pattern.map_01_to_16bit(
-                        channel_values[color_name]
-                    )
+            for repeate_index in range(0, self.repeate_count):
+                pixel_offset = (
+                    self.pixel_count *
+                    color_channels_count *
+                    repeate_index
                 )
-                # if color_name.startswith("blue"):
-                #     debug_string += (
-                #         "{:>6}: "
-                #         "h {:>3} "
-                #         "l {:>3}".format(
-                #             color_name,
-                #             hb,
-                #             lb
-                #         )
-                #     )
-                # write data
-                if self.mode_16bit:
-                    data_output.append(hb)
-                    data_output.append(lb)
-                else:
-                    data_output.append(hb)
+                local_pixel_index = pixel_offset + (
+                    pixel_index * color_channels_count
+                )
+
+                # set colors for pixel:
+                for color_name in self.color_channels:
+                    # calculate high and low byte
+                    hb, lb = self._calculate_16bit_values(
+                        pattern.map_01_to_16bit(
+                            channel_values[color_name]
+                        )
+                    )
+                    # if color_name.startswith("blue"):
+                    #     debug_string += (
+                    #         "{:>6}: "
+                    #         "h {:>3} "
+                    #         "l {:>3}".format(
+                    #             color_name,
+                    #             hb,
+                    #             lb
+                    #         )
+                    #     )
+
+                    # get channel index with color offset
+                    color_offset = self.color_channels.index(color_name)
+                    if self.mode_16bit:
+                        color_offset = color_offset * 2
+                    # print("color_offset", color_offset)
+                    channel_index = local_pixel_index + color_offset
+                    # write data
+                    if self.mode_16bit:
+                        data_output[channel_index + 0] = hb
+                        data_output[channel_index + 1] = lb
+                    else:
+                        data_output[channel_index + 0] = hb
 
             # print(debug_string)
-
-            # old easy rainbow :-)
-            # saturation = 1
-            # value = pattern.map_16bit_to_01(self.values['high'])
-            # # print("hue: {}".format(hue))
-            # # print("value: {}".format(value))
-            #
-            # r, g, b = colorsys.hsv_to_rgb(pixel_hue, saturation, value)
-            #
-            # r_hb, r_lb = self._calculate_16bit_values(
-            #     pattern.map_01_to_16bit(r)
-            # )
-            # g_hb, g_lb = self._calculate_16bit_values(
-            #     pattern.map_01_to_16bit(g)
-            # )
-            # b_hb, b_lb = self._calculate_16bit_values(
-            #     pattern.map_01_to_16bit(b)
-            # )
-            #
-            # if self.mode_16bit:
-            #     data_output.append(r_hb)
-            #     data_output.append(r_lb)
-            #     data_output.append(g_hb)
-            #     data_output.append(g_lb)
-            #     data_output.append(b_hb)
-            #     data_output.append(b_lb)
-            #     data_output.append(0)
-            #     data_output.append(0)
-            # else:
-            #     data_output.append(r_hb)
-            #     data_output.append(g_hb)
-            #     data_output.append(b_hb)
 
         return data_output
 
