@@ -236,6 +236,18 @@ class Gradient(pattern.Pattern):
                 local_pixel_index = pixel_offset + (
                     pixel_index * color_channels_count
                 )
+                if self.repeate_snake:
+                    # every odd index
+                    if ((repeate_index % 2) > 0):
+                        # total_pixel_channel_count = (
+                        #     self.pixel_count * color_channels_count
+                        # )
+                        # local_pixel_index = local_pixel_index
+                        local_pixel_index = pixel_offset + (
+                            ((self.pixel_count - 1) - pixel_index) *
+                            color_channels_count
+                        )
+                        # print("local_pixel_index", local_pixel_index)
 
                 # set colors for pixel:
                 for color_name in self.color_channels:
