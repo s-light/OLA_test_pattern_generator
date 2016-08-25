@@ -146,7 +146,22 @@ class Rainbow(pattern.Pattern):
                     color_channels_count *
                     repeate_index
                 )
-                local_pixel_index = pixel_offset + pixel_index
+                local_pixel_index = pixel_offset + (
+                    pixel_index * color_channels_count
+                )
+                if self.repeate_snake:
+                    # every odd index
+                    if ((repeate_index % 2) > 0):
+                        # total_pixel_channel_count = (
+                        #     self.pixel_count * color_channels_count
+                        # )
+                        # local_pixel_index = local_pixel_index
+                        local_pixel_index = pixel_offset + (
+                            ((self.pixel_count - 1) - pixel_index) *
+                            color_channels_count
+                        )
+                        # print("local_pixel_index", local_pixel_index)
+                        
                 # set colors to pixel:
                 if self.mode_16bit:
                     data_output[local_pixel_index + 0] = r_hb
