@@ -39,6 +39,7 @@ class Gradient(pattern.Pattern):
         self.config_defaults = {
             "cycle_duration": 10,
             "position_current": 0,
+            "type": "channel",
             "stops": [
                 {
                     "position": 0,
@@ -73,6 +74,70 @@ class Gradient(pattern.Pattern):
         # explicit call
         pattern.Pattern.__init__(self, config, config_global)
 
+    def _interpolate_channels(self, pixel_position, stop_start, stop_end):
+        """Interpolate with channels."""
+        # print("interpolate_channels")
+        result = {}
+        # check for exact match
+        if pixel_position == stop_start["position"]:
+            result = stop_start.copy()
+        else:
+            # interpolate all colors
+            for color_name in self.color_channels:
+                result[color_name] = pattern.map(
+                    pixel_position,
+                    stop_start["position"],
+                    stop_end["position"],
+                    stop_start[color_name],
+                    stop_end[color_name],
+                )
+            result["position"] = pixel_position
+
+        return result
+
+    def _interpolate_hsv(self, pixel_position, stop_start, stop_end):
+        """Interpolate with hsv."""
+        print("interpolate_hsv")
+        result = {}
+        # check for exact match
+        if pixel_position == stop_start["position"]:
+            print("exact")
+            red, green, blue = colorsys.hsv_to_rgb(
+                stop_start["hue"],
+                stop_start["saturation"],
+                stop_start["value"]
+            )
+            result["red"] = red
+            result["green"] = green
+            result["blue"] = blue
+            result["position"] = pixel_position
+        else:
+            # interpolate all colors
+            print("interpolate")
+            hsv_values = {}
+            for hsv_name in ["hue", "saturation", "value"]:
+                hsv_values[hsv_name] = pattern.map(
+                    pixel_position,
+                    stop_start["position"],
+                    stop_end["position"],
+                    stop_start[hsv_name],
+                    stop_end[hsv_name],
+                )
+            # multiply with global brightness value:
+            global_value = pattern.map_16bit_to_01(self.values['high'])
+            hsv_values["value"] = hsv_values["value"] * global_value
+            red, green, blue = colorsys.hsv_to_rgb(
+                hsv_values["hue"],
+                hsv_values["saturation"],
+                hsv_values["value"]
+            )
+            result["red"] = red
+            result["green"] = green
+            result["blue"] = blue
+            result["position"] = pixel_position
+
+        return result
+
     def _calculate_current_channel_values(self, pixel_position):
         """Calculate current pixel values."""
         # calculate value:
@@ -101,20 +166,28 @@ class Gradient(pattern.Pattern):
             # now list_index contains the first stop
             # where position is < pixel_position
 
-            # check for exact match
-            if pixel_position == stops_list[list_index]["position"]:
-                result = stops_list[list_index].copy()
+            # interpolate between stops:
+            stop_start = stops_list[list_index-1]
+            stop_end = stops_list[list_index]
+            interpolation_type = self.config['type']
+            if interpolation_type.startswith("hsv"):
+                result = self._interpolate_hsv(
+                    pixel_position,
+                    stop_start,
+                    stop_end
+                )
+            elif interpolation_type.startswith("channels"):
+                result = self._interpolate_channels(
+                    pixel_position,
+                    stop_start,
+                    stop_end
+                )
             else:
-                # interpolate all colors
-                for color_name in self.color_channels:
-                    result[color_name] = pattern.map(
-                        pixel_position,
-                        stops_list[list_index-1]["position"],
-                        stops_list[list_index]["position"],
-                        stops_list[list_index-1][color_name],
-                        stops_list[list_index][color_name],
-                    )
-                result["position"] = pixel_position
+                result = self._interpolate_channels(
+                    pixel_position,
+                    stop_start,
+                    stop_end
+                )
 
         return result
 
@@ -196,6 +269,7 @@ class Gradient(pattern.Pattern):
             channel_values = self._calculate_current_channel_values(
                 pixel_position
             )
+            # print(channel_values)
             # print(
             #     "pixel_position {:<19}"
             #     " -> "

@@ -161,7 +161,7 @@ class Rainbow(pattern.Pattern):
                             color_channels_count
                         )
                         # print("local_pixel_index", local_pixel_index)
-                        
+
                 # set colors to pixel:
                 if self.mode_16bit:
                     data_output[local_pixel_index + 0] = r_hb
