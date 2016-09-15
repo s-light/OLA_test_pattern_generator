@@ -264,69 +264,12 @@ class Gradient(pattern.Pattern):
                 else:
                     data_output[channel_index + 0] = hb
 
-    def _calculate_step(self):
-        """Calculate single step."""
-        # prepare temp array
-        data_output = array.array('B')
-        # available attributes:
-        # global things (readonly)
-        # self.channel_count
-        # self.pixel_count
-        # self.repeate_count
-        # self.repeate_snake
-        # self.color_channels
-        # self.update_interval
-        # self.mode_16bit
-        # self.values['off']
-        # self.values['low']
-        # self.values['high']
-        # self.config_global[]
-        # fill array with meaningfull data according to the pattern :-)
-        # .....
-
-        # print("")
-
-        position_current = self.config["position_current"]
-
-        color_channels_count = len(self.color_channels)
-        if self.mode_16bit:
-            color_channels_count = color_channels_count * 2
-
-        # in milliseconds
-        cycle_duration = self.config["cycle_duration"] * 1000
-
-        # calculate stepsize
-        # step_count = cycle_duration / update_interval
-        # cycle_duration = 1
-        # update_interval = position_stepsize
-        position_stepsize = 1.0 * self.update_interval / cycle_duration
-
-        # initilaize our data array to the maximal possible size:
-        total_channel_count = (
-            self.pixel_count *
-            color_channels_count *
-            self.repeate_count
-        )
-
-        for index in range(0, total_channel_count):
-            data_output.append(0)
-
-        # calculate new position
-        position_current = position_current + position_stepsize
-        # check for upper bound
-        if position_current >= 1:
-            position_current = 0.0
-        # write position_current back:
-        self.config["position_current"] = position_current
-        # print("position_current", position_current)
-
-        # channel_stepsize = color_channels_count
-        # if self.mode_16bit:
-        #     channel_stepsize = color_channels_count*2
-
-        # print("****")
-
-        # generate values for every pixel
+    def _calculate_pixels_for_position(
+        self,
+        data_output,
+        position_current,
+        color_channels_count
+    ):
         for pixel_index in range(0, self.pixel_count):
             # map gradient to pixel position
             pixel_position_step = 1.0 * pixel_index / self.pixel_count
@@ -398,6 +341,76 @@ class Gradient(pattern.Pattern):
                 color_channels_count
             )
             # print("1:", data_output)
+
+    def _calculate_step(self):
+        """Calculate single step."""
+        # prepare temp array
+        data_output = array.array('B')
+        # available attributes:
+        # global things (readonly)
+        # self.channel_count
+        # self.pixel_count
+        # self.repeate_count
+        # self.repeate_snake
+        # self.color_channels
+        # self.update_interval
+        # self.mode_16bit
+        # self.values['off']
+        # self.values['low']
+        # self.values['high']
+        # self.config_global[]
+        # fill array with meaningfull data according to the pattern :-)
+        # .....
+
+        # print("")
+
+        position_current = self.config["position_current"]
+
+        color_channels_count = len(self.color_channels)
+        if self.mode_16bit:
+            color_channels_count = color_channels_count * 2
+
+        # in milliseconds
+        cycle_duration = self.config["cycle_duration"] * 1000
+
+        # calculate stepsize
+        # step_count = cycle_duration / update_interval
+        # cycle_duration = 1
+        # update_interval = position_stepsize
+        position_stepsize = 1.0 * self.update_interval / cycle_duration
+
+        # initilaize our data array to the maximal possible size:
+        total_channel_count = (
+            self.pixel_count *
+            color_channels_count *
+            self.repeate_count
+        )
+
+        for index in range(0, total_channel_count):
+            data_output.append(0)
+
+        # calculate new position
+        position_current = position_current + position_stepsize
+        # check for upper bound
+        if position_current >= 1:
+            position_current = 0.0
+        # write position_current back:
+        self.config["position_current"] = position_current
+        # print("position_current", position_current)
+
+        # channel_stepsize = color_channels_count
+        # if self.mode_16bit:
+        #     channel_stepsize = color_channels_count*2
+
+        # print("****")
+
+        # generate values for every pixel
+        self._calculate_pixels_for_position(
+            data_output,
+            position_current,
+            color_channels_count
+        )
+
         return data_output
 
 ##########################################
