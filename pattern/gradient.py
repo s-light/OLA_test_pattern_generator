@@ -301,6 +301,19 @@ class Gradient(pattern.Pattern):
             #         channel_values["blue"]
             #     )
             # )
+
+            channel_values_16bit = {}
+            # pre calculate 16bit values
+            for color_name in self.color_channels:
+                # calculate high and low byte
+                hb, lb = self._calculate_16bit_values(
+                    pattern.map_01_to_16bit(
+                        channel_values[color_name]
+                    )
+                )
+                channel_values_16bit[color_name]['hb'] = hb
+                channel_values_16bit[color_name]['lb'] = lb
+
             for repeate_index in range(0, self.repeate_count):
                 pixel_offset = (
                     self.pixel_count *
@@ -326,11 +339,13 @@ class Gradient(pattern.Pattern):
                 # set colors for pixel:
                 for color_name in self.color_channels:
                     # calculate high and low byte
-                    hb, lb = self._calculate_16bit_values(
-                        pattern.map_01_to_16bit(
-                            channel_values[color_name]
-                        )
-                    )
+                    # hb, lb = self._calculate_16bit_values(
+                    #     pattern.map_01_to_16bit(
+                    #         channel_values[color_name]
+                    #     )
+                    # )
+                    hb = channel_values_16bit[color_name]['hb']
+                    lb = channel_values_16bit[color_name]['lb']
                     # if color_name.startswith("blue"):
                     #     debug_string += (
                     #         "{:>6}: "
