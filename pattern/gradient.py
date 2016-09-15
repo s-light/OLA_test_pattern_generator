@@ -191,7 +191,35 @@ class Gradient(pattern.Pattern):
 
         return result
 
-    def _handle_repeate(
+    def _calculate_repeat_pixel_index(
+        self,
+        pixel_index,
+        repeate_index,
+        color_channels_count
+    ):
+        pixel_offset = (
+            self.pixel_count *
+            color_channels_count *
+            repeate_index
+        )
+        local_pixel_index = pixel_offset + (
+            pixel_index * color_channels_count
+        )
+        if self.repeate_snake:
+            # every odd index
+            if ((repeate_index % 2) > 0):
+                # total_pixel_channel_count = (
+                #     self.pixel_count * color_channels_count
+                # )
+                # local_pixel_index = local_pixel_index
+                local_pixel_index = pixel_offset + (
+                    ((self.pixel_count - 1) - pixel_index) *
+                    color_channels_count
+                )
+                # print("local_pixel_index", local_pixel_index)
+        return local_pixel_index
+
+    def _set_data_output_w_repeat(
         self,
         data_output,
         pixel_index,
@@ -200,37 +228,18 @@ class Gradient(pattern.Pattern):
     ):
 
         for repeate_index in range(0, self.repeate_count):
-            pixel_offset = (
-                self.pixel_count *
-                color_channels_count *
-                repeate_index
+            local_pixel_index = self._calculate_repeat_pixel_index(
+                pixel_index,
+                repeate_index,
+                color_channels_count
             )
-            local_pixel_index = pixel_offset + (
-                pixel_index * color_channels_count
-            )
-            if self.repeate_snake:
-                # every odd index
-                if ((repeate_index % 2) > 0):
-                    # total_pixel_channel_count = (
-                    #     self.pixel_count * color_channels_count
-                    # )
-                    # local_pixel_index = local_pixel_index
-                    local_pixel_index = pixel_offset + (
-                        ((self.pixel_count - 1) - pixel_index) *
-                        color_channels_count
-                    )
-                    # print("local_pixel_index", local_pixel_index)
 
             # set colors for pixel:
             for color_name in self.color_channels:
-                # calculate high and low byte
-                # hb, lb = self._calculate_16bit_values(
-                #     pattern.map_01_to_16bit(
-                #         channel_values[color_name]
-                #     )
-                # )
+                # get high and low byte
                 hb = channel_values_16bit[color_name]['hb']
                 lb = channel_values_16bit[color_name]['lb']
+                # debug output
                 # if color_name.startswith("blue"):
                 #     debug_string += (
                 #         "{:>6}: "
@@ -254,8 +263,6 @@ class Gradient(pattern.Pattern):
                     data_output[channel_index + 1] = lb
                 else:
                     data_output[channel_index + 0] = hb
-
-
 
     def _calculate_step(self):
         """Calculate single step."""
@@ -384,7 +391,7 @@ class Gradient(pattern.Pattern):
 
             # print(debug_string)
             # print("0:", data_output)
-            self._handle_repeate(
+            self._set_data_output_w_repeat(
                 data_output,
                 pixel_index,
                 channel_values_16bit,
