@@ -311,8 +311,10 @@ class Gradient(pattern.Pattern):
                         channel_values[color_name]
                     )
                 )
-                channel_values_16bit[color_name]['hb'] = hb
-                channel_values_16bit[color_name]['lb'] = lb
+                values = {}
+                values['hb'] = hb
+                values['lb'] = lb
+                channel_values_16bit[color_name] = values
 
             for repeate_index in range(0, self.repeate_count):
                 pixel_offset = (
