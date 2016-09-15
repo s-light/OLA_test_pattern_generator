@@ -191,6 +191,72 @@ class Gradient(pattern.Pattern):
 
         return result
 
+    def _handle_repeate(
+        self,
+        data_output,
+        pixel_index,
+        channel_values_16bit,
+        color_channels_count
+    ):
+
+        for repeate_index in range(0, self.repeate_count):
+            pixel_offset = (
+                self.pixel_count *
+                color_channels_count *
+                repeate_index
+            )
+            local_pixel_index = pixel_offset + (
+                pixel_index * color_channels_count
+            )
+            if self.repeate_snake:
+                # every odd index
+                if ((repeate_index % 2) > 0):
+                    # total_pixel_channel_count = (
+                    #     self.pixel_count * color_channels_count
+                    # )
+                    # local_pixel_index = local_pixel_index
+                    local_pixel_index = pixel_offset + (
+                        ((self.pixel_count - 1) - pixel_index) *
+                        color_channels_count
+                    )
+                    # print("local_pixel_index", local_pixel_index)
+
+            # set colors for pixel:
+            for color_name in self.color_channels:
+                # calculate high and low byte
+                # hb, lb = self._calculate_16bit_values(
+                #     pattern.map_01_to_16bit(
+                #         channel_values[color_name]
+                #     )
+                # )
+                hb = channel_values_16bit[color_name]['hb']
+                lb = channel_values_16bit[color_name]['lb']
+                # if color_name.startswith("blue"):
+                #     debug_string += (
+                #         "{:>6}: "
+                #         "h {:>3} "
+                #         "l {:>3}".format(
+                #             color_name,
+                #             hb,
+                #             lb
+                #         )
+                #     )
+
+                # get channel index with color offset
+                color_offset = self.color_channels.index(color_name)
+                if self.mode_16bit:
+                    color_offset = color_offset * 2
+                # print("color_offset", color_offset)
+                channel_index = local_pixel_index + color_offset
+                # write data
+                if self.mode_16bit:
+                    data_output[channel_index + 0] = hb
+                    data_output[channel_index + 1] = lb
+                else:
+                    data_output[channel_index + 0] = hb
+
+
+
     def _calculate_step(self):
         """Calculate single step."""
         # prepare temp array
@@ -316,64 +382,15 @@ class Gradient(pattern.Pattern):
                 values['lb'] = lb
                 channel_values_16bit[color_name] = values
 
-            for repeate_index in range(0, self.repeate_count):
-                pixel_offset = (
-                    self.pixel_count *
-                    color_channels_count *
-                    repeate_index
-                )
-                local_pixel_index = pixel_offset + (
-                    pixel_index * color_channels_count
-                )
-                if self.repeate_snake:
-                    # every odd index
-                    if ((repeate_index % 2) > 0):
-                        # total_pixel_channel_count = (
-                        #     self.pixel_count * color_channels_count
-                        # )
-                        # local_pixel_index = local_pixel_index
-                        local_pixel_index = pixel_offset + (
-                            ((self.pixel_count - 1) - pixel_index) *
-                            color_channels_count
-                        )
-                        # print("local_pixel_index", local_pixel_index)
-
-                # set colors for pixel:
-                for color_name in self.color_channels:
-                    # calculate high and low byte
-                    # hb, lb = self._calculate_16bit_values(
-                    #     pattern.map_01_to_16bit(
-                    #         channel_values[color_name]
-                    #     )
-                    # )
-                    hb = channel_values_16bit[color_name]['hb']
-                    lb = channel_values_16bit[color_name]['lb']
-                    # if color_name.startswith("blue"):
-                    #     debug_string += (
-                    #         "{:>6}: "
-                    #         "h {:>3} "
-                    #         "l {:>3}".format(
-                    #             color_name,
-                    #             hb,
-                    #             lb
-                    #         )
-                    #     )
-
-                    # get channel index with color offset
-                    color_offset = self.color_channels.index(color_name)
-                    if self.mode_16bit:
-                        color_offset = color_offset * 2
-                    # print("color_offset", color_offset)
-                    channel_index = local_pixel_index + color_offset
-                    # write data
-                    if self.mode_16bit:
-                        data_output[channel_index + 0] = hb
-                        data_output[channel_index + 1] = lb
-                    else:
-                        data_output[channel_index + 0] = hb
-
             # print(debug_string)
-
+            # print("0:", data_output)
+            self._handle_repeate(
+                data_output,
+                pixel_index,
+                channel_values_16bit,
+                color_channels_count
+            )
+            # print("1:", data_output)
         return data_output
 
 ##########################################
