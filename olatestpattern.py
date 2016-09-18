@@ -29,7 +29,7 @@ from configdict import ConfigDict
 from olathreaded import OLAThread, OLAThread_States
 
 
-version = """12.08.2016 10:09 stefan"""
+version = """18.09.2016 19:09 stefan"""
 
 
 ##########################################
@@ -76,6 +76,7 @@ class OLAPattern(OLAThread):
             'channelcheck': {},
             'rainbow': {},
             'gradient': {},
+            'gradient_integer': {},
             'strobe': {},
             'static': {},
         },
@@ -143,6 +144,7 @@ class OLAPattern(OLAThread):
             from pattern.strobe import Strobe
             from pattern.rainbow import Rainbow
             from pattern.gradient import Gradient
+            from pattern.gradient_integer import Gradient_Integer
             from pattern.channelcheck import Channelcheck
             from pattern.static import Static
         except Exception as e:
@@ -152,6 +154,7 @@ class OLAPattern(OLAThread):
                 'channelcheck',
                 'rainbow',
                 'gradient',
+                'gradient_integer',
                 'strobe',
                 'static',
             ]
@@ -170,6 +173,11 @@ class OLAPattern(OLAThread):
             )
             pattern_name = 'gradient'
             self.pattern[pattern_name] = Gradient(
+                self.config['pattern'][pattern_name],
+                self.config['system']
+            )
+            pattern_name = 'gradient_integer'
+            self.pattern[pattern_name] = Gradient_Integer(
                 self.config['pattern'][pattern_name],
                 self.config['system']
             )

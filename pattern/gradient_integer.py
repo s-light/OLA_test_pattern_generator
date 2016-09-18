@@ -103,45 +103,13 @@ class Gradient_Integer(pattern.Pattern):
 
     def _interpolate_hsv(self, pixel_position, stop_start, stop_end):
         """Interpolate with hsv."""
-        print("interpolate_hsv")
+        print("interpolate_hsv -- TODO....")
         result = {}
         # check for exact match
-        if pixel_position == stop_start["position"]:
-            print("exact")
-            red, green, blue = colorsys.hsv_to_rgb(
-                stop_start["hue"],
-                stop_start["saturation"],
-                stop_start["value"]
-            )
-            result["red"] = red
-            result["green"] = green
-            result["blue"] = blue
-            result["position"] = pixel_position
-        else:
-            # interpolate all colors
-            print("interpolate")
-            hsv_values = {}
-            for hsv_name in ["hue", "saturation", "value"]:
-                hsv_values[hsv_name] = pattern.map(
-                    pixel_position,
-                    stop_start["position"],
-                    stop_end["position"],
-                    stop_start[hsv_name],
-                    stop_end[hsv_name],
-                )
-            # multiply with global brightness value:
-            global_value = pattern.map_16bit_to_01(self.values['high'])
-            hsv_values["value"] = hsv_values["value"] * global_value
-            red, green, blue = colorsys.hsv_to_rgb(
-                hsv_values["hue"],
-                hsv_values["saturation"],
-                hsv_values["value"]
-            )
-            result["red"] = red
-            result["green"] = green
-            result["blue"] = blue
-            result["position"] = pixel_position
-
+        result["red"] = 8000
+        result["green"] = 0
+        result["blue"] = 20000
+        result["position"] = pixel_position
         return result
 
     def _calculate_current_channel_values(self, pixel_position):
@@ -278,11 +246,11 @@ class Gradient_Integer(pattern.Pattern):
     ):
         for pixel_index in range(0, self.pixel_count):
             # map gradient to pixel position
-            pixel_position_step = 1.0 * pixel_index / self.pixel_count
+            pixel_position_step = 1000000 * pixel_index / self.pixel_count
             pixel_position = position_current + pixel_position_step
             # check for wrap around
-            if pixel_position > 1.0:
-                pixel_position -= 1.0
+            if pixel_position > 1000000:
+                pixel_position -= 1000000
                 # print("handle wrap around")
 
             # print("pixel_position", pixel_position)
@@ -329,9 +297,7 @@ class Gradient_Integer(pattern.Pattern):
             for color_name in self.color_channels:
                 # calculate high and low byte
                 hb, lb = self._calculate_16bit_values(
-                    pattern.map_01_to_16bit(
                         channel_values[color_name]
-                    )
                 )
                 values = {}
                 values['hb'] = hb
@@ -377,13 +343,13 @@ class Gradient_Integer(pattern.Pattern):
             color_channels_count = color_channels_count * 2
 
         # in milliseconds
-        cycle_duration = self.config["cycle_duration"] * 1000
+        cycle_duration = self.config["cycle_duration"]
 
         # calculate stepsize
         # step_count = cycle_duration / update_interval
-        # cycle_duration = 1
+        # cycle_duration = 1000000
         # update_interval = position_stepsize
-        position_stepsize = 1.0 * self.update_interval / cycle_duration
+        position_stepsize = 1000000 * self.update_interval / cycle_duration
 
         # initilaize our data array to the maximal possible size:
         total_channel_count = (
@@ -398,8 +364,8 @@ class Gradient_Integer(pattern.Pattern):
         # calculate new position
         position_current = position_current + position_stepsize
         # check for upper bound
-        if position_current >= 1:
-            position_current = 0.0
+        if position_current >= 1000000:
+            position_current = 0
         # write position_current back:
         self.config["position_current"] = position_current
         # print("position_current", position_current)
@@ -411,6 +377,7 @@ class Gradient_Integer(pattern.Pattern):
         # print("****")
 
         # generate values for every pixel
+        # this function manipulates data_output.
         self._calculate_pixels_for_position(
             data_output,
             position_current,
