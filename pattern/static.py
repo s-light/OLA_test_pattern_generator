@@ -52,9 +52,14 @@ class Static(Pattern):
         # prepare temp array
         data_output = array.array('B')
         # available attributes:
-        # global things
-        # self.mode_16bit
+        # global things (readonly)
         # self.channel_count
+        # self.pixel_count
+        # self.repeate_count
+        # self.repeate_snake
+        # self.color_channels
+        # self.update_interval
+        # self.mode_16bit
         # self.values['off']
         # self.values['low']
         # self.values['high']
@@ -66,10 +71,15 @@ class Static(Pattern):
             self.values['high']
         )
 
+        channel_count_for_pixel = self.pixel_count * len(self.color_channels)
+        if self.mode_16bit:
+            channel_count_for_pixel = channel_count_for_pixel * 2
+
+
         # for devices generate pattern
-        for index in range(0, self.channel_count):
-            high_byte = value_high_hb
-            low_byte = value_high_lb
+        high_byte = value_high_hb
+        low_byte = value_high_lb
+        for index in range(0, channel_count_for_pixel):
 
             if self.mode_16bit:
                 data_output.append(high_byte)
