@@ -1,5 +1,9 @@
 # project specific
 pattern.json
+temp/
+
+# Libre Office lock files
+.~lock.*#
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

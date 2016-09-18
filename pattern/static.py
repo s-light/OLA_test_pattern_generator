@@ -75,7 +75,6 @@ class Static(Pattern):
         if self.mode_16bit:
             channel_count_for_pixel = channel_count_for_pixel * 2
 
-
         # for devices generate pattern
         high_byte = value_high_hb
         low_byte = value_high_lb
