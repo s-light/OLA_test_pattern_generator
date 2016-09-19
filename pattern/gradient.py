@@ -169,25 +169,11 @@ class Gradient(pattern.Pattern):
             # interpolate between stops:
             stop_start = stops_list[list_index-1]
             stop_end = stops_list[list_index]
-            interpolation_type = self.config['type']
-            if interpolation_type.startswith("hsv"):
-                result = self._interpolate_hsv(
-                    pixel_position,
-                    stop_start,
-                    stop_end
-                )
-            elif interpolation_type.startswith("channels"):
-                result = self._interpolate_channels(
-                    pixel_position,
-                    stop_start,
-                    stop_end
-                )
-            else:
-                result = self._interpolate_channels(
-                    pixel_position,
-                    stop_start,
-                    stop_end
-                )
+            result = self.interpolation_function(
+                pixel_position,
+                stop_start,
+                stop_end
+            )
 
         return result
 
@@ -354,6 +340,15 @@ class Gradient(pattern.Pattern):
         # self.config_global[]
 
         self.update_globals()
+
+        # pattern specific:
+        interpolation_type = self.config['type']
+        if interpolation_type.startswith("hsv"):
+            self.interpolation_function = self._interpolate_hsv
+        elif interpolation_type.startswith("channels"):
+            self.interpolation_function = self._interpolate_channels
+        else:
+            self.interpolation_function = self._interpolate_channels
 
         # prepare temp array
         data_output = array.array('B')
