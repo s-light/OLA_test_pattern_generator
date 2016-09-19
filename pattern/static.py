@@ -43,7 +43,7 @@ class Static(pattern.Pattern):
         # python2 syntax
         # super(Pattern, self).__init__()
         # explicit call
-        Pattern.__init__(self, config, config_global)
+        pattern.Pattern.__init__(self, config, config_global)
 
         # inits for this pattern
 
