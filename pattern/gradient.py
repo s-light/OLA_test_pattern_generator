@@ -220,15 +220,16 @@ class Gradient(pattern.Pattern):
         pixel_index,
         channel_values_16bit
     ):
-
-        for repeate_index in range(0, self.repeate_count):
+        color_channels = self.color_channels
+        mode_16bit = self.mode_16bit
+        for repeate_index in xrange(0, self.repeate_count):
             local_pixel_index = self._calculate_repeat_pixel_index(
                 pixel_index,
                 repeate_index
             )
 
             # set colors for pixel:
-            for color_name in self.color_channels:
+            for color_name in color_channels:
                 # get high and low byte
                 hb = channel_values_16bit[color_name]['hb']
                 lb = channel_values_16bit[color_name]['lb']
@@ -245,13 +246,13 @@ class Gradient(pattern.Pattern):
                 #     )
 
                 # get channel index with color offset
-                color_offset = self.color_channels.index(color_name)
-                if self.mode_16bit:
+                color_offset = color_channels.index(color_name)
+                if mode_16bit:
                     color_offset = color_offset * 2
                 # print("color_offset", color_offset)
                 channel_index = local_pixel_index + color_offset
                 # write data
-                if self.mode_16bit:
+                if mode_16bit:
                     data_output[channel_index + 0] = hb
                     data_output[channel_index + 1] = lb
                 else:
@@ -263,7 +264,8 @@ class Gradient(pattern.Pattern):
         position_current
     ):
         pixel_count = self.pixel_count
-        for pixel_index in range(0, pixel_count):
+        color_channels = self.color_channels
+        for pixel_index in xrange(0, pixel_count):
             # map gradient to pixel position
             pixel_position_step = 1.0 * pixel_index / pixel_count
             pixel_position = position_current + pixel_position_step
@@ -313,7 +315,7 @@ class Gradient(pattern.Pattern):
 
             channel_values_16bit = {}
             # pre calculate 16bit values
-            for color_name in self.color_channels:
+            for color_name in color_channels:
                 # calculate high and low byte
                 hb, lb = pattern.calculate_16bit_parts(
                     pattern.map_01_to_16bit(
