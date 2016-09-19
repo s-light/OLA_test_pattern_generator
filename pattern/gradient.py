@@ -261,11 +261,9 @@ class Gradient(pattern.Pattern):
             # pre calculate 16bit values
             for color_name in color_channels:
                 # calculate high and low byte
-                value = (
-                    *pattern.calculate_16bit_parts(
-                        pattern.map_01_to_16bit(
-                            pixel_values[color_name]
-                        )
+                value = pattern.calculate_16bit_parts(
+                    pattern.map_01_to_16bit(
+                        pixel_values[color_name]
                     )
                 )
                 pixel_values_16bit.append(value)
