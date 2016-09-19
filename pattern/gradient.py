@@ -224,14 +224,14 @@ class Gradient(pattern.Pattern):
                 # write data
                 if mode_16bit:
                     data_output[output_channel_index + 0] = (
-                        pixel_values_16bit[pixel_values_index].hb
+                        pixel_values_16bit[pixel_values_index][0]
                     )
                     data_output[output_channel_index + 1] = (
-                        pixel_values_16bit[pixel_values_index].lb
+                        pixel_values_16bit[pixel_values_index][1]
                     )
                 else:
                     data_output[output_channel_index + 0] = (
-                        pixel_values_16bit[pixel_values_index].hb
+                        pixel_values_16bit[pixel_values_index][0]
                     )
 
     def _calculate_pixels_for_position(
@@ -256,44 +256,12 @@ class Gradient(pattern.Pattern):
             pixel_values = self._calculate_current_pixel_channel_values(
                 pixel_position
             )
-            # print(pixel_values)
-            # print(
-            #     "pixel_position {:<19}"
-            #     " -> "
-            #     # "pixel_values", pixel_values
-            #     "pos {:<19}"
-            #     "red {:<19}"
-            #     "green {:<19}"
-            #     "blue {:<19}".format(
-            #         pixel_position,
-            #         pixel_values["position"],
-            #         pixel_values["red"],
-            #         pixel_values["green"],
-            #         pixel_values["blue"]
-            #     )
-            # )
-
-            # debug_string = (
-            #     "pixel_position {:<19}"
-            #     " -> "
-            #     # "pixel_values", pixel_values
-            #     # "pos {:<19}"
-            #     # "red {:<19}"
-            #     # "green {:<19}"
-            #     "blue {:<19}".format(
-            #         pixel_position,
-            #         # pixel_values["position"],
-            #         # pixel_values["red"],
-            #         # pixel_values["green"],
-            #         pixel_values["blue"]
-            #     )
-            # )
 
             pixel_values_16bit = []
             # pre calculate 16bit values
             for color_name in color_channels:
                 # calculate high and low byte
-                value = pattern.Value_16bit(
+                value = (
                     *pattern.calculate_16bit_parts(
                         pattern.map_01_to_16bit(
                             pixel_values[color_name]
