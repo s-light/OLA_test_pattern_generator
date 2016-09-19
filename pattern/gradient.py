@@ -138,16 +138,16 @@ class Gradient(pattern.Pattern):
 
         return result
 
-    def _calculate_current_channel_values(self, pixel_position):
+    def _calculate_current_pixel_channel_values(self, pixel_position):
         """Calculate current pixel values."""
         # calculate value:
         # input:
         #     current position
         #     list of way points
-        stops_list = self.config["stops"]
+        stops_list = self.stops_list
 
         result = {}
-        # print("_calculate_current_channel_values:")
+        # print("_calculate_current_pixel_channel_values:")
         # print("pixel_position:", pixel_position)
         # check bounds
         if pixel_position <= stops_list[0]["position"]:
@@ -204,10 +204,10 @@ class Gradient(pattern.Pattern):
         self,
         data_output,
         pixel_index,
-        channel_values_16bit
+        pixel_values_16bit
     ):
-        color_channels = self.color_channels
         mode_16bit = self.mode_16bit
+
         for repeate_index in xrange(0, self.repeate_count):
             local_pixel_index = self._calculate_repeat_pixel_index(
                 pixel_index,
@@ -215,34 +215,24 @@ class Gradient(pattern.Pattern):
             )
 
             # set colors for pixel:
-            for color_name in color_channels:
-                # get high and low byte
-                hb = channel_values_16bit[color_name]['hb']
-                lb = channel_values_16bit[color_name]['lb']
-                # debug output
-                # if color_name.startswith("blue"):
-                #     debug_string += (
-                #         "{:>6}: "
-                #         "h {:>3} "
-                #         "l {:>3}".format(
-                #             color_name,
-                #             hb,
-                #             lb
-                #         )
-                #     )
-
-                # get channel index with color offset
-                color_offset = color_channels.index(color_name)
+            for pixel_values_index in xrange(self.color_channels_count):
+                color_offset = pixel_values_index
                 if mode_16bit:
                     color_offset = color_offset * 2
                 # print("color_offset", color_offset)
-                channel_index = local_pixel_index + color_offset
+                output_channel_index = local_pixel_index + color_offset
                 # write data
                 if mode_16bit:
-                    data_output[channel_index + 0] = hb
-                    data_output[channel_index + 1] = lb
+                    data_output[output_channel_index + 0] = (
+                        pixel_values_16bit[pixel_values_index].hb
+                    )
+                    data_output[output_channel_index + 1] = (
+                        pixel_values_16bit[pixel_values_index].lb
+                    )
                 else:
-                    data_output[channel_index + 0] = hb
+                    data_output[output_channel_index + 0] = (
+                        pixel_values_16bit[pixel_values_index].hb
+                    )
 
     def _calculate_pixels_for_position(
         self,
@@ -263,62 +253,61 @@ class Gradient(pattern.Pattern):
             # print("pixel_position", pixel_position)
 
             # calculate current values
-            channel_values = self._calculate_current_channel_values(
+            pixel_values = self._calculate_current_pixel_channel_values(
                 pixel_position
             )
-            # print(channel_values)
+            # print(pixel_values)
             # print(
             #     "pixel_position {:<19}"
             #     " -> "
-            #     # "channel_values", channel_values
+            #     # "pixel_values", pixel_values
             #     "pos {:<19}"
             #     "red {:<19}"
             #     "green {:<19}"
             #     "blue {:<19}".format(
             #         pixel_position,
-            #         channel_values["position"],
-            #         channel_values["red"],
-            #         channel_values["green"],
-            #         channel_values["blue"]
+            #         pixel_values["position"],
+            #         pixel_values["red"],
+            #         pixel_values["green"],
+            #         pixel_values["blue"]
             #     )
             # )
 
             # debug_string = (
             #     "pixel_position {:<19}"
             #     " -> "
-            #     # "channel_values", channel_values
+            #     # "pixel_values", pixel_values
             #     # "pos {:<19}"
             #     # "red {:<19}"
             #     # "green {:<19}"
             #     "blue {:<19}".format(
             #         pixel_position,
-            #         # channel_values["position"],
-            #         # channel_values["red"],
-            #         # channel_values["green"],
-            #         channel_values["blue"]
+            #         # pixel_values["position"],
+            #         # pixel_values["red"],
+            #         # pixel_values["green"],
+            #         pixel_values["blue"]
             #     )
             # )
 
-            channel_values_16bit = {}
+            pixel_values_16bit = []
             # pre calculate 16bit values
             for color_name in color_channels:
                 # calculate high and low byte
-                hb, lb = pattern.calculate_16bit_parts(
-                    pattern.map_01_to_16bit(
-                        channel_values[color_name]
+                value = pattern.Value_16bit(
+                    *pattern.calculate_16bit_parts(
+                        pattern.map_01_to_16bit(
+                            pixel_values[color_name]
+                        )
                     )
                 )
-                values = {}
-                values['hb'] = hb
-                values['lb'] = lb
-                channel_values_16bit[color_name] = values
+                pixel_values_16bit.append(value)
 
             # print(debug_string)
             # print("0:", data_output)
             self._set_data_output_w_repeat(
                 data_output,
                 pixel_index,
-                channel_values_16bit
+                pixel_values_16bit
             )
             # print("1:", data_output)
 
@@ -341,7 +330,7 @@ class Gradient(pattern.Pattern):
 
         self.update_globals()
 
-        # pattern specific:
+        # pattern specific updates:
         interpolation_type = self.config['type']
         if interpolation_type.startswith("hsv"):
             self.interpolation_function = self._interpolate_hsv
@@ -349,6 +338,8 @@ class Gradient(pattern.Pattern):
             self.interpolation_function = self._interpolate_channels
         else:
             self.interpolation_function = self._interpolate_channels
+
+        self.stops_list = self.config["stops"]
 
         # prepare temp array
         data_output = array.array('B')

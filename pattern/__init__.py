@@ -16,6 +16,7 @@ pattern base class.
 # https://docs.python.org/2.7/howto/pyporting.html#division
 # from __future__ import division
 
+import collections
 import array
 import struct
 
@@ -146,6 +147,9 @@ def calculate_16bit_values(value, mode_16bit=False):
 # classes
 
 
+Value_16bit = collections.namedtuple('Value_16bit', ['hb', 'lb'])
+
+
 class Pattern():
     """Base Pattern Class."""
 
@@ -173,10 +177,15 @@ class Pattern():
         self.pixel_count = self.config_global['pixel_count']
         self.repeate_count = self.config_global['repeate_count']
         self.repeate_snake = self.config_global['repeate_snake']
-        self.color_channels = self.config_global['color_channels']
+
         self.update_interval = self.config_global['update_interval']
         self.mode_16bit = self.config_global['mode_16bit']
 
+        self.color_channels = self.config_global['color_channels']
+        # self.color_channels = collections.namedtuple(
+        #     'color_channels',
+        #     **self.color_channels_dict
+        # )
         self.color_channels_count = len(self.color_channels)
         if self.mode_16bit:
             self.color_channels_count = self.color_channels_count * 2
