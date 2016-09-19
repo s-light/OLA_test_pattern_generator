@@ -257,16 +257,24 @@ class Gradient(pattern.Pattern):
                 pixel_position
             )
 
-            pixel_values_16bit = []
-            # pre calculate 16bit values
-            for color_name in color_channels:
-                # calculate high and low byte
-                value = pattern.calculate_16bit_parts(
-                    pattern.map_01_to_16bit(
-                        pixel_values[color_name]
-                    )
+            # pixel_values_16bit = []
+            # # pre calculate 16bit values
+            # for color_name in color_channels:
+            #     # calculate high and low byte
+            #     value = pattern.calculate_16bit_parts(
+            #         pattern.map_01_to_16bit(
+            #             pixel_values[color_name]
+            #         )
+            #     )
+            #     pixel_values_16bit.append(value)
+
+            # is list-comprehension faster?:
+            # https://docs.python.org/3/tutorial/datastructures.html#list-comprehensions
+            pixel_values_16bit = [pattern.calculate_16bit_parts(
+                pattern.map_01_to_16bit(
+                    pixel_values[color_name]
                 )
-                pixel_values_16bit.append(value)
+            ) for color_name in color_channels]
 
             # print(debug_string)
             # print("0:", data_output)
