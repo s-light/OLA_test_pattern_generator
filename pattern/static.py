@@ -47,6 +47,22 @@ class Static(Pattern):
 
         # inits for this pattern
 
+    def set_data_output(
+        self,
+        data_output,
+        channel_count_for_pixel,
+        high_byte,
+        low_byte,
+        mode_16bit
+    ):
+        for index in range(0, channel_count_for_pixel):
+
+            if mode_16bit:
+                data_output.append(high_byte)
+                data_output.append(low_byte)
+            else:
+                data_output.append(high_byte)
+
     def _calculate_step(self):
         """Calculate single step."""
         # prepare temp array
@@ -67,25 +83,27 @@ class Static(Pattern):
         # fill array with meaningfull data according to the pattern :-)
         # .....
 
+        # get this as local to speed up.
+        mode_16bit = self.mode_16bit
+
         value_high_hb, value_high_lb = self._calculate_16bit_values(
             self.values['high']
         )
 
         channel_count_for_pixel = self.pixel_count * len(self.color_channels)
-        if self.mode_16bit:
+        if mode_16bit:
             channel_count_for_pixel = channel_count_for_pixel * 2
 
         # for devices generate pattern
         high_byte = value_high_hb
         low_byte = value_high_lb
-        for index in range(0, channel_count_for_pixel):
-
-            if self.mode_16bit:
-                data_output.append(high_byte)
-                data_output.append(low_byte)
-            else:
-                data_output.append(high_byte)
-
+        self.set_data_output(
+            data_output,
+            channel_count_for_pixel,
+            high_byte,
+            low_byte,
+            mode_16bit
+        )
         return data_output
 
 ##########################################
