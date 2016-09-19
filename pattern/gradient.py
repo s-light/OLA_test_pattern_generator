@@ -344,8 +344,6 @@ class Gradient(pattern.Pattern):
 
     def _calculate_step(self):
         """Calculate single step."""
-        # prepare temp array
-        data_output = array.array('B')
         # available attributes:
         # global things (readonly)
         # self.channel_count
@@ -359,6 +357,7 @@ class Gradient(pattern.Pattern):
         # self.values['low']
         # self.values['high']
         # self.config_global[]
+
         # fill array with meaningfull data according to the pattern :-)
         # .....
 
@@ -375,7 +374,7 @@ class Gradient(pattern.Pattern):
 
         # calculate stepsize
         # step_count = cycle_duration / update_interval
-        # cycle_duration = 1
+        # cycle_duration = 1.0
         # update_interval = position_stepsize
         position_stepsize = 1.0 * self.update_interval / cycle_duration
 
@@ -386,8 +385,12 @@ class Gradient(pattern.Pattern):
             self.repeate_count
         )
 
-        for index in range(0, total_channel_count):
-            data_output.append(0)
+        # prepare temp array
+        data_output = array.array('B')
+        data_output.append(0)
+        # multiply so we have a array with total_channel_count zeros in it:
+        # this is much faster than a for loop!
+        data_output *= total_channel_count
 
         # calculate new position
         position_current = position_current + position_stepsize
