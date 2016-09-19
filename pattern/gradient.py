@@ -322,7 +322,7 @@ class Gradient(pattern.Pattern):
             # pre calculate 16bit values
             for color_name in self.color_channels:
                 # calculate high and low byte
-                hb, lb = self._calculate_16bit_values(
+                hb, lb = pattern.calculate_16bit_parts(
                     pattern.map_01_to_16bit(
                         channel_values[color_name]
                     )
@@ -393,7 +393,7 @@ class Gradient(pattern.Pattern):
         position_current = position_current + position_stepsize
         # check for upper bound
         if position_current >= 1:
-            position_current = 0.0
+            position_current -= 1
         # write position_current back:
         self.config["position_current"] = position_current
         # print("position_current", position_current)

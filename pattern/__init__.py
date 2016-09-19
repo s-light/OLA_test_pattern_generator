@@ -13,6 +13,9 @@ pattern base class.
         ~ all fine :-)
 """
 
+# https://docs.python.org/2.7/howto/pyporting.html#division
+# from __future__ import division
+
 import array
 import struct
 
@@ -101,6 +104,16 @@ def map_16bit_to_01(value):
     result = None
     result = map_bound(value, 0, 65535, 0.0, 1.0)
     return result
+
+
+def calculate_16bit_parts(value):
+    """Calculate the low and high part representations of value."""
+    if not (0 <= value < 65535):
+        value = min(max(value, 0), 65535)
+    # high_byte = value // 256
+    # low_byte = value % 256
+    # return high_byte, low_byte
+    return value // 256, value % 256
 
 
 def calculate_16bit_values(value, mode_16bit=False):

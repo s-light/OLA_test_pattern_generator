@@ -28,6 +28,7 @@ import json
 from configdict import ConfigDict
 from olathreaded import OLAThread, OLAThread_States
 
+import pattern
 
 version = """18.09.2016 19:09 stefan"""
 

@@ -15,7 +15,7 @@ static pattern.
 """
 
 
-from pattern import Pattern
+import pattern
 import array
 
 ##########################################
@@ -30,7 +30,7 @@ import array
 # classes
 
 
-class Static(Pattern):
+class Static(pattern.Pattern):
     """Static Pattern Class."""
 
     def __init__(self, config, config_global):
@@ -110,7 +110,7 @@ class Static(Pattern):
         # get this as local to speed up.
         mode_16bit = self.mode_16bit
 
-        value_high_hb, value_high_lb = self._calculate_16bit_values(
+        value_high_hb, value_high_lb = pattern.calculate_16bit_parts(
             self.values['high']
         )
 
