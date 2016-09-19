@@ -47,7 +47,36 @@ class Static(Pattern):
 
         # inits for this pattern
 
+        # setup pattern wide data_output array
+        self.channel_count_for_pixel = (
+            self.pixel_count * len(self.color_channels)
+        )
+        if self.mode_16bit:
+            self.channel_count_for_pixel = channel_count_for_pixel * 2
+
+        self.data_output = array.array('B')
+        for index in range(0, self.channel_count_for_pixel):
+            self.data_output.append(0)
+
     def set_data_output(
+        self,
+        high_byte,
+        low_byte,
+        mode_16bit
+    ):
+        channel_stepsize = 1
+        if mode_16bit:
+            channel_stepsize = 2
+
+        for index in range(0, self.channel_count_for_pixel, channel_stepsize):
+
+            if mode_16bit:
+                self.data_output[index] = high_byte
+                self.data_output[index + 1] = low_byte
+            else:
+                self.data_output[index] = high_byte
+
+    def add_data_output(
         self,
         data_output,
         channel_count_for_pixel,
@@ -66,7 +95,7 @@ class Static(Pattern):
     def _calculate_step(self):
         """Calculate single step."""
         # prepare temp array
-        data_output = array.array('B')
+        # data_output = array.array('B')
         # available attributes:
         # global things (readonly)
         # self.channel_count
@@ -90,21 +119,26 @@ class Static(Pattern):
             self.values['high']
         )
 
-        channel_count_for_pixel = self.pixel_count * len(self.color_channels)
-        if mode_16bit:
-            channel_count_for_pixel = channel_count_for_pixel * 2
+        # channel_count_for_pixel = self.pixel_count * len(self.color_channels)
+        # if mode_16bit:
+        #     channel_count_for_pixel = channel_count_for_pixel * 2
 
         # for devices generate pattern
         high_byte = value_high_hb
         low_byte = value_high_lb
+        # self.add_data_output(
+        #     data_output,
+        #     channel_count_for_pixel,
+        #     high_byte,
+        #     low_byte,
+        #     mode_16bit
+        # )
         self.set_data_output(
-            data_output,
-            channel_count_for_pixel,
             high_byte,
             low_byte,
             mode_16bit
         )
-        return data_output
+        return self.data_output
 
 ##########################################
 if __name__ == '__main__':
