@@ -50,18 +50,31 @@ class Channelcheck(pattern.Pattern):
 
     def _calculate_step(self):
         """Calculate single step."""
-        # prepare temp array
-        data_output = array.array('B')
+        # pattern.Pattern._calculate_step(self)
         # available attributes:
-        # global things
-        # self.mode_16bit
+        # global things (readonly)
         # self.channel_count
+        # self.pixel_count
+        # self.repeate_count
+        # self.repeate_snake
+        # self.color_channels
+        # self.update_interval
+        # self.mode_16bit
         # self.values['off']
         # self.values['low']
         # self.values['high']
         # self.config_global[]
+
+        self.update_globals()
+
+        # prepare temp array
+        data_output = array.array('B')
+        # data_output.append(0)
+        # # multiply so we have a array with total_channel_count zeros in it:
+        # # this is much faster than a for loop!
+        # data_output *= self.total_channel_count
+
         # fill array with meaningfull data according to the pattern :-)
-        # .....
 
         value_low_hb, value_low_lb = self._calculate_16bit_values(
             self.values['low']
@@ -70,26 +83,45 @@ class Channelcheck(pattern.Pattern):
             self.values['high']
         )
 
-        # for devices generate pattern
-        # for index in range(0, self.channel_count):
-        for index in range(0, self.pixel_count):
-            # if index is channel_current:
-            high_byte = value_low_hb
-            low_byte = value_low_lb
-            if index is self.channel_current:
-                high_byte = value_high_hb
-                low_byte = value_high_lb
-            if self.mode_16bit:
-                data_output.append(high_byte)
-                data_output.append(low_byte)
-            else:
-                data_output.append(high_byte)
+        # prefill with low value:
+        if self.mode_16bit:
+            data_output.append(value_low_hb)
+            data_output.append(value_low_lb)
+        else:
+            data_output.append(value_low_hb)
+        # multiply so we have a array with total_channel_count zeros in it:
+        # this is much faster than a for loop!
+        data_output *= self.total_channel_count
+
+        if self.mode_16bit:
+            data_output[self.channel_current] = value_high_hb
+            data_output[self.channel_current + 1] = value_high_lb
+        else:
+            data_output[self.channel_current] = value_high_hb
+
+        # # for devices generate pattern
+        # # for index in range(0, self.channel_count):
+        # for index in range(0, self.pixel_count):
+        #     # if index is channel_current:
+        #     high_byte = value_low_hb
+        #     low_byte = value_low_lb
+        #     if index is self.channel_current:
+        #         high_byte = value_high_hb
+        #         low_byte = value_high_lb
+        #     if self.mode_16bit:
+        #         data_output.append(high_byte)
+        #         data_output.append(low_byte)
+        #     else:
+        #         data_output.append(high_byte)
 
         if (
             self.channel_current <
             self.pixel_count-1
         ):
-            self.channel_current = self.channel_current + 1
+            if self.mode_16bit:
+                self.channel_current = self.channel_current + 2
+            else:
+                self.channel_current = self.channel_current + 1
         else:
             self.channel_current = 0
 

@@ -88,16 +88,30 @@ class Strobe(Pattern):
 
     def _calculate_step(self):
         """Calculate single step."""
-        # prepare temp array
-        data_output = array.array('B')
+        # pattern.Pattern._calculate_step(self)
         # available attributes:
-        # global things
-        # self.mode_16bit
+        # global things (readonly)
         # self.channel_count
+        # self.pixel_count
+        # self.repeate_count
+        # self.repeate_snake
+        # self.color_channels
+        # self.update_interval
+        # self.mode_16bit
         # self.values['off']
         # self.values['low']
         # self.values['high']
         # self.config_global[]
+
+        self.update_globals()
+
+        # prepare temp array
+        data_output = array.array('B')
+        # data_output.append(0)
+        # # multiply so we have a array with total_channel_count zeros in it:
+        # # this is much faster than a for loop!
+        # data_output *= self.total_channel_count
+
         # fill array with meaningfull data according to the pattern :-)
         # .....
 

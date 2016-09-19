@@ -49,8 +49,7 @@ class Rainbow(pattern.Pattern):
 
     def _calculate_step(self):
         """Calculate single step."""
-        # prepare temp array
-        data_output = array.array('B')
+        # pattern.Pattern._calculate_step(self)
         # available attributes:
         # global things (readonly)
         # self.channel_count
@@ -64,46 +63,38 @@ class Rainbow(pattern.Pattern):
         # self.values['low']
         # self.values['high']
         # self.config_global[]
+
+        self.update_globals()
+
+        # prepare temp array
+        data_output = array.array('B')
+        data_output.append(0)
+        # multiply so we have a array with total_channel_count zeros in it:
+        # this is much faster than a for loop!
+        data_output *= self.total_channel_count
+
         # fill array with meaningfull data according to the pattern :-)
-        # .....
 
-        # print("")
-
+        # get current positon
         position_current = self.config["position_current"]
-
-        color_channels_count = len(self.color_channels)
 
         # in milliseconds
         cycle_duration = self.config["cycle_duration"] * 1000
 
         # calculate stepsize
         # step_count = cycle_duration / update_interval
-        # cycle_duration = 1
+        # cycle_duration = 1.0
         # update_interval = position_stepsize
         position_stepsize = 1.0 * self.update_interval / cycle_duration
-
-        # initilaize our data array to the maximal possible size:
-        for index in range(
-            0,
-            self.pixel_count * self.repeate_count * color_channels_count
-        ):
-            data_output.append(0)
 
         # calculate new position
         position_current = position_current + position_stepsize
         # check for upper bound
         if position_current >= 1:
-            position_current = 0.0
+            position_current -= 1
         # write position_current back:
         self.config["position_current"] = position_current
         # print("position_current", position_current)
-
-        # ?? needed for what?
-        # channel_stepsize = color_channels_count
-        # if self.mode_16bit:
-        #     channel_stepsize = color_channels_count*2
-
-        # print("****")
 
         # generate color values for all pixels
         for pixel_index in range(0, self.pixel_count):
@@ -143,22 +134,22 @@ class Rainbow(pattern.Pattern):
             for repeate_index in range(0, self.repeate_count):
                 pixel_offset = (
                     self.pixel_count *
-                    color_channels_count *
+                    self.color_channels_count *
                     repeate_index
                 )
                 local_pixel_index = pixel_offset + (
-                    pixel_index * color_channels_count
+                    pixel_index * self.color_channels_count
                 )
                 if self.repeate_snake:
                     # every odd index
                     if ((repeate_index % 2) > 0):
                         # total_pixel_channel_count = (
-                        #     self.pixel_count * color_channels_count
+                        #     self.pixel_count * self.color_channels_count
                         # )
                         # local_pixel_index = local_pixel_index
                         local_pixel_index = pixel_offset + (
                             ((self.pixel_count - 1) - pixel_index) *
-                            color_channels_count
+                            self.color_channels_count
                         )
                         # print("local_pixel_index", local_pixel_index)
 

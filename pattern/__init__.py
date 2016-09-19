@@ -113,7 +113,10 @@ def calculate_16bit_parts(value):
     # high_byte = value // 256
     # low_byte = value % 256
     # return high_byte, low_byte
-    return value // 256, value % 256
+    # faster:
+    # return value // 256, value % 256
+    # faster again:
+    return value >> 8, value & 255
 
 
 def calculate_16bit_values(value, mode_16bit=False):
@@ -162,41 +165,27 @@ class Pattern():
         # self.pixel_count = config_global['pixel_count']
         # self.mode_16bit = config_global['mode_16bit']
         self.values = config_global['value']
+        self.update_globals()
 
-    @property
-    def channel_count(self):
-        """Shortcut to channel_count."""
-        return self.config_global['channel_count']
+    def update_globals(self):
+        """Update all internal values from config_global."""
+        self.channel_count = self.config_global['channel_count']
+        self.pixel_count = self.config_global['pixel_count']
+        self.repeate_count = self.config_global['repeate_count']
+        self.repeate_snake = self.config_global['repeate_snake']
+        self.color_channels = self.config_global['color_channels']
+        self.update_interval = self.config_global['update_interval']
+        self.mode_16bit = self.config_global['mode_16bit']
 
-    @property
-    def pixel_count(self):
-        """Shortcut to pixel_count."""
-        return self.config_global['pixel_count']
+        self.color_channels_count = len(self.color_channels)
+        if self.mode_16bit:
+            self.color_channels_count = self.color_channels_count * 2
 
-    @property
-    def repeate_count(self):
-        """Shortcut to repeate_count."""
-        return self.config_global['repeate_count']
-
-    @property
-    def repeate_snake(self):
-        """Shortcut to repeate_snake."""
-        return self.config_global['repeate_snake']
-
-    @property
-    def color_channels(self):
-        """Shortcut to color_channels."""
-        return self.config_global['color_channels']
-
-    @property
-    def update_interval(self):
-        """Shortcut to update_interval."""
-        return self.config_global['update_interval']
-
-    @property
-    def mode_16bit(self):
-        """Shortcut to mode_16bit."""
-        return self.config_global['mode_16bit']
+        self.total_channel_count = (
+            self.pixel_count *
+            self.color_channels_count *
+            self.repeate_count
+        )
 
     def _calculate_16bit_values(self, value):
         """Calculate the low and high part representations of value."""
@@ -207,10 +196,9 @@ class Pattern():
 
     def _calculate_step(self):
         """Calculate single step."""
-        # prepare temp array
-        data_output = array.array('B')
+        # pattern.Pattern._calculate_step(self)
         # available attributes:
-        # global things
+        # global things (readonly)
         # self.channel_count
         # self.pixel_count
         # self.repeate_count
@@ -222,6 +210,16 @@ class Pattern():
         # self.values['low']
         # self.values['high']
         # self.config_global[]
+
+        self.update_globals()
+
+        # prepare temp array
+        data_output = array.array('B')
+        data_output.append(0)
+        # multiply so we have a array with total_channel_count zeros in it:
+        # this is much faster than a for loop!
+        data_output *= self.total_channel_count
+
         # fill array with meaningfull data according to the pattern :-)
         # .....
         return data_output
