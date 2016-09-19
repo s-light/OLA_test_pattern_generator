@@ -64,16 +64,12 @@ class Static(Pattern):
         low_byte,
         mode_16bit
     ):
-        channel_stepsize = 1
         if mode_16bit:
-            channel_stepsize = 2
-
-        for index in range(0, self.channel_count_for_pixel, channel_stepsize):
-
-            if mode_16bit:
+            for index in range(0, self.channel_count_for_pixel, 2):
                 self.data_output[index] = high_byte
                 self.data_output[index + 1] = low_byte
-            else:
+        else:
+            for index in range(0, self.channel_count_for_pixel):
                 self.data_output[index] = high_byte
 
     def add_data_output(
