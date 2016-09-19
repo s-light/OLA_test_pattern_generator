@@ -80,13 +80,12 @@ class Static(Pattern):
         low_byte,
         mode_16bit
     ):
-        for index in range(0, channel_count_for_pixel):
-
-            if mode_16bit:
-                data_output.append(high_byte)
-                data_output.append(low_byte)
-            else:
-                data_output.append(high_byte)
+        if mode_16bit:
+            data_output.append(high_byte)
+            data_output.append(low_byte)
+        else:
+            data_output.append(high_byte)
+        data_output *= channel_count_for_pixel
 
     def _calculate_step(self):
         """Calculate single step."""
@@ -115,26 +114,35 @@ class Static(Pattern):
             self.values['high']
         )
 
-        # channel_count_for_pixel = self.pixel_count * len(self.color_channels)
-        # if mode_16bit:
-        #     channel_count_for_pixel = channel_count_for_pixel * 2
-
         # for devices generate pattern
         high_byte = value_high_hb
         low_byte = value_high_lb
-        # self.add_data_output(
-        #     data_output,
-        #     channel_count_for_pixel,
-        #     high_byte,
-        #     low_byte,
-        #     mode_16bit
-        # )
-        self.set_data_output(
+
+        # generate array on every calculation step
+        data_output = array.array('B')
+
+        channel_count_for_pixel = self.pixel_count * len(self.color_channels)
+        # this is not needed for the current append mechanisem.
+        # if mode_16bit is  active the array of both values will be multiplyed.
+        # if mode_16bit:
+        #     channel_count_for_pixel = channel_count_for_pixel * 2
+
+        self.add_data_output(
+            data_output,
+            channel_count_for_pixel,
             high_byte,
             low_byte,
             mode_16bit
         )
-        return self.data_output
+        return data_output
+
+        # use pregenerated array
+        # self.set_data_output(
+        #     high_byte,
+        #     low_byte,
+        #     mode_16bit
+        # )
+        # return self.data_output
 
 ##########################################
 if __name__ == '__main__':
