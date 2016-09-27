@@ -270,10 +270,14 @@ class Gradient(pattern.Pattern):
 
             # is list-comprehension faster?:
             # https://docs.python.org/3/tutorial/datastructures.html#list-comprehensions
+            # pixel_values_16bit = [pattern.calculate_16bit_parts(
+            #     pattern.map_01_to_16bit(
+            #         pixel_values[color_name]
+            #     )
+            # ) for color_name in color_channels]
+            # try without the function call
             pixel_values_16bit = [pattern.calculate_16bit_parts(
-                pattern.map_01_to_16bit(
-                    pixel_values[color_name]
-                )
+                int(65535 * pixel_values[color_name])
             ) for color_name in color_channels]
 
             # print(debug_string)
