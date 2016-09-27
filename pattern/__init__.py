@@ -99,7 +99,7 @@ def map_01_to_16bit(value):
     # result = None
     # result = int(map_bound(value, 0.0, 1.0, 0, 65535))
     # return result
-    return map_bound(value, 0.0, 1.0, 0, 65535)
+    return int(map_bound(value, 0.0, 1.0, 0, 65535))
     # result = None
     # if value <= 0:
     #     result = 0
