@@ -101,18 +101,19 @@ def map_01_to_16bit(value):
     # return result
     # return int(map_bound(value, 0.0, 1.0, 0, 65535))
     # result = None
-    if value <= 0:
-        # result = 0
-        return 0
-    else:
-        if value >= 1:
-            # result = 65535
-            return 65535
-        else:
-            # simplified
-            # result = 65535 * value / 1
-            return int(65535 * value)
+    # if value <= 0:
+    #     # result = 0
+    #     return 0
+    # else:
+    #     if value >= 1:
+    #         # result = 65535
+    #         return 65535
+    #     else:
+    #         # simplified
+    #         # result = 65535 * value / 1
+    #         return int(65535 * value)
     # return result
+    return int(65535 * value)
 
 
 def map_16bit_to_01(value):
