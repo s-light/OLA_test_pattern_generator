@@ -81,8 +81,9 @@ def map_bound(value, in_low, in_high, out_low, out_high):
             result = out_high
         else:
             # http://stackoverflow.com/a/5650012/574981
-            result = out_low + \
+            result = out_low + (
                 (out_high - out_low) * (value - in_low) / (in_high - in_low)
+            )
     return result
 
 
@@ -95,9 +96,20 @@ def map_01_to_8bit(value):
 
 def map_01_to_16bit(value):
     """Map value from 0-1 range to 0-65535 range."""
-    result = None
-    result = int(map_bound(value, 0.0, 1.0, 0, 65535))
-    return result
+    # result = None
+    # result = int(map_bound(value, 0.0, 1.0, 0, 65535))
+    # return result
+    return map_bound(value, 0.0, 1.0, 0, 65535)
+    # result = None
+    # if value <= 0:
+    #     result = 0
+    # else:
+    #     if value >= 1:
+    #         result = 65535
+    #     else:
+    #         # simplified
+    #         result = 65535 * value / 1
+    # return result
 
 
 def map_16bit_to_01(value):
