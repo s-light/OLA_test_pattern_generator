@@ -16,6 +16,9 @@ pattern base class.
 # https://docs.python.org/2.7/howto/pyporting.html#division
 from __future__ import division
 
+import importlib
+import os
+import pkgutil
 import collections
 import array
 import struct
@@ -24,6 +27,48 @@ import configdict
 
 ##########################################
 # globals
+
+pattern_list = []
+
+
+##########################################
+# special functions
+
+def _load_all_modules(path, names):
+    """Load all modules in path.
+
+        usage:
+            # Load all modules in the current directory.
+            load_all_modules(__file__,__name__)
+
+        based on
+            http://stackoverflow.com/a/25459405/574981
+            from Daniel Kauffman
+
+    """
+    module_names = []
+    # For each module in the current directory...
+    for void, module_name, void in pkgutil.iter_modules(
+        [os.path.dirname(path)]
+    ):
+        # print("importing:", names + '.' + module_name)
+        # Import the module.
+        importlib.import_module(names + '.' + module_name)
+        module_names.append(module_name)
+
+    return module_names
+
+
+##########################################
+# package init
+
+# Load all modules in the current directory.
+# load_all_modules(__file__, __name__)
+
+def load_all_submodules():
+    # Load all modules in the current directory.
+    pattern_list = _load_all_modules(__file__, __name__)
+    return pattern_list
 
 
 ##########################################
@@ -166,7 +211,7 @@ def calculate_16bit_values(value, mode_16bit=False):
 Value_16bit = collections.namedtuple('Value_16bit', ['hb', 'lb'])
 
 
-class Pattern():
+class Pattern(object):
     """Base Pattern Class."""
 
     def __init__(self, config, config_global):

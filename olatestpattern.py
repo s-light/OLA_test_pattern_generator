@@ -131,67 +131,7 @@ class OLAPattern(OLAThread):
         # self.channel_count = 50
         # self.channel_count = self.config['system']['channel_count']
 
-        ##########################################
-        # load patterns
-        if self.verbose:
-            print("load pattern:")
-
-        # dir_current = os.path.dirname(os.path.abspath(__file__))
-        # lib_path = os.path.join(dir_current, '../pattern/')
-        # sys.path.append(lib_path)
-        try:
-            # https://docs.python.org/3/library/importlib.html#importlib.import_module
-            # import pattern plugins
-            from pattern.strobe import Strobe
-            from pattern.rainbow import Rainbow
-            from pattern.gradient import Gradient
-            from pattern.gradient_integer import Gradient_Integer
-            from pattern.channelcheck import Channelcheck
-            from pattern.static import Static
-        except Exception as e:
-            raise
-        else:
-            self.pattern_list = [
-                'channelcheck',
-                'rainbow',
-                'gradient',
-                'gradient_integer',
-                'strobe',
-                'static',
-            ]
-
-            self.pattern = {}
-            # for pattern_name in pattern_list:
-            pattern_name = 'channelcheck'
-            self.pattern[pattern_name] = Channelcheck(
-                self.config['pattern'][pattern_name],
-                self.config['system']
-            )
-            pattern_name = 'rainbow'
-            self.pattern[pattern_name] = Rainbow(
-                self.config['pattern'][pattern_name],
-                self.config['system']
-            )
-            pattern_name = 'gradient'
-            self.pattern[pattern_name] = Gradient(
-                self.config['pattern'][pattern_name],
-                self.config['system']
-            )
-            pattern_name = 'gradient_integer'
-            self.pattern[pattern_name] = Gradient_Integer(
-                self.config['pattern'][pattern_name],
-                self.config['system']
-            )
-            pattern_name = 'strobe'
-            self.pattern[pattern_name] = Strobe(
-                self.config['pattern'][pattern_name],
-                self.config['system']
-            )
-            pattern_name = 'static'
-            self.pattern[pattern_name] = Static(
-                self.config['pattern'][pattern_name],
-                self.config['system']
-            )
+        self.init_patterns()
 
         if self.verbose:
             print("--> finished.")
@@ -208,6 +148,24 @@ class OLAPattern(OLAThread):
         # value_high_hb, value_high_lb = self.calculate_16bit_values(
         #     self.config['system']['value']['high']
         # )
+
+    def init_patterns(self):
+        ##########################################
+        # load patterns
+        if self.verbose:
+            print("init patterns:")
+
+        self.pattern_list = pattern.load_all_submodules()
+
+        # init all patterns:
+        self.pattern = {}
+        for pattern_class in pattern.Pattern.__subclasses__():
+            full_module_name = pattern_class.__module__
+            pattern_name = full_module_name.replace("pattern.", "")
+            self.pattern[pattern_name] = pattern_class(
+                self.config['pattern'][pattern_name],
+                self.config['system']
+            )
 
     def ola_connected(self):
         """register update event callback and switch to running mode."""
