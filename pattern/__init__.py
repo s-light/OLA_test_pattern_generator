@@ -14,7 +14,7 @@ pattern base class.
 """
 
 # https://docs.python.org/2.7/howto/pyporting.html#division
-# from __future__ import division
+from __future__ import division
 
 import collections
 import array
@@ -99,16 +99,19 @@ def map_01_to_16bit(value):
     # result = None
     # result = int(map_bound(value, 0.0, 1.0, 0, 65535))
     # return result
-    return int(map_bound(value, 0.0, 1.0, 0, 65535))
+    # return int(map_bound(value, 0.0, 1.0, 0, 65535))
     # result = None
-    # if value <= 0:
-    #     result = 0
-    # else:
-    #     if value >= 1:
-    #         result = 65535
-    #     else:
-    #         # simplified
-    #         result = 65535 * value / 1
+    if value <= 0:
+        # result = 0
+        return 0
+    else:
+        if value >= 1:
+            # result = 65535
+            return 65535
+        else:
+            # simplified
+            # result = 65535 * value / 1
+            return int(65535 * value)
     # return result
 
 
