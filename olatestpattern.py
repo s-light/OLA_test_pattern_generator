@@ -30,7 +30,7 @@ from olathreaded import OLAThread, OLAThread_States
 
 import pattern
 
-version = """18.09.2016 19:09 stefan"""
+version = """29.09.2016 08:49 stefan"""
 
 
 ##########################################
@@ -86,7 +86,7 @@ class OLAPattern(OLAThread):
     path_script = os.path.dirname(os.path.abspath(__file__))
 
     def __init__(self, filename, verbose=False):
-        """init mapper things."""
+        """Init mapper things."""
         # super(OLAThread, self).__init__()
         OLAThread.__init__(self)
 
@@ -150,6 +150,7 @@ class OLAPattern(OLAThread):
         # )
 
     def init_patterns(self):
+        """Load and initialize all available patterns."""
         ##########################################
         # load patterns
         if self.verbose:
@@ -162,13 +163,15 @@ class OLAPattern(OLAThread):
         for pattern_class in pattern.Pattern.__subclasses__():
             full_module_name = pattern_class.__module__
             pattern_name = full_module_name.replace("pattern.", "")
+            if pattern_name not in self.config['pattern']:
+                self.config['pattern'][pattern_name] = {}
             self.pattern[pattern_name] = pattern_class(
                 self.config['pattern'][pattern_name],
                 self.config['system']
             )
 
     def ola_connected(self):
-        """register update event callback and switch to running mode."""
+        """Register update event callback and switch to running mode."""
         self.wrapper.AddEvent(
             self.config['system']['update_interval'],
             self._calculate_step
@@ -217,7 +220,7 @@ class OLAPattern(OLAThread):
         return channels
 
     def _calculate_step(self):
-        """generate test pattern."""
+        """Generate test pattern."""
         # register new event (for correct timing as first thing.)
         self.wrapper.AddEvent(
             self.config['system']['update_interval'],
@@ -292,6 +295,7 @@ class OLAPattern(OLAThread):
 
 ##########################################
 def handle_userinput(user_input):
+    """Handle userinput in interactive mode."""
     global flag_run
     if user_input == "q":
         flag_run = False
