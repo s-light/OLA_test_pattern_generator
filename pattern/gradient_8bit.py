@@ -85,14 +85,35 @@ class Gradient8Bit(pattern.Pattern):
             result = stop_start.copy()
         else:
             # interpolate all colors
-            for color_name in self.color_channels:
-                result[color_name] = pattern.map(
-                    pixel_position,
-                    stop_start["position"],
-                    stop_end["position"],
-                    stop_start[color_name],
-                    stop_end[color_name],
-                )
+            # for color_name in self.color_channels:
+            #     result[color_name] = pattern.map(
+            #         pixel_position,
+            #         stop_start["position"],
+            #         stop_end["position"],
+            #         stop_start[color_name],
+            #         stop_end[color_name],
+            #     )
+            result["red"] = pattern.map(
+                pixel_position,
+                stop_start["position"],
+                stop_end["position"],
+                stop_start["red"],
+                stop_end["red"]
+            )
+            result["green"] = pattern.map(
+                pixel_position,
+                stop_start["position"],
+                stop_end["position"],
+                stop_start["green"],
+                stop_end["green"]
+            )
+            result["blue"] = pattern.map(
+                pixel_position,
+                stop_start["position"],
+                stop_end["position"],
+                stop_start["blue"],
+                stop_end["blue"]
+            )
             result["position"] = pixel_position
 
         return result
