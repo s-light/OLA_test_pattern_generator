@@ -115,12 +115,12 @@ class Gradient2(pattern.Pattern):
         stops_count = len(stops_list)
         position_stepwidth_per_pixel = self.position_stepwidth_per_pixel
 
-        print("\n"*2)
-        print("_calculate_pixels_for_position()")
-        print("position_current {: <.9f}".format(position_current))
-
-        print("pixel_count     {: <}".format(pixel_count))
-        print("pixel_index_max {: <}".format(pixel_index_max))
+        # print("\n"*2)
+        # print("_calculate_pixels_for_position()")
+        # print("position_current {: <.9f}".format(position_current))
+        #
+        # print("pixel_count     {: <}".format(pixel_count))
+        # print("pixel_index_max {: <}".format(pixel_index_max))
 
         color_channels = self.color_channels
 
@@ -135,9 +135,9 @@ class Gradient2(pattern.Pattern):
             else:
                 stop_end = stops_list[0]
 
-            print("stop_index {}".format(stop_index))
-            print("stop_start {}".format(stop_start))
-            print("stop_end   {}".format(stop_end))
+            # print("stop_index {}".format(stop_index))
+            # print("stop_start {}".format(stop_start))
+            # print("stop_end   {}".format(stop_end))
 
             # calculate first and last pixel position for this section
             pixel_position_start = stop_start['position'] + position_current
@@ -149,9 +149,9 @@ class Gradient2(pattern.Pattern):
             # if pixel_position_start > 1.0:
             #     pixel_position_start -= 1.0
 
-            print("pixel_position_start {: <.3f}".format(
-                pixel_position_start
-            ))
+            # print("pixel_position_start {: <.3f}".format(
+            #     pixel_position_start
+            # ))
 
             pixel_position_end = stop_end['position'] + position_current
             # pixel_position_end = stop_end['position']
@@ -160,13 +160,13 @@ class Gradient2(pattern.Pattern):
             # if pixel_position_end > 1.0:
             #     pixel_position_end -= 1.0
 
-            print("pixel_position_end   {: <.3f}".format(pixel_position_end))
+            # print("pixel_position_end   {: <.3f}".format(pixel_position_end))
 
             # calculate pixel index from position:
             pixel_index_start = int(
                 pixel_position_start * pixel_index_max
             )
-            print("pixel_index_start    {}".format(pixel_index_start))
+            # print("pixel_index_start    {}".format(pixel_index_start))
 
             pixel_index_end = int(
                 pixel_position_end * pixel_index_max
@@ -175,12 +175,12 @@ class Gradient2(pattern.Pattern):
             # # handle wrap around in value
             # if pixel_index_end < pixel_index_max:
             #     pixel_index_end -= pixel_index_max
-            print("pixel_index_end      {}".format(pixel_index_end))
+            # print("pixel_index_end      {}".format(pixel_index_end))
             # handle wrap around for xrange
             if pixel_index_end < pixel_index_start:
                 pixel_index_end += pixel_index_max
 
-            print("pixel_index_end      {}".format(pixel_index_end))
+            # print("pixel_index_end      {}".format(pixel_index_end))
 
             # check if there are pixels in this section
             if (pixel_index_end - pixel_index_start) > 0:
@@ -213,18 +213,18 @@ class Gradient2(pattern.Pattern):
                         stop_end["position"]
                     )
 
-                    print(
-                        "ir: {:< 4} "
-                        "i: {:< 4} "
-                        # "pr: {:< 7.6f} "
-                        "p: {:< 7.6f}"
-                        .format(
-                            pixel_index_raw,
-                            pixel_index,
-                            # pixel_position_raw,
-                            pixel_position
-                            )
-                    )
+                    # print(
+                    #     "ir: {:< 4} "
+                    #     "i: {:< 4} "
+                    #     # "pr: {:< 7.6f} "
+                    #     "p: {:< 7.6f}"
+                    #     .format(
+                    #         pixel_index_raw,
+                    #         pixel_index,
+                    #         # pixel_position_raw,
+                    #         pixel_position
+                    #         )
+                    # )
 
                     # now we have
                     # pixel_index
@@ -243,25 +243,25 @@ class Gradient2(pattern.Pattern):
     def _set_data_output(self, data_output, pixel_data):
         color_channels = self.color_channels
         color_channels_count = len(color_channels)
-        print("output:")
+        # print("output:")
         for pixel_index, pixel_values in enumerate(pixel_data):
             channel_index = (pixel_index * color_channels_count)
-            print(
-                "i: {:< 4} "
-                "p: {:< 7.6f}  "
-                "r: {:< 7.6f}  "
-                "g: {:< 7.6f}  "
-                "b: {:< 7.6f}  "
-                "ci: {:< 4} "
-                .format(
-                    pixel_index,
-                    pixel_values['position'],
-                    pixel_values['red'],
-                    pixel_values['green'],
-                    pixel_values['blue'],
-                    channel_index
-                )
-            )
+            # print(
+            #     "i: {:< 4} "
+            #     "p: {:< 7.6f}  "
+            #     "r: {:< 7.6f}  "
+            #     "g: {:< 7.6f}  "
+            #     "b: {:< 7.6f}  "
+            #     "ci: {:< 4} "
+            #     .format(
+            #         pixel_index,
+            #         pixel_values['position'],
+            #         pixel_values['red'],
+            #         pixel_values['green'],
+            #         pixel_values['blue'],
+            #         channel_index
+            #     )
+            # )
             for color_index, color_name in enumerate(color_channels):
                 color_value = pixel_values[color_name]
                 # convert 0..1 to 0..65535 range
