@@ -7,6 +7,21 @@ gradient pattern.
     generates a test pattern:
     gradient
 
+    logic:
+        start at: _calculate_step()
+            calc (new) current position. (position means time)
+            calls: _calculate_pixels_for_position()
+                for every pixel:
+                    calc pixel_position
+                    call _calculate_current_pixel_channel_values()
+                        find stops
+                            interpolate between stops
+                    separate 16bit to 2x8bit
+                    set output array with repeating
+
+
+
+
     history:
         see git commits
 

@@ -48,7 +48,7 @@ def _load_all_modules(path, names):
     """
     module_names = []
     # For each module in the current directory...
-    for void, module_name, void in pkgutil.iter_modules(
+    for importer, module_name, is_package in pkgutil.iter_modules(
         [os.path.dirname(path)]
     ):
         # print("importing:", names + '.' + module_name)

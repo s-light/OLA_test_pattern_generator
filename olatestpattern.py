@@ -625,6 +625,13 @@ if __name__ == '__main__':
             except KeyboardInterrupt:
                 print("\nstop script.")
                 flag_run = False
+            except EOFError:
+                print("\nstop script.")
+                flag_run = False
+            except Exception as e:
+                print("unknown error: {}".format(e))
+                flag_run = False
+                print("stop script.")
             else:
                 try:
                     if len(user_input) > 0:
