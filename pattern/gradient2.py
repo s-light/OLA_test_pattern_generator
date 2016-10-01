@@ -184,13 +184,13 @@ class Gradient2(pattern.Pattern):
 
             # print("pixel_index_end      {}".format(pixel_index_end))
 
-            # precalculate for mapping
-            position_diff = stop_end_position - stop_start_position
-            pixel_index_diff = pixel_index_end - pixel_index_start
-            factor_pixel_pos = position_diff / pixel_index_diff
-
             # check if there are pixels in this section
             if (pixel_index_end - pixel_index_start) > 0:
+                # precalculate for mapping
+                position_diff = stop_end_position - stop_start_position
+                pixel_index_diff = pixel_index_end - pixel_index_start
+                factor_pixel_pos = position_diff / pixel_index_diff
+
                 # for every pixel in this section do
                 # pixel_position = pixel_position_start
                 for pixel_index_raw in xrange(
