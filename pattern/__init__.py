@@ -100,17 +100,24 @@ def map(value, in_low, in_high, out_low, out_high):
     #     newValue = outMin + (
     #         (value - inMin) / (inMax - inMin)
     #     ) * (outMax - outMin)
+    # # without clamping - reworded
+    # result = (
+    #     (
+    #         ((value - in_low) / (in_high - in_low)) *
+    #         (out_high - out_low)
+    #     ) + out_low
+    # )
 
     result = None
 
     # based on http://arduino.cc/en/Reference/Map
-    result = ((value - in_low) * (out_high - out_low)) / \
-        (in_high - in_low) + out_low
-
-    # http://stackoverflow.com/a/5650012/574981
-    # result = out_low + \
-    #     ((out_high - out_low) * (value - in_low)) / \
-    #     (in_high - in_low)
+    # and http://stackoverflow.com/a/5650012/574981
+    result = (
+        (
+            ((value - in_low) * (out_high - out_low)) /
+            (in_high - in_low)
+        ) + out_low
+    )
 
     return result
 

@@ -135,12 +135,14 @@ class Gradient2(pattern.Pattern):
             else:
                 stop_end = stops_list[0]
 
+            stop_start_position = stop_start["position"]
+            stop_end_position = stop_end["position"]
             # print("stop_index {}".format(stop_index))
             # print("stop_start {}".format(stop_start))
             # print("stop_end   {}".format(stop_end))
 
             # calculate first and last pixel position for this section
-            pixel_position_start = stop_start['position'] + position_current
+            pixel_position_start = stop_start_position + position_current
             # pixel_position_start = stop_start['position']
             # print("pixel_position_start {: <.3f}".format(
             #     pixel_position_start
@@ -153,7 +155,7 @@ class Gradient2(pattern.Pattern):
             #     pixel_position_start
             # ))
 
-            pixel_position_end = stop_end['position'] + position_current
+            pixel_position_end = stop_end_position + position_current
             # pixel_position_end = stop_end['position']
             # print("pixel_position_end   {: <.3f}".format(pixel_position_end))
             # # check for wrap around
@@ -182,6 +184,11 @@ class Gradient2(pattern.Pattern):
 
             # print("pixel_index_end      {}".format(pixel_index_end))
 
+            # precalculate for mapping
+            position_diff = stop_end_position - stop_start_position
+            pixel_index_diff = pixel_index_end - pixel_index_start
+            factor_pixel_pos = position_diff / pixel_index_diff
+
             # check if there are pixels in this section
             if (pixel_index_end - pixel_index_start) > 0:
                 # for every pixel in this section do
@@ -195,23 +202,18 @@ class Gradient2(pattern.Pattern):
                         pixel_index = pixel_index - pixel_count
 
                     # calculate position in section
-                    pixel_position_raw = 0
-                    pixel_position = 0
-                    # pixel_position_raw = (
-                    #     (pixel_index_start + pixel_index) *
-                    #     position_stepwidth_per_pixel
-                    # ) - position_current
-                    # # check for wrap around
-                    # pixel_position = pixel_position_raw
-                    # if pixel_position_raw > 1.0:
-                    #     pixel_position = pixel_position_raw - 1.0
-                    pixel_position = pattern.map(
-                        pixel_index_raw,
-                        pixel_index_start,
-                        pixel_index_end,
-                        stop_start["position"],
-                        stop_end["position"]
-                    )
+                    # pixel_position = pattern.map(
+                    #     pixel_index_raw,
+                    #     pixel_index_start,
+                    #     pixel_index_end,
+                    #     stop_start["position"],
+                    #     stop_end["position"]
+                    # )
+                    # optimized variant - (precalculate outside of loop)
+                    pixel_position = (
+                        (pixel_index_raw - pixel_index_start) *
+                        factor_pixel_pos
+                    ) + stop_start_position
 
                     # print(
                     #     "ir: {:< 4} "
@@ -268,8 +270,8 @@ class Gradient2(pattern.Pattern):
                 value_16bit = int(65535 * color_value)
                 # convert 16bit to 8 bit
                 # check bounds
-                if not (0 <= value_16bit < 65535):
-                    value_16bit = min(max(value_16bit, 0), 65535)
+                # if not (0 <= value_16bit < 65535):
+                #     value_16bit = min(max(value_16bit, 0), 65535)
                 value_HighByte = value_16bit >> 8
                 data_output[channel_index + color_index] = value_HighByte
 
