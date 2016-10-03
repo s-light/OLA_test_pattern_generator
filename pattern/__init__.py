@@ -37,13 +37,13 @@ pattern_list = []
 def _load_all_modules(path, names):
     """Load all modules in path.
 
-        usage:
-            # Load all modules in the current directory.
-            load_all_modules(__file__,__name__)
+    usage:
+        # Load all modules in the current directory.
+        load_all_modules(__file__,__name__)
 
-        based on
-            http://stackoverflow.com/a/25459405/574981
-            from Daniel Kauffman
+    based on
+        http://stackoverflow.com/a/25459405/574981
+        from Daniel Kauffman
 
     """
     module_names = []
@@ -66,6 +66,7 @@ def _load_all_modules(path, names):
 # load_all_modules(__file__, __name__)
 
 def load_all_submodules():
+    """Load all submodules in this directory."""
     # Load all modules in the current directory.
     pattern_list = _load_all_modules(__file__, __name__)
     return pattern_list
@@ -243,6 +244,7 @@ class Pattern(object):
         """Update all internal values from config_global."""
         self.channel_count = self.config_global['channel_count']
         self.pixel_count = self.config_global['pixel_count']
+        self.pixel_index_max = self.pixel_count - 1
         self.repeate_count = self.config_global['repeate_count']
         self.repeate_snake = self.config_global['repeate_snake']
 

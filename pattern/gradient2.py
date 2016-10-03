@@ -41,6 +41,48 @@ import pattern
 ##########################################
 # classes
 
+class Gradient_Section(object):
+    """Gradient_Section Helper Class."""
+
+    def __init__(self, stop_start, stop_end, pixel_index_max):
+        """Init section."""
+        self.start_stop = stop_start
+        self.start_position = stop_start['position']
+        # self.start_values = stop_start['values']
+        self.end_stop = stop_end
+        self.end_position = stop_end['position']
+        # self.end_values = stop_end['values']
+
+        # precalculate
+        self.position_diff = self.end_position - self.start_position
+
+        # fake calculation for pixel count in section:
+        # (not optimized... just copy&paste)
+        position_current = 0
+        stop_start_position = stop_start["position"]
+        stop_end_position = stop_end["position"]
+        pixel_position_start = stop_start_position + position_current
+        pixel_position_end = stop_end_position + position_current
+        pixel_index_start = int(
+            pixel_position_start * pixel_index_max
+        )
+        pixel_index_end = int(
+            pixel_position_end * pixel_index_max
+        )
+        if pixel_index_end < pixel_index_start:
+            pixel_index_end += pixel_index_max
+
+        self.pixel_diff = pixel_index_end - pixel_index_start
+
+        self.factor_pixel_pos = None
+
+        self.has_pixel = False
+        if self.pixel_diff > 0:
+            self.has_pixel = True
+            # guarded by pixel_diff > 0
+            # --> otherwise we could get a divide by zero execption
+            self.factor_pixel_pos = self.position_diff / self.pixel_diff
+
 
 class Gradient2(pattern.Pattern):
     """Gradient2 Pattern Class."""
@@ -85,23 +127,85 @@ class Gradient2(pattern.Pattern):
         # explicit call
         pattern.Pattern.__init__(self, config, config_global)
 
-    def update(arg):
-        pass
+    def update_config(self):
+        """Update all configuration things that can be precalculated."""
+        # call parent class function:
+        pattern.Pattern.update_config(self)
 
-    def _interpolate_channels(self, pixel_position, stop_start, stop_end):
+        # pattern specific precalculations
+        # pattern specific updates:
+        interpolation_type = self.config['type']
+        self.interpolation_function = self._interpolate_channels
+        # if interpolation_type.startswith("hsv"):
+        #     self.interpolation_function = self._interpolate_hsv
+        # elif interpolation_type.startswith("channels"):
+        #     self.interpolation_function = self._interpolate_channels
+        # else:
+        #     self.interpolation_function = self._interpolate_channels
+
+        # prepare temp array
+        self.data_output = array.array('B')
+        self.data_output.append(0)
+        # multiply so we have a array with total_channel_count zeros in it:
+        # this is much faster than a for loop!
+        self.data_output *= self.total_channel_count
+
+        self.pixel_data = []
+        self.pixel_data.append(0)
+        self.pixel_data *= self.pixel_count
+
+        # in milliseconds
+        cycle_duration = self.config["cycle_duration"] * 1000
+
+        # calculate stepsize
+        # step_count = cycle_duration / update_interval
+        # cycle_duration = 1.0
+        # update_interval = position_stepsize
+        self.position_stepsize = 1.0 * self.update_interval / cycle_duration
+
+        stops_list = self.config["stops"]
+        self.stops_list = stops_list
+        stops_count = len(stops_list)
+        position_min = stops_list[0]["position"]
+        position_max = stops_list[stops_count-1]["position"]
+        position_amount = position_max - position_min
+        self.position_stepwidth_per_pixel = position_amount / self.pixel_count
+
+        # print("stops_count", stops_count)
+        # print("position_min", position_min)
+        # print("position_max", position_max)
+        # print("position_amount", position_amount)
+        # print("position_stepwidth_per_pixel", position_stepwidth_per_pixel)
+
+        # precalculate sections:
+        self.sections = []
+        # for every section in the stops_list
+        for stop_index, stop_start in enumerate(stops_list):
+            if stop_index < (stops_count-1):
+                stop_end = stops_list[stop_index+1]
+            else:
+                stop_end = stops_list[0]
+
+            self.sections.append(
+                Gradient_Section(stop_start, stop_end, self.pixel_index_max)
+            )
+
+    def _interpolate_channels(self, pixel_position, section):
         """Interpolate with channels."""
         # print("interpolate_channels")
         result = {}
+        stop_start = section.start_stop
+        stop_end = section.end_stop
         # check for exact match
-        if pixel_position == stop_start["position"]:
+        if pixel_position == section.start_position:
             result = stop_start.copy()
         else:
             # interpolate all colors
             for color_name in self.color_channels:
                 result[color_name] = pattern.map(
                     pixel_position,
-                    stop_start["position"],
-                    stop_end["position"],
+                    section.start_position,
+                    section.end_position,
                     stop_start[color_name],
                     stop_end[color_name],
                 )
@@ -111,88 +215,35 @@ class Gradient2(pattern.Pattern):
 
     def _calculate_pixels_for_position(self, position_current):
         """Calculate pixels for all positions."""
-        pixel_count = self.pixel_count
-        pixel_index_max = self.pixel_count - 1
-
-        stops_list = self.stops_list
-        stops_count = len(stops_list)
-        position_stepwidth_per_pixel = self.position_stepwidth_per_pixel
-
         # print("\n"*2)
         # print("_calculate_pixels_for_position()")
         # print("position_current {: <.9f}".format(position_current))
-        #
-        # print("pixel_count     {: <}".format(pixel_count))
-        # print("pixel_index_max {: <}".format(pixel_index_max))
+
+        pixel_count = self.pixel_count
+        pixel_index_max = self.pixel_index_max
+        pixel_data = self.pixel_data
 
         color_channels = self.color_channels
 
-        pixel_data = []
-        pixel_data.append(0)
-        pixel_data *= pixel_count
+        for section in self.sections:
+            # skip sections without pixels.
+            if section.has_pixel:
+                pixel_position_start = (
+                    section.start_position + position_current
+                )
+                pixel_position_end = (
+                    section.end_position + position_current
+                )
 
-        # for every section in the stops_list
-        for stop_index, stop_start in enumerate(stops_list):
-            if stop_index < (stops_count-1):
-                stop_end = stops_list[stop_index+1]
-            else:
-                stop_end = stops_list[0]
+                pixel_index_start = int(
+                    pixel_position_start * pixel_index_max
+                )
+                pixel_index_end = int(
+                    pixel_position_end * pixel_index_max
+                )
 
-            stop_start_position = stop_start["position"]
-            stop_end_position = stop_end["position"]
-            # print("stop_index {}".format(stop_index))
-            # print("stop_start {}".format(stop_start))
-            # print("stop_end   {}".format(stop_end))
-
-            # calculate first and last pixel position for this section
-            pixel_position_start = stop_start_position + position_current
-            # pixel_position_start = stop_start['position']
-            # print("pixel_position_start {: <.3f}".format(
-            #     pixel_position_start
-            # ))
-            # # check for wrap around
-            # if pixel_position_start > 1.0:
-            #     pixel_position_start -= 1.0
-
-            # print("pixel_position_start {: <.3f}".format(
-            #     pixel_position_start
-            # ))
-
-            pixel_position_end = stop_end_position + position_current
-            # pixel_position_end = stop_end['position']
-            # print("pixel_position_end   {: <.3f}".format(pixel_position_end))
-            # # check for wrap around
-            # if pixel_position_end > 1.0:
-            #     pixel_position_end -= 1.0
-
-            # print("pixel_position_end   {: <.3f}".format(pixel_position_end))
-
-            # calculate pixel index from position:
-            pixel_index_start = int(
-                pixel_position_start * pixel_index_max
-            )
-            # print("pixel_index_start    {}".format(pixel_index_start))
-
-            pixel_index_end = int(
-                pixel_position_end * pixel_index_max
-            )
-            # print("pixel_index_end      {}".format(pixel_index_end))
-            # # handle wrap around in value
-            # if pixel_index_end < pixel_index_max:
-            #     pixel_index_end -= pixel_index_max
-            # print("pixel_index_end      {}".format(pixel_index_end))
-            # handle wrap around for xrange
-            if pixel_index_end < pixel_index_start:
-                pixel_index_end += pixel_index_max
-
-            # print("pixel_index_end      {}".format(pixel_index_end))
-
-            # check if there are pixels in this section
-            if (pixel_index_end - pixel_index_start) > 0:
-                # precalculate for mapping
-                position_diff = stop_end_position - stop_start_position
-                pixel_index_diff = pixel_index_end - pixel_index_start
-                factor_pixel_pos = position_diff / pixel_index_diff
+                if pixel_index_end < pixel_index_start:
+                    pixel_index_end += pixel_index_max
 
                 # for every pixel in this section do
                 # pixel_position = pixel_position_start
@@ -205,18 +256,11 @@ class Gradient2(pattern.Pattern):
                         pixel_index = pixel_index - pixel_count
 
                     # calculate position in section
-                    # pixel_position = pattern.map(
-                    #     pixel_index_raw,
-                    #     pixel_index_start,
-                    #     pixel_index_end,
-                    #     stop_start["position"],
-                    #     stop_end["position"]
-                    # )
                     # optimized variant - (precalculate outside of loop)
                     pixel_position = (
                         (pixel_index_raw - pixel_index_start) *
-                        factor_pixel_pos
-                    ) + stop_start_position
+                        section.factor_pixel_pos
+                    ) + section.start_position
 
                     # print(
                     #     "ir: {:< 4} "
@@ -231,16 +275,10 @@ class Gradient2(pattern.Pattern):
                     #         )
                     # )
 
-                    # now we have
-                    # pixel_index
-                    # pixel_position
-                    # stop_start
-                    # stop_end
                     # so we can interpolate
                     pixel_data[pixel_index] = self.interpolation_function(
                         pixel_position,
-                        stop_start,
-                        stop_end
+                        section
                     )
 
         return pixel_data
@@ -297,52 +335,12 @@ class Gradient2(pattern.Pattern):
 
         self.update_config()
 
-        # pattern specific updates:
-        interpolation_type = self.config['type']
-        self.interpolation_function = self._interpolate_channels
-        # if interpolation_type.startswith("hsv"):
-        #     self.interpolation_function = self._interpolate_hsv
-        # elif interpolation_type.startswith("channels"):
-        #     self.interpolation_function = self._interpolate_channels
-        # else:
-        #     self.interpolation_function = self._interpolate_channels
-
-        # prepare temp array
-        data_output = array.array('B')
-        data_output.append(0)
-        # multiply so we have a array with total_channel_count zeros in it:
-        # this is much faster than a for loop!
-        data_output *= self.total_channel_count
-
-        # in milliseconds
-        cycle_duration = self.config["cycle_duration"] * 1000
-
-        # calculate stepsize
-        # step_count = cycle_duration / update_interval
-        # cycle_duration = 1.0
-        # update_interval = position_stepsize
-        position_stepsize = 1.0 * self.update_interval / cycle_duration
-
-        stops_list = self.config["stops"]
-        self.stops_list = stops_list
-        stops_count = len(stops_list)
-        position_min = stops_list[0]["position"]
-        position_max = stops_list[stops_count-1]["position"]
-        position_amount = position_max - position_min
-        self.position_stepwidth_per_pixel = position_amount / self.pixel_count
-
-        # print("stops_count", stops_count)
-        # print("position_min", position_min)
-        # print("position_max", position_max)
-        # print("position_amount", position_amount)
-        # print("position_stepwidth_per_pixel", position_stepwidth_per_pixel)
-
         ##########################################
         # fill array with meaningfull data according to the pattern :-)
 
         # calculate new position
         position_current = self.config["position_current"]
-        position_current = position_current + position_stepsize
+        position_current = position_current + self.position_stepsize
         # check for upper bound
         if position_current >= 1:
             position_current -= 1
@@ -352,13 +350,14 @@ class Gradient2(pattern.Pattern):
         # print("****")
 
         # generate values for every pixel
-        pixel_data = self._calculate_pixels_for_position(
+        # fills self.pixel_data
+        self._calculate_pixels_for_position(
             position_current
         )
 
-        self._set_data_output(data_output, pixel_data)
+        self._set_data_output(self.data_output, self.pixel_data)
 
-        return data_output
+        return self.data_output
 
 ##########################################
 if __name__ == '__main__':
