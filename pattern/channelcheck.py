@@ -65,7 +65,7 @@ class Channelcheck(pattern.Pattern):
         # self.values['high']
         # self.config_global[]
 
-        self.update_globals()
+        self.update_config()
 
         # prepare temp array
         data_output = array.array('B')

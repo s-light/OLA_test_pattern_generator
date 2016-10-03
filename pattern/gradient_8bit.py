@@ -303,7 +303,7 @@ class Gradient8Bit(pattern.Pattern):
         # self.values['high']
         # self.config_global[]
 
-        self.update_globals()
+        self.update_config()
 
         # pattern specific updates:
         interpolation_type = self.config['type']

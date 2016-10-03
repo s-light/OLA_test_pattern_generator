@@ -237,9 +237,9 @@ class Pattern(object):
         # self.pixel_count = config_global['pixel_count']
         # self.mode_16bit = config_global['mode_16bit']
         self.values = config_global['value']
-        self.update_globals()
+        self.update_config()
 
-    def update_globals(self):
+    def update_config(self):
         """Update all internal values from config_global."""
         self.channel_count = self.config_global['channel_count']
         self.pixel_count = self.config_global['pixel_count']
@@ -288,7 +288,7 @@ class Pattern(object):
         # self.values['high']
         # self.config_global[]
 
-        self.update_globals()
+        self.update_config()
 
         # prepare temp array
         data_output = array.array('B')

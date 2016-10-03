@@ -81,9 +81,12 @@ class Gradient2(pattern.Pattern):
         # python3 syntax
         # super().__init__()
         # python2 syntax
-        # super(Pattern, self).__init__()
+        # super(pattern.Pattern, self).__init__()
         # explicit call
         pattern.Pattern.__init__(self, config, config_global)
+
+    def update(arg):
+        pass
 
     def _interpolate_channels(self, pixel_position, stop_start, stop_end):
         """Interpolate with channels."""
@@ -292,7 +295,7 @@ class Gradient2(pattern.Pattern):
         # self.values['high']
         # self.config_global[]
 
-        self.update_globals()
+        self.update_config()
 
         # pattern specific updates:
         interpolation_type = self.config['type']
