@@ -309,12 +309,35 @@ class Gradient2(pattern.Pattern):
 
         return pixel_data
 
+    def _calculate_repeat_pixel_index(self, pixel_index, repeate_index):
+        pixel_offset = (
+            self.pixel_count *
+            self.color_channels_count *
+            repeate_index
+        )
+        local_pixel_index = pixel_offset + (
+            pixel_index * self.color_channels_count
+        )
+        if self.repeate_snake:
+            # every odd index
+            if ((repeate_index % 2) > 0):
+                # total_pixel_channel_count = (
+                #     self.pixel_count * self.color_channels_count
+                # )
+                # local_pixel_index = local_pixel_index
+                local_pixel_index = pixel_offset + (
+                    ((self.pixel_count - 1) - pixel_index) *
+                    self.color_channels_count
+                )
+                # print("local_pixel_index", local_pixel_index)
+        return local_pixel_index
+
     def _set_data_output(self, data_output, pixel_data):
+        mode_16bit = self.mode_16bit
         color_channels = self.color_channels
         color_channels_count = len(color_channels)
         # print("output:")
         for pixel_index, pixel_values in enumerate(pixel_data):
-            channel_index = (pixel_index * color_channels_count)
             # print(
             #     "i: {:< 4} "
             #     "p: {:< 7.6f}  "
@@ -331,7 +354,16 @@ class Gradient2(pattern.Pattern):
             #         channel_index
             #     )
             # )
+
+            # for every color channel
             for color_index, color_name in enumerate(color_channels):
+                color_offset = color_index
+                if mode_16bit:
+                    color_offset = color_offset * 2
+
+                # channel_index = (pixel_index * color_channels_count)
+
+                # calculate 16bit parts
                 color_value = pixel_values[color_name]
                 # convert 0..1 to 0..65535 range
                 value_16bit = int(65535 * color_value)
@@ -340,7 +372,27 @@ class Gradient2(pattern.Pattern):
                 # if not (0 <= value_16bit < 65535):
                 #     value_16bit = min(max(value_16bit, 0), 65535)
                 value_HighByte = value_16bit >> 8
-                data_output[channel_index + color_index] = value_HighByte
+                value_LowByte = value_16bit & 255
+
+                # for every repeate index
+                for repeate_index in xrange(0, self.repeate_count):
+                    local_pixel_index = self._calculate_repeat_pixel_index(
+                        pixel_index,
+                        repeate_index
+                    )
+                    output_channel_index = local_pixel_index + color_offset
+                    # data_output[channel_index + color_index] = value_HighByte
+                    if mode_16bit:
+                        data_output[output_channel_index + 0] = (
+                            value_HighByte
+                        )
+                        data_output[output_channel_index + 1] = (
+                            value_LowByte
+                        )
+                    else:
+                        data_output[output_channel_index + 0] = (
+                            value_HighByte
+                        )
 
     def _calculate_step(self):
         """Calculate single step."""
