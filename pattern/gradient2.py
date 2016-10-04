@@ -44,7 +44,9 @@ import pattern
 class Gradient_Section(object):
     """Gradient_Section Helper Class."""
 
-    def __init__(self, stop_start, stop_end, pixel_index_max):
+    def __init__(
+        self, stop_start, stop_end, pixel_index_max, color_channels
+    ):
         """Init section."""
         self.start_stop = stop_start
         self.start_position = stop_start['position']
@@ -76,12 +78,24 @@ class Gradient_Section(object):
 
         self.factor_pixel_pos = None
 
+        self.color_factors = {}
+
         self.has_pixel = False
         if self.pixel_diff > 0:
             self.has_pixel = True
             # guarded by pixel_diff > 0
             # --> otherwise we could get a divide by zero execption
             self.factor_pixel_pos = self.position_diff / self.pixel_diff
+
+            for color_name in color_channels:
+                # self.color_diffs = {}
+                # self.color_diffs[color_name] = (
+                #     (stop_end[color_name] - stop_start[color_name])
+                # )
+                self.color_factors[color_name] = (
+                    (stop_end[color_name] - stop_start[color_name]) /
+                    self.position_diff
+                )
 
 
 class Gradient2(pattern.Pattern):
@@ -187,7 +201,12 @@ class Gradient2(pattern.Pattern):
                 stop_end = stops_list[0]
 
             self.sections.append(
-                Gradient_Section(stop_start, stop_end, self.pixel_index_max)
+                Gradient_Section(
+                    stop_start,
+                    stop_end,
+                    self.pixel_index_max,
+                    self.color_channels
+                )
             )
 
     def _interpolate_channels(self, pixel_position, section):
@@ -202,13 +221,20 @@ class Gradient2(pattern.Pattern):
         else:
             # interpolate all colors
             for color_name in self.color_channels:
-                result[color_name] = pattern.map(
-                    pixel_position,
-                    section.start_position,
-                    section.end_position,
-                    stop_start[color_name],
-                    stop_end[color_name],
+                # result[color_name] = pattern.map(
+                #     pixel_position,
+                #     section.start_position,
+                #     section.end_position,
+                #     stop_start[color_name],
+                #     stop_end[color_name],
+                # )
+                result[color_name] = (
+                    (
+                        (pixel_position - section.start_position) *
+                        section.color_factors[color_name]
+                    ) + stop_start[color_name]
                 )
+
             result["position"] = pixel_position
 
         return result
