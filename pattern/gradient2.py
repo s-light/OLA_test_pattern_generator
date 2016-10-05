@@ -141,6 +141,8 @@ class Gradient2(pattern.Pattern):
         # explicit call
         pattern.Pattern.__init__(self, config, config_global)
 
+    # update / precalculate helper
+
     def update_config(self):
         """Update all configuration things that can be precalculated."""
         # call parent class function:
@@ -208,6 +210,8 @@ class Gradient2(pattern.Pattern):
                     self.color_channels
                 )
             )
+
+    # generator helper functions
 
     def _interpolate_channels(self, pixel_position, section):
         """Interpolate with channels."""
@@ -309,6 +313,41 @@ class Gradient2(pattern.Pattern):
 
         return pixel_data
 
+    # output writing
+
+    def _set_data_output(self, data_output, pixel_data):
+        color_channels = self.color_channels
+        color_channels_count = len(color_channels)
+        # print("output:")
+        for pixel_index, pixel_values in enumerate(pixel_data):
+            channel_index = (pixel_index * color_channels_count)
+            # print(
+            #     "i: {:< 4} "
+            #     "p: {:< 7.6f}  "
+            #     "r: {:< 7.6f}  "
+            #     "g: {:< 7.6f}  "
+            #     "b: {:< 7.6f}  "
+            #     "ci: {:< 4} "
+            #     .format(
+            #         pixel_index,
+            #         pixel_values['position'],
+            #         pixel_values['red'],
+            #         pixel_values['green'],
+            #         pixel_values['blue'],
+            #         channel_index
+            #     )
+            # )
+            for color_index, color_name in enumerate(color_channels):
+                color_value = pixel_values[color_name]
+                # convert 0..1 to 0..65535 range
+                value_16bit = int(65535 * color_value)
+                # convert 16bit to 8 bit
+                # check bounds
+                # if not (0 <= value_16bit < 65535):
+                #     value_16bit = min(max(value_16bit, 0), 65535)
+                value_HighByte = value_16bit >> 8
+                data_output[channel_index + color_index] = value_HighByte
+
     def _calculate_repeat_pixel_index(self, pixel_index, repeate_index):
         pixel_offset = (
             self.pixel_count *
@@ -332,7 +371,7 @@ class Gradient2(pattern.Pattern):
                 # print("local_pixel_index", local_pixel_index)
         return local_pixel_index
 
-    def _set_data_output(self, data_output, pixel_data):
+    def _set_data_output_w_repeat(self, data_output, pixel_data):
         mode_16bit = self.mode_16bit
         color_channels = self.color_channels
         color_channels_count = len(color_channels)
@@ -394,6 +433,8 @@ class Gradient2(pattern.Pattern):
                             value_HighByte
                         )
 
+    # main generator funciton
+
     def _calculate_step(self):
         """Calculate single step."""
         # pattern.Pattern._calculate_step(self)
@@ -433,7 +474,10 @@ class Gradient2(pattern.Pattern):
             position_current
         )
 
-        self._set_data_output(self.data_output, self.pixel_data)
+        if self.repeate_count > 0:
+            self._set_data_output_w_repeat(self.data_output, self.pixel_data)
+        else:
+            self._set_data_output(self.data_output, self.pixel_data)
 
         return self.data_output
 
