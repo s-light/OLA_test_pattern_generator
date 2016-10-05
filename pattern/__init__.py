@@ -262,9 +262,10 @@ class Pattern(object):
 
         self.total_channel_count = (
             self.pixel_count *
-            self.color_channels_count *
-            self.repeate_count
+            self.color_channels_count
         )
+        if self.repeate_count > 0:
+            self.total_channel_count *= self.repeate_count
 
     def _calculate_16bit_values(self, value):
         """Calculate the low and high part representations of value."""
