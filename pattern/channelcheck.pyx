@@ -129,7 +129,7 @@ class Channelcheck(pattern.Pattern):
 
 ##########################################
 if __name__ == '__main__':
-
+    import sys
     print(42*'*')
     print('Python Version: ' + sys.version)
     print(42*'*')

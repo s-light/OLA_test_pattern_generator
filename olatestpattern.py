@@ -25,6 +25,11 @@ import re
 import readline
 import json
 
+# this automatic cython compilation does not work in combination
+# with the automatic importing of the packag submodules.
+# import pyximport
+# pyximport.install()
+
 from configdict import ConfigDict
 from olathreaded import OLAThread, OLAThread_States
 
