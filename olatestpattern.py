@@ -27,6 +27,7 @@ import json
 
 # this automatic cython compilation does not work in combination
 # with the automatic importing of the packag submodules.
+# (the submodules are not found -> no *.py or *.so files...)
 # import pyximport
 # pyximport.install()
 
@@ -35,7 +36,7 @@ from olathreaded import OLAThread, OLAThread_States
 
 import pattern
 
-version = """29.09.2016 08:49 stefan"""
+version = """06.10.2016 09:29 stefan"""
 
 
 ##########################################

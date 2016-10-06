@@ -46,14 +46,14 @@ def _load_all_modules(path, names):
         from Daniel Kauffman
 
     """
-    print("path: {}".format(path))
-    print("names: {}".format(names))
+    # print("path: {}".format(path))
+    # print("names: {}".format(names))
     module_names = []
     # For each module in the current directory...
     for importer, module_name, is_package in pkgutil.iter_modules(
         [os.path.dirname(path)]
     ):
-        print("importing:", names + '.' + module_name)
+        # print("importing:", names + '.' + module_name)
         # Import the module.
         importlib.import_module(names + '.' + module_name)
         module_names.append(module_name)
