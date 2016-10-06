@@ -200,7 +200,7 @@ class Gradient2(pattern.Pattern):
             self.pixel_count *
             self.pixel_channels_count
         )
-        # this toatl_channel_count means 8 bit channels...
+        # this total_channel_count means 8 bit channels...
         if self.mode_16bit:
             self.total_channel_count *= 2
 
@@ -223,9 +223,15 @@ class Gradient2(pattern.Pattern):
         # this is much faster than a for loop!
         self.data_output *= self.total_channel_count
 
-        self.pixel_data = []
-        self.pixel_data.append(0)
-        self.pixel_data *= self.pixel_count
+        # self.pixel_data = []
+        # self.pixel_data.append(0)
+        # self.pixel_data *= self.pixel_count
+
+        # predefine pixel_data with sub elements:
+        # https://docs.python.org/3/faq/programming.html#faq-multidimensional-list
+        self.pixel_data = [
+            [0] * self.pixel_channels_count for i in range(self.pixel_count)
+        ]
 
         # in milliseconds
         cycle_duration = self.config["cycle_duration"] * 1000
@@ -273,46 +279,41 @@ class Gradient2(pattern.Pattern):
 
     # generator helper functions
 
-    def _interpolate_channels(self, pixel_position, section):
+    def _interpolate_channels(self, pixel_position, section, pixel_data_this):
         """Interpolate with channels."""
         # print("interpolate_channels")
         # result = {
         #     'position': -1,
         #     'values': []
         # }
-        result = []
+        # result = []
         # result.append(0)
         # result *= self.pixel_channels_count
 
-        stop_start = section.start_stop
-        stop_end = section.end_stop
         # check for exact match
-        if pixel_position == section.start_position:
-            # copy
-            result = section.start_values[:]
-        else:
-            # init array
-            result.append(0)
-            result *= self.pixel_channels_count
-            # interpolate all colors
-            for pixel_channel_index in xrange(self.pixel_channels_count):
-                # result[pixel_channel_index] = pattern.map(
-                #     pixel_position,
-                #     section.start_position,
-                #     section.end_position,
-                #     stop_start[pixel_channel_index],
-                #     stop_end[pixel_channel_index],
-                # )
-                result[pixel_channel_index] = (
-                    (
-                        (pixel_position - section.start_position) *
-                        section.color_factors[pixel_channel_index]
-                    ) + section.start_values[pixel_channel_index]
-                )
+        # if pixel_position == section.start_position:
+        #     # copy
+        #     result = section.start_values[:]
+        # else:
+        # interpolate all colors
+        for pixel_channel_index in xrange(self.pixel_channels_count):
+            # result[pixel_channel_index] = pattern.map(
+            #     pixel_position,
+            #     section.start_position,
+            #     section.end_position,
+            #     stop_start[pixel_channel_index],
+            #     stop_end[pixel_channel_index],
+            # )
+            pixel_data_this[pixel_channel_index] = (
+                (
+                    (pixel_position - section.start_position) *
+                    section.color_factors[pixel_channel_index]
+                ) + section.start_values[pixel_channel_index]
+            )
 
-            # result["position"] = pixel_position
+        # result["position"] = pixel_position
 
-        return result
+        # return result
 
     def _calculate_pixels_for_position(self, position_current):
         """Calculate pixels for all positions."""
@@ -375,9 +376,10 @@ class Gradient2(pattern.Pattern):
                     # )
 
                     # so now we can interpolate
-                    pixel_data[pixel_index] = self.interpolation_function(
+                    self.interpolation_function(
                         pixel_position,
-                        section
+                        section,
+                        pixel_data[pixel_index]
                     )
 
         return pixel_data
