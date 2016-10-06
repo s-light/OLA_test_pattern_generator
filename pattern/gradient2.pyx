@@ -46,15 +46,15 @@ class Gradient_Section(object):
     """Gradient_Section Helper Class."""
 
     def __init__(
-        self, stop_start, stop_end, pixel_index_max, color_channels
+        self, stop_start, stop_end, pixel_index_max, pixel_channels_count
     ):
         """Init section."""
         self.start_stop = stop_start
         self.start_position = stop_start['position']
-        # self.start_values = stop_start['values']
+        self.start_values = stop_start['values']
         self.end_stop = stop_end
         self.end_position = stop_end['position']
-        # self.end_values = stop_end['values']
+        self.end_values = stop_end['values']
 
         # precalculate
         self.position_diff = self.end_position - self.start_position
@@ -79,7 +79,9 @@ class Gradient_Section(object):
 
         self.factor_pixel_pos = None
 
-        self.color_factors = {}
+        self.color_factors = []
+        self.color_factors.append(0)
+        self.color_factors *= pixel_channels_count
 
         self.has_pixel = False
         if self.pixel_diff > 0:
@@ -88,13 +90,16 @@ class Gradient_Section(object):
             # --> otherwise we could get a divide by zero execption
             self.factor_pixel_pos = self.position_diff / self.pixel_diff
 
-            for color_name in color_channels:
+            for color_index in xrange(pixel_channels_count):
                 # self.color_diffs = {}
                 # self.color_diffs[color_name] = (
                 #     (stop_end[color_name] - stop_start[color_name])
                 # )
-                self.color_factors[color_name] = (
-                    (stop_end[color_name] - stop_start[color_name]) /
+                self.color_factors[color_index] = (
+                    (
+                        self.end_values[color_index] -
+                        self.start_values[color_index]
+                    ) /
                     self.position_diff
                 )
 
@@ -108,31 +113,69 @@ class Gradient2(pattern.Pattern):
             "cycle_duration": 10,
             "position_current": 0,
             "type": "channel",
+            "pixel_channel_map": [
+                "red",
+                "green",
+                "blue",
+            ],
+            # default = full rainbow
             "stops": [
                 {
                     "position": 0,
-                    "red": 1,
-                    "green": 1,
-                    "blue": 1,
+                    "values": [
+                        1,
+                        0,
+                        0,
+                    ],
                 },
                 {
-                    "position": 0.3,
-                    "red": 1,
-                    "green": 0,
-                    "blue": 0,
+                    "position": 0.16,
+                    "values": [
+                        1,
+                        1,
+                        0,
+                    ],
                 },
                 {
-                    "position": 0.7,
-                    "red": 0,
-                    "green": 1,
-                    "blue": 0,
+                    "position": 0.34,
+                    "values": [
+                        0,
+                        1,
+                        0,
+                    ],
+                },
+                {
+                    "position": 0.5,
+                    "values": [
+                        0,
+                        1,
+                        1,
+                    ],
+                },
+                {
+                    "position": 0.64,
+                    "values": [
+                        0,
+                        0,
+                        1,
+                    ],
+                },
+                {
+                    "position": 0.78,
+                    "values": [
+                        1,
+                        0,
+                        1,
+                    ],
                 },
                 {
                     "position": 1,
-                    "red": 0,
-                    "green": 0,
-                    "blue": 1,
-                },
+                    "values": [
+                        1,
+                        0,
+                        0,
+                    ],
+                }
             ],
         }
         # python3 syntax
@@ -150,7 +193,20 @@ class Gradient2(pattern.Pattern):
         pattern.Pattern.update_config(self)
 
         # pattern specific precalculations
-        # pattern specific updates:
+        self.pixel_channels = self.config['pixel_channel_map']
+        self.pixel_channels_count = len(self.pixel_channels)
+
+        self.total_channel_count = (
+            self.pixel_count *
+            self.pixel_channels_count
+        )
+        # this toatl_channel_count means 8 bit channels...
+        if self.mode_16bit:
+            self.total_channel_count *= 2
+
+        if self.repeate_count > 0:
+            self.total_channel_count *= self.repeate_count
+
         interpolation_type = self.config['type']
         self.interpolation_function = self._interpolate_channels
         # if interpolation_type.startswith("hsv"):
@@ -194,6 +250,9 @@ class Gradient2(pattern.Pattern):
         # print("position_amount", position_amount)
         # print("position_stepwidth_per_pixel", position_stepwidth_per_pixel)
 
+        # localize for speed?!
+        # pixel_channels_count = self.pixel_channels_count
+
         # precalculate sections:
         self.sections = []
         # for every section in the stops_list
@@ -208,7 +267,7 @@ class Gradient2(pattern.Pattern):
                     stop_start,
                     stop_end,
                     self.pixel_index_max,
-                    self.color_channels
+                    self.pixel_channels_count
                 )
             )
 
@@ -217,30 +276,41 @@ class Gradient2(pattern.Pattern):
     def _interpolate_channels(self, pixel_position, section):
         """Interpolate with channels."""
         # print("interpolate_channels")
-        result = {}
+        # result = {
+        #     'position': -1,
+        #     'values': []
+        # }
+        result = []
+        # result.append(0)
+        # result *= self.pixel_channels_count
+
         stop_start = section.start_stop
         stop_end = section.end_stop
         # check for exact match
         if pixel_position == section.start_position:
-            result = stop_start.copy()
+            # copy
+            result = section.start_values[:]
         else:
+            # init array
+            result.append(0)
+            result *= self.pixel_channels_count
             # interpolate all colors
-            for color_name in self.color_channels:
-                # result[color_name] = pattern.map(
+            for pixel_channel_index in xrange(self.pixel_channels_count):
+                # result[pixel_channel_index] = pattern.map(
                 #     pixel_position,
                 #     section.start_position,
                 #     section.end_position,
-                #     stop_start[color_name],
-                #     stop_end[color_name],
+                #     stop_start[pixel_channel_index],
+                #     stop_end[pixel_channel_index],
                 # )
-                result[color_name] = (
+                result[pixel_channel_index] = (
                     (
                         (pixel_position - section.start_position) *
-                        section.color_factors[color_name]
-                    ) + stop_start[color_name]
+                        section.color_factors[pixel_channel_index]
+                    ) + section.start_values[pixel_channel_index]
                 )
 
-            result["position"] = pixel_position
+            # result["position"] = pixel_position
 
         return result
 
@@ -253,8 +323,6 @@ class Gradient2(pattern.Pattern):
         pixel_count = self.pixel_count
         pixel_index_max = self.pixel_index_max
         pixel_data = self.pixel_data
-
-        color_channels = self.color_channels
 
         for section in self.sections:
             # skip sections without pixels.
@@ -306,7 +374,7 @@ class Gradient2(pattern.Pattern):
                     #         )
                     # )
 
-                    # so we can interpolate
+                    # so now we can interpolate
                     pixel_data[pixel_index] = self.interpolation_function(
                         pixel_position,
                         section
@@ -317,11 +385,14 @@ class Gradient2(pattern.Pattern):
     # output writing
 
     def _set_data_output(self, data_output, pixel_data):
-        color_channels = self.color_channels
-        color_channels_count = len(color_channels)
+        pixel_channels_count = self.pixel_channels_count
+        p_8bit_ch_count = pixel_channels_count
+        if self.mode_16bit:
+            p_8bit_ch_count *= 2
+
         # print("output:")
         for pixel_index, pixel_values in enumerate(pixel_data):
-            channel_index = (pixel_index * color_channels_count)
+            channel_index = (pixel_index * p_8bit_ch_count)
             # print(
             #     "i: {:< 4} "
             #     "p: {:< 7.6f}  "
@@ -338,16 +409,18 @@ class Gradient2(pattern.Pattern):
             #         channel_index
             #     )
             # )
-            for color_index, color_name in enumerate(color_channels):
-                color_value = pixel_values[color_name]
+            for pixel_channel_index in xrange(pixel_channels_count):
+                value_float = pixel_values[pixel_channel_index]
                 # convert 0..1 to 0..65535 range
-                value_16bit = int(65535 * color_value)
+                value_16bit = int(65535 * value_float)
                 # convert 16bit to 8 bit
                 # check bounds
                 # if not (0 <= value_16bit < 65535):
                 #     value_16bit = min(max(value_16bit, 0), 65535)
                 value_HighByte = value_16bit >> 8
-                data_output[channel_index + color_index] = value_HighByte
+                data_output[
+                    channel_index + pixel_channel_index
+                ] = value_HighByte
 
     def _calculate_repeat_pixel_index(self, pixel_index, repeate_index):
         pixel_offset = (
@@ -374,6 +447,11 @@ class Gradient2(pattern.Pattern):
 
     def _set_data_output_w_repeat(self, data_output, pixel_data):
         mode_16bit = self.mode_16bit
+        pixel_channels_count = self.pixel_channels_count
+        p_8bit_ch_count = pixel_channels_count
+        if mode_16bit:
+            p_8bit_ch_count *= 2
+
         color_channels = self.color_channels
         color_channels_count = len(color_channels)
         # print("output:")
@@ -396,17 +474,15 @@ class Gradient2(pattern.Pattern):
             # )
 
             # for every color channel
-            for color_index, color_name in enumerate(color_channels):
-                color_offset = color_index
+            for pixel_channel_index in xrange(pixel_channels_count):
+                p_ch_offset = pixel_channel_index
                 if mode_16bit:
-                    color_offset = color_offset * 2
-
-                # channel_index = (pixel_index * color_channels_count)
+                    p_ch_offset *= 2
 
                 # calculate 16bit parts
-                color_value = pixel_values[color_name]
+                value_float = pixel_values[pixel_channel_index]
                 # convert 0..1 to 0..65535 range
-                value_16bit = int(65535 * color_value)
+                value_16bit = int(65535 * value_float)
                 # convert 16bit to 8 bit
                 # check bounds
                 # if not (0 <= value_16bit < 65535):
@@ -420,8 +496,7 @@ class Gradient2(pattern.Pattern):
                         pixel_index,
                         repeate_index
                     )
-                    output_channel_index = local_pixel_index + color_offset
-                    # data_output[channel_index + color_index] = value_HighByte
+                    output_channel_index = local_pixel_index + p_ch_offset
                     if mode_16bit:
                         data_output[output_channel_index + 0] = (
                             value_HighByte
