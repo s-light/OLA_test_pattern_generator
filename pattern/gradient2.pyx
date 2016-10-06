@@ -324,6 +324,7 @@ class Gradient2(pattern.Pattern):
         pixel_count = self.pixel_count
         pixel_index_max = self.pixel_index_max
         pixel_data = self.pixel_data
+        pixel_channels_count = self.pixel_channels_count
 
         for section in self.sections:
             # skip sections without pixels.
@@ -376,11 +377,19 @@ class Gradient2(pattern.Pattern):
                     # )
 
                     # so now we can interpolate
-                    self.interpolation_function(
-                        pixel_position,
-                        section,
-                        pixel_data[pixel_index]
-                    )
+                    # self.interpolation_function(
+                    #     pixel_position,
+                    #     section,
+                    #     pixel_data[pixel_index]
+                    # )
+                    for pixel_channel_index in xrange(pixel_channels_count):
+                        # interpolate
+                        pixel_data[pixel_index][pixel_channel_index] = (
+                            (
+                                (pixel_position - section.start_position) *
+                                section.color_factors[pixel_channel_index]
+                            ) + section.start_values[pixel_channel_index]
+                        )
 
         return pixel_data
 
