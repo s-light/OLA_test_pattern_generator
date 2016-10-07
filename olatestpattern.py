@@ -495,6 +495,10 @@ def handle_userinput(user_input):
             else:
                 print("not a valid index.")
 
+    # update current pattern config
+    pattern_name = my_pattern.config['system']['pattern_name']
+    my_pattern.pattern[pattern_name].update_config()
+
 ##########################################
 if __name__ == '__main__':
 

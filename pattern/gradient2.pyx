@@ -185,6 +185,8 @@ class Gradient2(pattern.Pattern):
         # explicit call
         pattern.Pattern.__init__(self, config, config_global)
 
+        self.update_config()
+
     # update / precalculate helper
 
     def update_config(self):
@@ -539,7 +541,8 @@ class Gradient2(pattern.Pattern):
         # self.values['high']
         # self.config_global[]
 
-        self.update_config()
+        # now is called if config has changed from external
+        # self.update_config()
 
         ##########################################
         # fill array with meaningfull data according to the pattern :-)
