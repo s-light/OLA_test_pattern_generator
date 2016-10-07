@@ -398,12 +398,25 @@ class Gradient2(pattern.Pattern):
     # output writing
 
     def _set_data_output(self, data_output, pixel_data):
+        cdef unsigned int pixel_channels_count
         pixel_channels_count = self.pixel_channels_count
+        cdef unsigned int p_8bit_ch_count
         p_8bit_ch_count = pixel_channels_count
         if self.mode_16bit:
             p_8bit_ch_count *= 2
 
         # print("output:")
+        # declare variables used inside loops:
+        cdef unsigned int pixel_index
+        # cdef float pixel_values[]
+
+        cdef unsigned int channel_index
+        cdef unsigned int pixel_channel_index
+
+        cdef float value_float
+        cdef unsigned int value_16bit
+        cdef unsigned int value_HighByte
+
         for pixel_index, pixel_values in enumerate(pixel_data):
             channel_index = (pixel_index * p_8bit_ch_count)
             # print(
