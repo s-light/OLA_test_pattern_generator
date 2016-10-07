@@ -27,7 +27,8 @@ gradient pattern.
 from __future__ import division
 
 import array
-import colorsys
+# import colorsys
+from cython cimport view
 
 import pattern
 
@@ -231,9 +232,15 @@ class Gradient2(pattern.Pattern):
 
         # predefine pixel_data with sub elements:
         # https://docs.python.org/3/faq/programming.html#faq-multidimensional-list
-        self.pixel_data = [
-            [0] * self.pixel_channels_count for i in range(self.pixel_count)
-        ]
+        # self.pixel_data = [
+        #     [0] * self.pixel_channels_count for i in range(self.pixel_count)
+        # ]
+        # setup pixel data as cython array
+        self.pixel_data = view.array(
+            shape=(self.pixel_count, self.pixel_channels_count),
+            itemsize=sizeof(float),
+            format="f"
+        )
 
         # in milliseconds
         cycle_duration = self.config["cycle_duration"] * 1000
@@ -323,10 +330,14 @@ class Gradient2(pattern.Pattern):
         # print("_calculate_pixels_for_position()")
         # print("position_current {: <.9f}".format(position_current))
 
+        # cdef unsigned int pixel_count
+        # cdef unsigned int pixel_index_max
+        # cdef unsigned int pixel_channels_count
         pixel_count = self.pixel_count
         pixel_index_max = self.pixel_index_max
-        pixel_data = self.pixel_data
         pixel_channels_count = self.pixel_channels_count
+
+        pixel_data = self.pixel_data
 
         for section in self.sections:
             # skip sections without pixels.
