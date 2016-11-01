@@ -1,4 +1,3 @@
-#!/usr/bin/env python2
 # coding=utf-8
 # cython: profile=True
 
@@ -26,9 +25,10 @@ gradient pattern.
 # https://docs.python.org/2.7/howto/pyporting.html#division
 from __future__ import division
 
-import array
 # import colorsys
 from cython cimport view
+from cpython cimport array
+import array
 
 import pattern
 
@@ -83,6 +83,16 @@ class Gradient_Section(object):
         self.color_factors = []
         self.color_factors.append(0)
         self.color_factors *= pixel_channels_count
+        # cdef float[:] color_factors_internal = array.array(
+        #     "f",
+        #     pixel_channels_count
+        # )
+        # cdef float[:] color_factors_internal = view.array(
+        #     shape=(pixel_channels_count),
+        #     itemsize=sizeof(float),
+        #     format="f"
+        # )
+        # self.color_factors = color_factors_internal
 
         self.has_pixel = False
         if self.pixel_diff > 0:
@@ -232,15 +242,22 @@ class Gradient2(pattern.Pattern):
 
         # predefine pixel_data with sub elements:
         # https://docs.python.org/3/faq/programming.html#faq-multidimensional-list
-        # self.pixel_data = [
-        #     [0] * self.pixel_channels_count for i in range(self.pixel_count)
-        # ]
+        self.pixel_data = [
+            [0] * self.pixel_channels_count for i in range(self.pixel_count)
+        ]
         # setup pixel data as cython array
-        self.pixel_data = view.array(
-            shape=(self.pixel_count, self.pixel_channels_count),
-            itemsize=sizeof(float),
-            format="f"
-        )
+        # pixel_data_raw = view.array(
+        #     shape=(self.pixel_count, self.pixel_channels_count),
+        #     itemsize=sizeof(float),
+        #     format="f"
+        # )
+        # init memoryview
+        # http://docs.cython.org/en/latest/src/userguide/memoryviews.html#using-memoryviews
+        # http://cython.readthedocs.io/en/latest/src/tutorial/array.html#safe-usage-with-memory-views
+        # cdef float[:,:] pixel_data_view = pixel_data_raw
+        # self.pixel_data = pixel_data_view
+        # use in function definitions: float[:,:] pixel_data not None
+
 
         # in milliseconds
         cycle_duration = self.config["cycle_duration"] * 1000
@@ -324,29 +341,58 @@ class Gradient2(pattern.Pattern):
 
         # return result
 
-    def _calculate_pixels_for_position(self, position_current):
+    def _calculate_pixels_for_position(self, float position_current):
         """Calculate pixels for all positions."""
         # print("\n"*2)
         # print("_calculate_pixels_for_position()")
         # print("position_current {: <.9f}".format(position_current))
 
-        # cdef unsigned int pixel_count
-        # cdef unsigned int pixel_index_max
-        # cdef unsigned int pixel_channels_count
+        cdef unsigned int pixel_count
+        cdef unsigned int pixel_index_max
+        cdef unsigned int pixel_channels_count
         pixel_count = self.pixel_count
         pixel_index_max = self.pixel_index_max
         pixel_channels_count = self.pixel_channels_count
 
         pixel_data = self.pixel_data
 
+        # definitions for inside section-loop:
+        cdef float pixel_position_start
+        cdef float pixel_position_end
+        cdef unsigned int pixel_index_start
+        cdef unsigned int pixel_index_end
+        # section helper
+        cdef float section_factor_pixel_pos
+        cdef float section_start_position
+        cdef float section_end_position
+        cdef float[:] section_start_values
+        cdef float[:] section_color_factors
+        # section_start_values = None
+        # section_color_factors = None
+
+        # definitions for pixel-loop:
+        cdef size_t pixel_index_raw
+        cdef size_t pixel_index
+        cdef float pixel_position
+
+        # definitions for pixel_channel-loop:
+        cdef size_t pixel_channel_index
+
         for section in self.sections:
             # skip sections without pixels.
             if section.has_pixel:
+                # update global helpers
+                section_factor_pixel_pos = section.factor_pixel_pos
+                section_start_position = section.start_position
+                section_end_position = section.end_position
+                section_start_values = section.start_values
+                section_color_factors = section.color_factors
+
                 pixel_position_start = (
-                    section.start_position + position_current
+                    section_start_position + position_current
                 )
                 pixel_position_end = (
-                    section.end_position + position_current
+                    section_end_position + position_current
                 )
 
                 pixel_index_start = int(
@@ -358,6 +404,8 @@ class Gradient2(pattern.Pattern):
 
                 if pixel_index_end < pixel_index_start:
                     pixel_index_end += pixel_index_max
+
+
 
                 # for every pixel in this section do
                 # pixel_position = pixel_position_start
@@ -373,8 +421,8 @@ class Gradient2(pattern.Pattern):
                     # optimized variant - (precalculate outside of loop)
                     pixel_position = (
                         (pixel_index_raw - pixel_index_start) *
-                        section.factor_pixel_pos
-                    ) + section.start_position
+                        section_factor_pixel_pos
+                    ) + section_start_position
 
                     # print(
                     #     "ir: {:< 4} "
@@ -399,16 +447,16 @@ class Gradient2(pattern.Pattern):
                         # interpolate
                         pixel_data[pixel_index][pixel_channel_index] = (
                             (
-                                (pixel_position - section.start_position) *
-                                section.color_factors[pixel_channel_index]
-                            ) + section.start_values[pixel_channel_index]
+                                (pixel_position - section_start_position) *
+                                section_color_factors[pixel_channel_index]
+                            ) + section_start_values[pixel_channel_index]
                         )
 
         return pixel_data
 
     # output writing
 
-    def _set_data_output(self, data_output, pixel_data):
+    def _set_data_output(self, data_output, float[:,:] pixel_data not None):
         cdef unsigned int pixel_channels_count
         pixel_channels_count = self.pixel_channels_count
         cdef unsigned int p_8bit_ch_count
@@ -418,17 +466,18 @@ class Gradient2(pattern.Pattern):
 
         # print("output:")
         # declare variables used inside loops:
-        cdef unsigned int pixel_index
-        # cdef float pixel_values[]
+        cdef size_t pixel_index
+        cdef float[:] pixel_values
 
-        cdef unsigned int channel_index
-        cdef unsigned int pixel_channel_index
+        cdef size_t channel_index
+        cdef size_t pixel_channel_index
 
         cdef float value_float
         cdef unsigned int value_16bit
         cdef unsigned int value_HighByte
 
-        for pixel_index, pixel_values in enumerate(pixel_data):
+        for pixel_index in xrange(len(pixel_data)):
+            pixel_values = pixel_data[pixel_index]
             channel_index = (pixel_index * p_8bit_ch_count)
             # print(
             #     "i: {:< 4} "

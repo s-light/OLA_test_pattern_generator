@@ -537,6 +537,12 @@ if __name__ == '__main__':
         action="store_true"
     )
     parser.add_argument(
+        "-P",
+        "--Profile",
+        help="show profiling infromation",
+        action="store_true"
+    )
+    parser.add_argument(
         "-v",
         "--verbose",
         help="show advanced log information",
@@ -667,5 +673,30 @@ if __name__ == '__main__':
     #     # as last thing we save the current configuration.
     #     print("\nwrite config.")
     #     my_pattern.my_config.write_to_file()
+
+    if args.interactive and args.Profile:
+        print("now some profiling information:")
+        import cProfile
+        import timeit
+        print("set repeate_count = 0.")
+        my_pattern.config['system']['repeate_count'] = 0
+        my_pattern.pattern['gradient2'].update_config()
+        print(
+            "cProfile: "
+            "my_pattern.pattern['gradient2']._calculate_step()"
+        )
+        cProfile.run(
+            "my_pattern.pattern['gradient2']._calculate_step()",
+            sort='cumtime'
+        )
+        print(
+            "timeit(number=1): "
+            "my_pattern.pattern['gradient2']._calculate_step()"
+        )
+        print(timeit.timeit(
+            "my_pattern.pattern['gradient2']._calculate_step()",
+            setup="from __main__ import my_pattern",
+            number=1
+        ))
 
     ##########################################
