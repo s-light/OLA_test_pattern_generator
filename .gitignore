@@ -10,6 +10,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Cython c and html files
+*.c
+
 # C extensions
 *.so
 

@@ -1,0 +1,3 @@
+# Cython c and html files
+*.c
+*.html
