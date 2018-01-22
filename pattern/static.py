@@ -52,7 +52,7 @@ class Static(pattern.Pattern):
             self.pixel_count * len(self.color_channels)
         )
         if self.mode_16bit:
-            self.channel_count_for_pixel = channel_count_for_pixel * 2
+            self.channel_count_for_pixel = self.channel_count_for_pixel * 2
 
         self.data_output = array.array('B')
         for index in range(0, self.channel_count_for_pixel):
@@ -64,6 +64,7 @@ class Static(pattern.Pattern):
         low_byte,
         mode_16bit
     ):
+        """TODO:write docstring."""
         if mode_16bit:
             for index in xrange(0, self.channel_count_for_pixel, 2):
                 self.data_output[index] = high_byte
@@ -80,6 +81,7 @@ class Static(pattern.Pattern):
         low_byte,
         mode_16bit
     ):
+        """TODO:write docstring."""
         if mode_16bit:
             data_output.append(high_byte)
             data_output.append(low_byte)
@@ -152,9 +154,10 @@ class Static(pattern.Pattern):
         # )
         # return self.data_output
 
+
 ##########################################
 if __name__ == '__main__':
-
+    import sys
     print(42*'*')
     print('Python Version: ' + sys.version)
     print(42*'*')
