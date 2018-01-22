@@ -17,20 +17,21 @@ ola test pattern generator.
 import sys
 import os
 import time
-import array
-import struct
+# import array
+# import struct
 import signal
 import argparse
-import re
+# import re
 import readline
 import json
 
 from configdict import ConfigDict
-from olathreaded import OLAThread, OLAThread_States
+from olathreaded import OLAThread
+# from olathreaded import OLAThread_States
 
 import pattern
 
-version = """29.09.2016 08:49 stefan"""
+version = """22.01.2018 20:00 stefan"""
 
 
 ##########################################
@@ -53,7 +54,9 @@ class OLAPattern(OLAThread):
             # 'update_interval': 30,
             'update_interval': 500,
             # 'update_interval': 250,
-            'mode_16bit': True,
+            'mode_16bit': False,
+            'use_pixel_dimming': False,
+            'global_dimming': 65535,
             'value': {
                 'high': 1000,
                 'low': 256,
@@ -294,204 +297,477 @@ class OLAPattern(OLAThread):
 
 
 ##########################################
-def handle_userinput(user_input):
-    """Handle userinput in interactive mode."""
-    global flag_run
-    if user_input == "q":
-        flag_run = False
-        print("stop script.")
-    elif user_input == "s":
-        my_pattern.config['system']['pattern_name'] = 'stop'
-        print("stopped.")
-    elif user_input.startswith("ui"):
-        # try to extract new update interval value
-        start_index = user_input.find(':')
-        if start_index > -1:
-            update_interval_new = \
-                user_input[start_index+1:]
-            try:
-                update_interval_new = \
-                    int(update_interval_new)
-            except Exception as e:
-                print("input not valid. ({})".format(e))
-            else:
-                my_pattern.config['system']['update_interval'] = (
-                        update_interval_new
-                    )
-                print("set update_interval to {}.".format(
-                    my_pattern.config['system']
-                    ['update_interval']
-                ))
-    elif user_input.startswith("uo"):
-        # try to extract universe value
-        start_index = user_input.find(':')
-        if start_index > -1:
-            universe_output_new = \
-                user_input[start_index+1:]
-            try:
-                universe_output_new = \
-                    int(universe_output_new)
-            except Exception as e:
-                print("input not valid. ({})".format(e))
-            else:
-                my_pattern.config['universe']['output'] = (
-                        universe_output_new
-                    )
-                print("set universe_output to {}.".format(
-                    my_pattern.config['universe']['output']
-                ))
-    elif user_input.startswith("pc"):
-        # try to extract pixel count
-        start_index = user_input.find(':')
-        if start_index > -1:
-            value_new = \
-                user_input[start_index+1:]
-            try:
-                value_new = \
-                    int(value_new)
-            except Exception as e:
-                print("input not valid. ({})".format(e))
-            else:
-                my_pattern.config['system']['pixel_count'] = (
-                        value_new
-                    )
-                print("set pixel_count to {}.".format(
-                    my_pattern.config['system']['pixel_count']
-                ))
-    elif user_input.startswith("rc"):
-        # try to extract repeate count
-        start_index = user_input.find(':')
-        if start_index > -1:
-            value_new = \
-                user_input[start_index+1:]
-            try:
-                value_new = \
-                    int(value_new)
-            except Exception as e:
-                print("input not valid. ({})".format(e))
-            else:
-                my_pattern.config['system']['repeate_count'] = (
-                        value_new
-                    )
-                print("set repeate_count to {}.".format(
-                    my_pattern.config['system']['repeate_count']
-                ))
-    elif user_input.startswith("rs"):
-        # try to extract repeate_snake
-        start_index = user_input.find(':')
-        if start_index > -1:
-            mode_value_new = \
-                user_input[start_index+1:]
-            try:
-                try:
-                    mode_value_new = int(mode_value_new)
-                except Exception as e:
-                    if mode_value_new.startswith("True"):
-                        mode_value_new = True
-                    else:
-                        mode_value_new = False
-                else:
-                    mode_value_new = bool(mode_value_new)
-            except Exception as e:
-                print("input not valid. ({})".format(e))
-            else:
-                my_pattern.config['system']['repeate_snake'] = (
-                        mode_value_new
-                    )
-                print("set repeate_snake to {}.".format(
-                    my_pattern.config['system']['repeate_snake']
-                ))
-    elif user_input.startswith("mo"):
-        # try to extract mode_16bit value
-        start_index = user_input.find(':')
-        if start_index > -1:
-            mode_value_new = \
-                user_input[start_index+1:]
-            try:
-                try:
-                    mode_value_new = int(mode_value_new)
-                except Exception as e:
-                    if mode_value_new.startswith("True"):
-                        mode_value_new = True
-                    else:
-                        mode_value_new = False
-                else:
-                    mode_value_new = bool(mode_value_new)
-            except Exception as e:
-                print("input not valid. ({})".format(e))
-            else:
-                my_pattern.config['system']['mode_16bit'] = (
-                        mode_value_new
-                    )
-                print("set mode_16bit to {}.".format(
-                    my_pattern.config['system']['mode_16bit']
-                ))
-    elif user_input.startswith("sc"):
-        # try to extract universe value
-            print("\nwrite config.")
-            my_pattern.my_config.write_to_file()
-    elif user_input.startswith("v"):
-        # try to extract new update interval value
-        start_index = user_input.find(':')
-        if start_index > -1:
-            value_new = user_input[start_index+1:]
-            try:
-                value_new = int(value_new)
-            except ValueError as e:
-                print("input not valid. ({})".format(e))
-                raise(e)
-            else:
-                # bound value
-                if value_new > 65535:
-                    value_new = 65535
-                # check for high low or off
-                value_name = ''
-                if user_input.startswith("vh"):
-                    value_name = 'high'
-                elif user_input.startswith("vl"):
-                    value_name = 'low'
-                elif user_input.startswith("vo"):
-                    value_name = 'off'
-                try:
-                    my_pattern.config['system']['value'][value_name] = \
-                        value_new
-                except ValueError as e:
-                    print(
-                        "input not valid. ({})".format(e)
-                    )
-                else:
-                    print("set value {} to {}.".format(
-                        value_name,
-                        my_pattern.config['system']
-                        ['value'][value_name]
-                    ))
-    else:
-        # check for integer
+
+def parse_ui__update_interval(user_input):
+    """Parse update interval."""
+    # try to extract new update interval value
+    start_index = user_input.find(':')
+    if start_index > -1:
+        update_interval_new = \
+            user_input[start_index+1:]
         try:
-            pattern_index = int(user_input)
-        except ValueError as e:
+            update_interval_new = \
+                int(update_interval_new)
+        except Exception as e:
             print("input not valid. ({})".format(e))
         else:
-            # print("my_pattern.pattern_list.count = {}".format(
-            #     len(pattern_list)
-            # ))
-
-            if (
-                (pattern_index > 0) and
-                (pattern_index <= len(my_pattern.pattern_list))
-            ):
-                my_pattern.config['system']['pattern_name'] = (
-                    my_pattern.pattern_list[pattern_index-1]
+            my_pattern.config['system']['update_interval'] = (
+                    update_interval_new
                 )
-                print("switched to {}.".format(
-                    my_pattern.pattern_list[pattern_index-1]
-                ))
+            print("set update_interval to {}.".format(
+                my_pattern.config['system']
+                ['update_interval']
+            ))
+
+
+def parse_ui__universe_value(user_input):
+    """Parse universe value."""
+    # try to extract universe value
+    start_index = user_input.find(':')
+    if start_index > -1:
+        universe_output_new = \
+            user_input[start_index+1:]
+        try:
+            universe_output_new = \
+                int(universe_output_new)
+        except Exception as e:
+            print("input not valid. ({})".format(e))
+        else:
+            my_pattern.config['universe']['output'] = (
+                    universe_output_new
+                )
+            print("set universe_output to {}.".format(
+                my_pattern.config['universe']['output']
+            ))
+
+
+def parse_ui__pixel_count(user_input):
+    """Parse pixel count."""
+    # try to extract pixel count
+    start_index = user_input.find(':')
+    if start_index > -1:
+        value_new = \
+            user_input[start_index+1:]
+        try:
+            value_new = \
+                int(value_new)
+        except Exception as e:
+            print("input not valid. ({})".format(e))
+        else:
+            my_pattern.config['system']['pixel_count'] = (
+                    value_new
+                )
+            print("set pixel_count to {}.".format(
+                my_pattern.config['system']['pixel_count']
+            ))
+
+
+def parse_ui__repeate_count(user_input):
+    """Parse repeate count."""
+    # try to extract repeate count
+    start_index = user_input.find(':')
+    if start_index > -1:
+        value_new = \
+            user_input[start_index+1:]
+        try:
+            value_new = \
+                int(value_new)
+        except Exception as e:
+            print("input not valid. ({})".format(e))
+        else:
+            my_pattern.config['system']['repeate_count'] = (
+                    value_new
+                )
+            print("set repeate_count to {}.".format(
+                my_pattern.config['system']['repeate_count']
+            ))
+
+
+def parse_ui__repeate_snake(user_input):
+    """Parse repeate snake."""
+    # try to extract repeate_snake
+    start_index = user_input.find(':')
+    if start_index > -1:
+        mode_value_new = \
+            user_input[start_index+1:]
+        try:
+            try:
+                mode_value_new = int(mode_value_new)
+            except Exception as e:
+                if mode_value_new.startswith("True"):
+                    mode_value_new = True
+                else:
+                    mode_value_new = False
             else:
-                print("not a valid index.")
+                mode_value_new = bool(mode_value_new)
+        except Exception as e:
+            print("input not valid. ({})".format(e))
+        else:
+            my_pattern.config['system']['repeate_snake'] = (
+                    mode_value_new
+                )
+            print("set repeate_snake to {}.".format(
+                my_pattern.config['system']['repeate_snake']
+            ))
 
-##########################################
-if __name__ == '__main__':
 
+def parse_ui__mode_16bit(user_input):
+    """Parse mode 16bit."""
+    # try to extract mode_16bit value
+    start_index = user_input.find(':')
+    if start_index > -1:
+        mode_value_new = \
+            user_input[start_index+1:]
+        try:
+            try:
+                mode_value_new = int(mode_value_new)
+            except Exception as e:
+                if mode_value_new.startswith("True"):
+                    mode_value_new = True
+                else:
+                    mode_value_new = False
+            else:
+                mode_value_new = bool(mode_value_new)
+        except Exception as e:
+            print("input not valid. ({})".format(e))
+        else:
+            my_pattern.config['system']['mode_16bit'] = (
+                    mode_value_new
+                )
+            print("set mode_16bit to {}.".format(
+                my_pattern.config['system']['mode_16bit']
+            ))
+
+
+def parse_ui__values(user_input):
+    """Parse values."""
+    # try to extract new high and low values
+    start_index = user_input.find(':')
+    if start_index > -1:
+        value_new = user_input[start_index+1:]
+        try:
+            value_new = int(value_new)
+        except ValueError as e:
+            print("input not valid. ({})".format(e))
+            raise(e)
+        else:
+            # bound value
+            if value_new > 65535:
+                value_new = 65535
+            # check for high low or off
+            value_name = ''
+            if user_input.startswith("vh"):
+                value_name = 'high'
+            elif user_input.startswith("vl"):
+                value_name = 'low'
+            elif user_input.startswith("vo"):
+                value_name = 'off'
+            try:
+                my_pattern.config['system']['value'][value_name] = \
+                    value_new
+            except ValueError as e:
+                print(
+                    "input not valid. ({})".format(e)
+                )
+            else:
+                print("set value {} to {}.".format(
+                    value_name,
+                    my_pattern.config['system']
+                    ['value'][value_name]
+                ))
+
+
+def parse_ui__pattern_id(user_input):
+    """Parse pattern id."""
+    # check for integer
+    try:
+        pattern_index = int(user_input)
+    except ValueError as e:
+        print("input not valid. ({})".format(e))
+    else:
+        # print("my_pattern.pattern_list.count = {}".format(
+        #     len(pattern_list)
+        # ))
+
+        if (
+            (pattern_index > 0) and
+            (pattern_index <= len(my_pattern.pattern_list))
+        ):
+            my_pattern.config['system']['pattern_name'] = (
+                my_pattern.pattern_list[pattern_index-1]
+            )
+            print("switched to {}.".format(
+                my_pattern.pattern_list[pattern_index-1]
+            ))
+        else:
+            print("not a valid index.")
+
+
+def parse_ui__pattern_stop(user_input):
+    """Parse pattern_stop."""
+    my_pattern.config['system']['pattern_name'] = 'stop'
+    print("stopped.")
+
+
+def parse_ui__quit(user_input):
+    """Parse quit."""
+    flag_run = False
+    return flag_run
+
+
+def parse_ui__save_config(user_input):
+    """Parse save_config."""
+    # save config to file
+    print("\nwrite config.")
+    my_pattern.my_config.write_to_file()
+
+
+parser_functions = {
+    "ui": {
+        "info": "update interval",
+        "example": "{update_interval} ({update_frequency}Hz)",
+        "func": parse_ui__update_interval,
+    },
+    "uo": {
+        "info": "set universe output",
+        "example": "{universe_output}",
+        "func": parse_ui__universe_value,
+    },
+    "pc": {
+        "info": "set pixel count",
+        "example": "{pixel_count}",
+        "func": parse_ui__pixel_count,
+    },
+    "rc": {
+        "info": "set repeate count",
+        "example": "{repeate_count}",
+        "func": parse_ui__repeate_count,
+    },
+    "rs": {
+        "info": "set repeate snake",
+        "example": "{repeate_snake}",
+        "func": parse_ui__repeate_snake,
+    },
+    "mo": {
+        "info": "set mode_16bit",
+        "example": "{mode_16bit}",
+        "func": parse_ui__repeate_snake,
+    },
+    "vh": {
+        "info": "set value high",
+        "example": "{vhigh}",
+        "func": parse_ui__values,
+    },
+    "vl": {
+        "info": "set value low",
+        "example": "{vlow}",
+        "func": parse_ui__values,
+    },
+    "vo": {
+        "info": "set value off",
+        "example": "{voff}",
+        "func": parse_ui__values,
+    },
+    "q": {
+        "info": "Ctrl+C or 'q' to stop script",
+        "example": None,
+        "func": parse_ui__quit,
+    },
+    "s": {
+        "info": "stop pattern generator 's'",
+        "example": None,
+        "func": parse_ui__pattern_stop,
+    },
+    "sc": {
+        "info": "save config 'sc'",
+        "example": None,
+        "func": parse_ui__save_config,
+    },
+}
+
+parser_functions_order = [
+    "s",
+    "ui",
+    "uo",
+    "pc",
+    "rc",
+    "rs",
+    "mo",
+    "vh",
+    "vl",
+    "vo",
+    "sc",
+    "q",
+]
+
+
+def get_parser_function(user_input):
+    """Get the parser funciton from the user_input."""
+    parser_key = None
+    parser_func = None
+    for key, value in parser_functions.items():
+        if user_input.startswith(key):
+            parser_key = key
+            parser_func = value['func']
+    return (parser_key, parser_func)
+
+
+def handle_userinput(user_input):
+    """Handle userinput in interactive mode."""
+    flag_run = True
+    parser_key, parser_func = get_parser_function(user_input)
+    # print(parser_key, parser_func)
+    if parser_func:
+        flag_run_temp = parser_func(user_input)
+        if flag_run_temp is False:
+            flag_run = False
+    else:
+        parse_ui__pattern_id(user_input)
+    return flag_run
+
+
+def generate_parser_message():
+    """Generate parser messages."""
+    # print("generate parser message...")
+    parser_message = ""
+    # for parser_key, parser_obj in parser_functions.items():
+    for parser_key in parser_functions_order:
+        parser_obj = parser_functions[parser_key]
+
+        # result entry:
+        # "  'pc': set pixel count 'pc:{pixel_count}'\n"
+
+        # print("parser_key: ", parser_key)
+        # print("parser_obj: ", parser_obj)
+        # print("parser_obj['example']: ", parser_obj['example'])
+        message_entry = "  '{key}': {info}"
+        # print("message_entry: ", message_entry)
+        parser_example = None
+        if 'example' in parser_obj:
+            if parser_obj['example'] is not None:
+                parser_example = parser_obj['example'].format(
+                    update_frequency=(
+                        1000.0/my_pattern.config['system']['update_interval']
+                    ),
+                    update_interval=(
+                        my_pattern.config['system']['update_interval']
+                    ),
+                    pixel_count=my_pattern.config['system']['pixel_count'],
+                    repeate_count=my_pattern.config['system']['repeate_count'],
+                    repeate_snake=my_pattern.config['system']['repeate_snake'],
+                    universe_output=my_pattern.config['universe']['output'],
+                    mode_16bit=my_pattern.config['system']['mode_16bit'],
+                    vhigh=my_pattern.config['system']['value']['high'],
+                    vlow=my_pattern.config['system']['value']['low'],
+                    voff=my_pattern.config['system']['value']['off'],
+                )
+                message_entry += (
+                  " '{key}:{example}'"
+                )
+
+        message_entry += "\n"
+        message_entry = message_entry.format(
+            key=parser_key,
+            info=parser_obj['info'],
+            example=parser_example,
+        )
+        parser_message += message_entry
+    # print("parser_message: ")
+    # print(parser_message)
+
+    # the exchange seems to only work at the first occurency :-?!
+    # exchange formating strings in examples
+    # print("run formating for examples.")
+    # parser_message.format(
+    #     update_frequency=(
+    #         1000.0/my_pattern.config['system']['update_interval']
+    #     ),
+    #     update_interval=my_pattern.config['system']['update_interval'],
+    #     pixel_count=my_pattern.config['system']['pixel_count'],
+    #     repeate_count=my_pattern.config['system']['repeate_count'],
+    #     repeate_snake=my_pattern.config['system']['repeate_snake'],
+    #     universe_output=my_pattern.config['universe']['output'],
+    #     mode_16bit=my_pattern.config['system']['mode_16bit'],
+    #     vhigh=my_pattern.config['system']['value']['high'],
+    #     vlow=my_pattern.config['system']['value']['low'],
+    #     voff=my_pattern.config['system']['value']['off'],
+    # )
+    # print("done.")
+    return parser_message
+
+
+def generate_menu_message():
+    """Build String for menu message/info."""
+    pattern_list = ""
+    # for index, value in iter(pattern_list):
+    for value in my_pattern.pattern_list:
+        index = my_pattern.pattern_list.index(value)
+        # print(index, value)
+        selected = ' '
+        if my_pattern.config['system']['pattern_name'] == value:
+            selected = '>'
+        pattern_list += " {}'{}' {}\n".format(selected, index+1, value)
+
+    message = (
+        "\n" +
+        42*'*' + "\n"
+        "select pattern: \n" +
+        pattern_list +
+        "  's': stop\n"
+        "set option: \n" +
+        generate_parser_message() +
+        42*'*' + "\n"
+        "\n"
+    )
+    return message
+
+
+def request_userinput(message):
+    """Request userinput."""
+    flag_run = True
+    try:
+        if sys.version_info.major >= 3:
+            # python3
+            user_input = input(message)
+        elif sys.version_info.major == 2:
+            # python2
+            user_input = raw_input(message)
+        else:
+            # no input methode found.
+            user_input = "q"
+    except KeyboardInterrupt:
+        print("\nstop script.")
+        flag_run = False
+    except EOFError:
+        print("\nstop script.")
+        flag_run = False
+    except Exception as e:
+        print("unknown error: {}".format(e))
+        flag_run = False
+        print("stop script.")
+    else:
+        try:
+            if len(user_input) > 0:
+                flag_run = handle_userinput(user_input)
+        except Exception as e:
+            print("unknown error: {}".format(e))
+            flag_run = False
+            print("stop script.")
+    return flag_run
+
+
+def handle_interactive():
+    """Handle all interactive running."""
+    # wait for user to hit key.
+    flag_run = True
+    while flag_run:
+        message = generate_menu_message()
+        flag_run = request_userinput(message)
+    return flag_run
+
+
+def main():
+    """Main handling."""
     print(42*'*')
     print('Python Version: ' + sys.version)
     print(42*'*')
@@ -499,7 +775,7 @@ if __name__ == '__main__':
     ##########################################
     # commandline arguments
     filename_default = "./pattern.json"
-    pattern_name_default = "channelcheck"
+    # pattern_name_default = "channelcheck"
 
     parser = argparse.ArgumentParser(
         description="generate patterns - output with olad"
@@ -554,6 +830,7 @@ if __name__ == '__main__':
     signal.signal(signal.SIGINT, _exit_helper)
     signal.signal(signal.SIGTERM, _exit_helper)
 
+    global my_pattern
     my_pattern = OLAPattern(args.config, args.verbose)
 
     # overwritte with pattern name from comandline
@@ -563,83 +840,7 @@ if __name__ == '__main__':
     my_pattern.start_ola()
 
     if args.interactive:
-        # wait for user to hit key.
-        flag_run = True
-        while flag_run:
-
-            message_list = ""
-            # for index, value in iter(pattern_list):
-            for value in my_pattern.pattern_list:
-                index = my_pattern.pattern_list.index(value)
-                # print(index, value)
-                selected = ' '
-                if my_pattern.config['system']['pattern_name'] == value:
-                    selected = '>'
-                message_list += " {}'{}' {}\n".format(selected, index+1, value)
-
-            message = (
-                "\n" +
-                42*'*' + "\n"
-                "select pattern: \n" +
-                message_list +
-                "  's': stop\n"
-                "set option: \n"
-                "  'ui': update interval "
-                "'ui:{update_interval} ({update_frequency}Hz)'\n"
-                "  'uo': set universe output 'uo:{universe_output}'\n"
-                "  'pc': set pixel count 'pc:{pixel_count}'\n"
-                "  'rc': set repeate count 'rc:{repeate_count}'\n"
-                "  'rs': set repeate snake 'rs:{repeate_snake}'\n"
-                "  'mo': set mode_16bit 'mo:{mode_16bit}'\n"
-                "  'vh': set value high 'vh:{vhigh}'\n"
-                "  'vl': set value low 'vl:{vlow}'\n"
-                "  'vo': set value off 'vo:{voff}'\n"
-                "  'sc': save config 'sc'\n"
-                "Ctrl+C or 'q' to stop script\n" +
-                42*'*' + "\n"
-                "\n"
-            ).format(
-                update_frequency=(
-                    1000.0/my_pattern.config['system']['update_interval']
-                ),
-                update_interval=my_pattern.config['system']['update_interval'],
-                pixel_count=my_pattern.config['system']['pixel_count'],
-                repeate_count=my_pattern.config['system']['repeate_count'],
-                repeate_snake=my_pattern.config['system']['repeate_snake'],
-                universe_output=my_pattern.config['universe']['output'],
-                mode_16bit=my_pattern.config['system']['mode_16bit'],
-                vhigh=my_pattern.config['system']['value']['high'],
-                vlow=my_pattern.config['system']['value']['low'],
-                voff=my_pattern.config['system']['value']['off'],
-            )
-            try:
-                if sys.version_info.major >= 3:
-                    # python3
-                    user_input = input(message)
-                elif sys.version_info.major == 2:
-                    # python2
-                    user_input = raw_input(message)
-                else:
-                    # no input methode found.
-                    value = "q"
-            except KeyboardInterrupt:
-                print("\nstop script.")
-                flag_run = False
-            except EOFError:
-                print("\nstop script.")
-                flag_run = False
-            except Exception as e:
-                print("unknown error: {}".format(e))
-                flag_run = False
-                print("stop script.")
-            else:
-                try:
-                    if len(user_input) > 0:
-                        handle_userinput(user_input)
-                except Exception as e:
-                    print("unknown error: {}".format(e))
-                    flag_run = False
-                    print("stop script.")
+        handle_interactive()
     # if not interactive
     else:
         # just wait
@@ -657,5 +858,11 @@ if __name__ == '__main__':
     #     # as last thing we save the current configuration.
     #     print("\nwrite config.")
     #     my_pattern.my_config.write_to_file()
+
+
+##########################################
+if __name__ == '__main__':
+
+    main()
 
     ##########################################
