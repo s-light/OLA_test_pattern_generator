@@ -260,7 +260,7 @@ class OLAPattern(OLAThread):
             # channels.insert(i + (i * 3), global_dimmer_8bit)
         # print(len(channels))
         # print(channels)
-        # return channels
+        return channels
 
     def _calculate_step(self):
         """Generate test pattern."""
