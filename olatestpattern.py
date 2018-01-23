@@ -56,7 +56,7 @@ class OLAPattern(OLAThread):
             # 'update_interval': 250,
             'mode_16bit': False,
             'use_pixel_dimming': False,
-            'global_dimming': 65535,
+            'global_dimmer': 65535,
             'value': {
                 'high': 1000,
                 'low': 256,
@@ -190,7 +190,7 @@ class OLAPattern(OLAThread):
         """Handle all pattern repeating things."""
         # this does not work. we have to use the pixel information.
         # otherwiese color-order will get mixed up..
-        pixel_count = self.config['system']['pixel_count']
+        # pixel_count = self.config['system']['pixel_count']
         repeate_count = self.config['system']['repeate_count']
         repeate_snake = self.config['system']['repeate_snake']
         channels_count = len(channels)
@@ -220,6 +220,46 @@ class OLAPattern(OLAThread):
                         print('error:', e)
                     else:
                         channels.append(value)
+        return channels
+
+    def _apply_global_dimmer(self, channels):
+        """Apply the global dimmer factor."""
+        # print("")
+        global_dimmer_16bit = self.config['system']['global_dimmer']
+        # print("global_dimmer_16bit", global_dimmer_16bit)
+        # 65535 = 255
+        #  gd   = gd8
+        # global_dimmer_8bit = 255 * global_dimmer_16bit / 65535
+        # print("global_dimmer_8bit", global_dimmer_8bit)
+        global_dimmer_norm = 1.0 * global_dimmer_16bit / 65535
+        # print("global_dimmer_norm", global_dimmer_norm)
+        # print("")
+        # print(channels)
+        for i, ch in enumerate(channels):
+            # channels[i] = ch * global_dimmer_8bit
+            channels[i] = int(ch * global_dimmer_norm)
+        # print(channels)
+        return channels
+
+    def _apply_pixel_dimmer(self, channels):
+        """Apply the pixel dimmer for APA102."""
+        # print("")
+        global_dimmer_16bit = self.config['system']['global_dimmer']
+        # print("global_dimmer_16bit", global_dimmer_16bit)
+        # 65535 = 255
+        #  gd   = gd8
+        global_dimmer_8bit = 255 * global_dimmer_16bit / 65535
+        # print("global_dimmer_8bit", global_dimmer_8bit)
+        # global_dimmer_norm = 1.0 * global_dimmer_16bit / 65535
+        # print("global_dimmer_norm", global_dimmer_norm)
+        print("")
+        print(len(channels))
+        print(channels)
+        for i in range(0, len(channels), 4):
+            channels.insert(i, global_dimmer_8bit)
+            # channels.insert(i + (i * 3), global_dimmer_8bit)
+        print(len(channels))
+        print(channels)
         return channels
 
     def _calculate_step(self):
@@ -268,32 +308,15 @@ class OLAPattern(OLAThread):
                 #     temp_channel_len,
                 #     len(channels)
                 # ))
+                if self.config['system']['use_pixel_dimming']:
+                    channels = self._apply_pixel_dimmer(channels)
+                else:
+                    channels = self._apply_global_dimmer(channels)
                 # send frame
                 self.dmx_send_frame(
                     self.config['universe']['output'],
                     channels
                 )
-
-        # if pattern_name:
-        #     if 'strobe' in pattern_name:
-        #         self._calculate_step_strobe(
-        #             self.config['pattern']['strobe']
-        #         )
-        #     elif 'channelcheck' in pattern_name:
-        #         self._calculate_step_channelcheck(
-        #             self.config['pattern']['channelcheck']
-        #         )
-        #     elif 'gradient' in pattern_name:
-        #         self._calculate_step_gradient(
-        #             self.config['pattern']['gradient']
-        #         )
-        #     elif 'staic' in pattern_name:
-        #         self._calculate_step_static(
-        #             self.config['pattern']['static']
-        #         )
-        # else:
-        #     # time.sleep(1)
-        #     pass
 
 
 ##########################################
@@ -477,6 +500,46 @@ def parse_ui__values(user_input):
                 ))
 
 
+def parse_ui__global_dimmer(user_input):
+    """Parse global dimmer."""
+    start_index = user_input.find(':')
+    if start_index > -1:
+        value_new = \
+            user_input[start_index+1:]
+        try:
+            value_new = \
+                int(value_new)
+        except Exception as e:
+            print("input not valid. ({})".format(e))
+        else:
+            my_pattern.config['system']['global_dimmer'] = (
+                value_new
+            )
+            print("set global_dimmer to {}.".format(
+                my_pattern.config['system']['global_dimmer']
+            ))
+
+
+def parse_ui__use_pixel_dimming(user_input):
+    """Parse use pixel dimming."""
+    start_index = user_input.find(':')
+    if start_index > -1:
+        value_new = \
+            user_input[start_index+1:]
+        try:
+            value_new = \
+                int(value_new)
+        except Exception as e:
+            print("input not valid. ({})".format(e))
+        else:
+            my_pattern.config['system']['use_pixel_dimming'] = (
+                value_new
+            )
+            print("set use_pixel_dimming to {}.".format(
+                my_pattern.config['system']['use_pixel_dimming']
+            ))
+
+
 def parse_ui__pattern_id(user_input):
     """Parse pattern id."""
     # check for integer
@@ -551,7 +614,12 @@ parser_functions = {
     "mo": {
         "info": "set mode_16bit",
         "example": "{mode_16bit}",
-        "func": parse_ui__repeate_snake,
+        "func": parse_ui__mode_16bit,
+    },
+    "pd": {
+        "info": "set use_pixel_dimming",
+        "example": "{use_pixel_dimming}",
+        "func": parse_ui__use_pixel_dimming,
     },
     "vh": {
         "info": "set value high",
@@ -567,6 +635,11 @@ parser_functions = {
         "info": "set value off",
         "example": "{voff}",
         "func": parse_ui__values,
+    },
+    "gd": {
+        "info": "set global_dimmer",
+        "example": "{global_dimmer}",
+        "func": parse_ui__global_dimmer,
     },
     "q": {
         "info": "Ctrl+C or 'q' to stop script",
@@ -596,6 +669,8 @@ parser_functions_order = [
     "vh",
     "vl",
     "vo",
+    "gd",
+    "pd",
     "sc",
     "q",
 ]
@@ -660,6 +735,10 @@ def generate_parser_message():
                     vhigh=my_pattern.config['system']['value']['high'],
                     vlow=my_pattern.config['system']['value']['low'],
                     voff=my_pattern.config['system']['value']['off'],
+                    global_dimmer=my_pattern.config['system']['global_dimmer'],
+                    use_pixel_dimming=(
+                        my_pattern.config['system']['use_pixel_dimming']
+                    ),
                 )
                 message_entry += (
                   " '{key}:{example}'"
