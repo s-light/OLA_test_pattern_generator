@@ -252,15 +252,15 @@ class OLAPattern(OLAThread):
         # print("global_dimmer_8bit", global_dimmer_8bit)
         # global_dimmer_norm = 1.0 * global_dimmer_16bit / 65535
         # print("global_dimmer_norm", global_dimmer_norm)
-        print("")
-        print(len(channels))
-        print(channels)
+        # print("")
+        # print(len(channels))
+        # print(channels)
         for i in range(0, len(channels), 4):
             channels.insert(i, global_dimmer_8bit)
             # channels.insert(i + (i * 3), global_dimmer_8bit)
-        print(len(channels))
-        print(channels)
-        return channels
+        # print(len(channels))
+        # print(channels)
+        # return channels
 
     def _calculate_step(self):
         """Generate test pattern."""
