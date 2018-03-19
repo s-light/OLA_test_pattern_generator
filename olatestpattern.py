@@ -210,7 +210,7 @@ class OLAPattern(OLAThread):
                     if ((repeate_index % 2) > 0):
                         # print("(repeate_index % 2):", (repeate_index % 2))
                         # snake back
-                        pixel_range = range(channels_count-1, -1, -1)
+                        pixel_range = range(channels_count - 1, -1, -1)
                 # print("pixel_range:", pixel_range)
                 for channel_index in pixel_range:
                     # print("append:", channel_index)
@@ -327,7 +327,7 @@ def parse_ui__update_interval(user_input):
     start_index = user_input.find(':')
     if start_index > -1:
         update_interval_new = \
-            user_input[start_index+1:]
+            user_input[start_index + 1:]
         try:
             update_interval_new = \
                 int(update_interval_new)
@@ -335,8 +335,8 @@ def parse_ui__update_interval(user_input):
             print("input not valid. ({})".format(e))
         else:
             my_pattern.config['system']['update_interval'] = (
-                    update_interval_new
-                )
+                update_interval_new
+            )
             print("set update_interval to {}.".format(
                 my_pattern.config['system']
                 ['update_interval']
@@ -349,7 +349,7 @@ def parse_ui__universe_value(user_input):
     start_index = user_input.find(':')
     if start_index > -1:
         universe_output_new = \
-            user_input[start_index+1:]
+            user_input[start_index + 1:]
         try:
             universe_output_new = \
                 int(universe_output_new)
@@ -357,8 +357,8 @@ def parse_ui__universe_value(user_input):
             print("input not valid. ({})".format(e))
         else:
             my_pattern.config['universe']['output'] = (
-                    universe_output_new
-                )
+                universe_output_new
+            )
             print("set universe_output to {}.".format(
                 my_pattern.config['universe']['output']
             ))
@@ -370,7 +370,7 @@ def parse_ui__pixel_count(user_input):
     start_index = user_input.find(':')
     if start_index > -1:
         value_new = \
-            user_input[start_index+1:]
+            user_input[start_index + 1:]
         try:
             value_new = \
                 int(value_new)
@@ -378,8 +378,8 @@ def parse_ui__pixel_count(user_input):
             print("input not valid. ({})".format(e))
         else:
             my_pattern.config['system']['pixel_count'] = (
-                    value_new
-                )
+                value_new
+            )
             print("set pixel_count to {}.".format(
                 my_pattern.config['system']['pixel_count']
             ))
@@ -391,7 +391,7 @@ def parse_ui__repeate_count(user_input):
     start_index = user_input.find(':')
     if start_index > -1:
         value_new = \
-            user_input[start_index+1:]
+            user_input[start_index + 1:]
         try:
             value_new = \
                 int(value_new)
@@ -399,8 +399,8 @@ def parse_ui__repeate_count(user_input):
             print("input not valid. ({})".format(e))
         else:
             my_pattern.config['system']['repeate_count'] = (
-                    value_new
-                )
+                value_new
+            )
             print("set repeate_count to {}.".format(
                 my_pattern.config['system']['repeate_count']
             ))
@@ -412,7 +412,7 @@ def parse_ui__repeate_snake(user_input):
     start_index = user_input.find(':')
     if start_index > -1:
         mode_value_new = \
-            user_input[start_index+1:]
+            user_input[start_index + 1:]
         try:
             try:
                 mode_value_new = int(mode_value_new)
@@ -427,8 +427,8 @@ def parse_ui__repeate_snake(user_input):
             print("input not valid. ({})".format(e))
         else:
             my_pattern.config['system']['repeate_snake'] = (
-                    mode_value_new
-                )
+                mode_value_new
+            )
             print("set repeate_snake to {}.".format(
                 my_pattern.config['system']['repeate_snake']
             ))
@@ -440,7 +440,7 @@ def parse_ui__mode_16bit(user_input):
     start_index = user_input.find(':')
     if start_index > -1:
         mode_value_new = \
-            user_input[start_index+1:]
+            user_input[start_index + 1:]
         try:
             try:
                 mode_value_new = int(mode_value_new)
@@ -455,8 +455,8 @@ def parse_ui__mode_16bit(user_input):
             print("input not valid. ({})".format(e))
         else:
             my_pattern.config['system']['mode_16bit'] = (
-                    mode_value_new
-                )
+                mode_value_new
+            )
             print("set mode_16bit to {}.".format(
                 my_pattern.config['system']['mode_16bit']
             ))
@@ -467,7 +467,7 @@ def parse_ui__values(user_input):
     # try to extract new high and low values
     start_index = user_input.find(':')
     if start_index > -1:
-        value_new = user_input[start_index+1:]
+        value_new = user_input[start_index + 1:]
         try:
             value_new = int(value_new)
         except ValueError as e:
@@ -505,7 +505,7 @@ def parse_ui__global_dimmer(user_input):
     start_index = user_input.find(':')
     if start_index > -1:
         value_new = \
-            user_input[start_index+1:]
+            user_input[start_index + 1:]
         try:
             value_new = \
                 int(value_new)
@@ -525,7 +525,7 @@ def parse_ui__use_pixel_dimming(user_input):
     start_index = user_input.find(':')
     if start_index > -1:
         value_new = \
-            user_input[start_index+1:]
+            user_input[start_index + 1:]
         try:
             value_new = \
                 int(value_new)
@@ -557,10 +557,10 @@ def parse_ui__pattern_id(user_input):
             (pattern_index <= len(my_pattern.pattern_list))
         ):
             my_pattern.config['system']['pattern_name'] = (
-                my_pattern.pattern_list[pattern_index-1]
+                my_pattern.pattern_list[pattern_index - 1]
             )
             print("switched to {}.".format(
-                my_pattern.pattern_list[pattern_index-1]
+                my_pattern.pattern_list[pattern_index - 1]
             ))
         else:
             print("not a valid index.")
@@ -722,7 +722,7 @@ def generate_parser_message():
             if parser_obj['example'] is not None:
                 parser_example = parser_obj['example'].format(
                     update_frequency=(
-                        1000.0/my_pattern.config['system']['update_interval']
+                        1000.0 / my_pattern.config['system']['update_interval']
                     ),
                     update_interval=(
                         my_pattern.config['system']['update_interval']
@@ -785,17 +785,17 @@ def generate_menu_message():
         selected = ' '
         if my_pattern.config['system']['pattern_name'] == value:
             selected = '>'
-        pattern_list += " {}'{}' {}\n".format(selected, index+1, value)
+        pattern_list += " {}'{}' {}\n".format(selected, index + 1, value)
 
     message = (
         "\n" +
-        42*'*' + "\n"
+        42 * '*' + "\n"
         "select pattern: \n" +
         pattern_list +
         "  's': stop\n"
         "set option: \n" +
         generate_parser_message() +
-        42*'*' + "\n"
+        42 * '*' + "\n"
         "\n"
     )
     return message
@@ -847,9 +847,9 @@ def handle_interactive():
 
 def main():
     """Main handling."""
-    print(42*'*')
+    print(42 * '*')
     print('Python Version: ' + sys.version)
-    print(42*'*')
+    print(42 * '*')
 
     ##########################################
     # commandline arguments
@@ -892,9 +892,9 @@ def main():
     ##########################################
     # prepare:
     if args.interactive:
-        print(42*'*')
+        print(42 * '*')
         print(__doc__)
-        print(42*'*')
+        print(42 * '*')
 
     # init flag_run
     flag_run = False
