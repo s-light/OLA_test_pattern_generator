@@ -15,7 +15,7 @@ olad client abstraction.
 """
 
 
-import os
+# import os
 import sys
 import time
 import threading
@@ -23,7 +23,7 @@ import threading
 # pip install enum34
 from enum import Enum
 from enum import unique
-import array
+# import array
 import socket
 
 from ola.ClientWrapper import ClientWrapper
@@ -60,7 +60,7 @@ class OLAThread(threading.Thread):
     """connect to olad in a threaded way."""
 
     def __init__(self):
-        """create new OLAThread instance."""
+        """Create new OLAThread instance."""
         # super().__init__()
         # super(threading.Thread, self).__init__()
         threading.Thread.__init__(self)
@@ -76,7 +76,7 @@ class OLAThread(threading.Thread):
         # self.start()
 
     def run(self):
-        """run state engine in threading."""
+        """Run state engine in threading."""
         print("run")
         print("self.state: {}".format(self.state))
         while self.state is not OLAThread_States.standby:
@@ -93,7 +93,7 @@ class OLAThread(threading.Thread):
             #     pass
 
     def ola_wrapper_run(self):
-        """run ola wrapper."""
+        """Run ola wrapper."""
         print("run ola wrapper.")
         try:
             self.wrapper.Run()
@@ -109,7 +109,7 @@ class OLAThread(threading.Thread):
             #     print(error)
 
     def ola_waiting_for_connection(self):
-        """connect to ola."""
+        """Connect to ola."""
         print("waiting for olad....")
         self.flag_connected = False
         self.flag_wait_for_ola = True
@@ -132,7 +132,7 @@ class OLAThread(threading.Thread):
 
     def ola_connected(self):
         """
-        just switch to running mode.
+        Just switch to running mode.
 
            this can be overriden in a subclass.
         """
@@ -140,7 +140,7 @@ class OLAThread(threading.Thread):
 
     # dmx frame sending
     def dmx_send_frame(self, universe, data):
-        """send data as one dmx frame."""
+        """Send data as one dmx frame."""
         if self.flag_connected:
             try:
                 # temp_array = array.array('B')
@@ -164,7 +164,7 @@ class OLAThread(threading.Thread):
             pass
 
     def dmx_send_callback(self, state):
-        """react on ola state."""
+        """React on ola state."""
         if not state.Succeeded():
             self.wrapper.Stop()
             self.state = OLAThread_States.waiting
@@ -175,14 +175,14 @@ class OLAThread(threading.Thread):
 
     # managment functions
     def start_ola(self):
-        """switch to state running."""
+        """Switch to state running."""
         print("start_ola")
         if self.state == OLAThread_States.standby:
             self.state = OLAThread_States.waiting
             self.start()
 
     def stop_ola(self):
-        """stop ola wrapper."""
+        """Stop ola wrapper."""
         if self.flag_wait_for_ola:
             print("stop search for ola wrapper.")
             self.flag_wait_for_ola = False
@@ -193,6 +193,7 @@ class OLAThread(threading.Thread):
         self.state = OLAThread_States.standby
         # wait for thread to finish.
         self.join()
+
 
 ##########################################
 if __name__ == '__main__':
