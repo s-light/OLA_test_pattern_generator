@@ -75,7 +75,7 @@ class ColorsMultiuninverse(pattern.Pattern):
             self.colors_rgb_high[universe] = self._hsv_01_to_rgb_16bit(
                 hue, saturation, value_high
             )
-            self.colors_rgb_high[universe] = self._hsv_01_to_rgb_16bit(
+            self.colors_rgb_low[universe] = self._hsv_01_to_rgb_16bit(
                 hue, saturation, value_low
             )
 
@@ -118,6 +118,21 @@ class ColorsMultiuninverse(pattern.Pattern):
         # fill array with meaningfull data according to the pattern :-)
         # .....
 
+        # color = {
+        #     'red': {
+        #         'high': 0,
+        #         'low': 0,
+        #     },
+        #     'green': {
+        #         'high': 0,
+        #         'low': 0,
+        #     },
+        #     'blue': {
+        #         'high': 0,
+        #         'low': 0,
+        #     },
+        # }
+        # if universe in self.colors_rgb_high:
         color = self.colors_rgb_high[universe]
         if not self.strobe_state:
             color = self.colors_rgb_low[universe]

@@ -1,4 +1,5 @@
 {
+    "path_to_config": ".",
     "pattern": {
         "colors": {},
         "update_interval": 5000
@@ -12,16 +13,19 @@
         ],
         "global_dimmer": 65535,
         "mode_16bit": false,
-        "pattern_name": "stop",
+        "pattern_interval": 5000,
+        "pattern_name": "run",
         "pixel_count": 170,
+        "repeate_count": 4,
+        "repeate_snake": true,
         "universe": {
-            "count": 1,
+            "count": 3,
             "output": 1
         },
-        "update_interval": 500,
+        "update_interval": 2000,
         "use_pixel_dimming": false,
         "value": {
-            "high": 1000,
+            "high": 65535,
             "low": 256,
             "off": 0
         }

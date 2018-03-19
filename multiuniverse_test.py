@@ -631,13 +631,13 @@ def parse_ui__pattern_id(user_input):
 
 def parse_ui__pattern_stop(user_input):
     """Parse pattern_stop."""
-    my_pattern.config['system']['pattern_state'] = 'stop'
+    my_pattern.config['system']['pattern_name'] = 'stop'
     print("stopped.")
 
 
 def parse_ui__pattern_run(user_input):
     """Parse pattern_run."""
-    my_pattern.config['system']['pattern_state'] = 'run'
+    my_pattern.config['system']['pattern_name'] = 'run'
     print("running.")
 
 
