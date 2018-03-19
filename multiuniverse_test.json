@@ -11,22 +11,22 @@
             "green",
             "blue"
         ],
-        "global_dimmer": 65535,
+        "global_dimmer": 8,
         "mode_16bit": false,
         "pattern_interval": 5000,
         "pattern_name": "run",
-        "pixel_count": 18,
+        "pixel_count": 36,
         "repeate_count": 4,
         "repeate_snake": true,
         "universe": {
-            "count": 32,
+            "count": 20,
             "output": 1
         },
         "update_interval": 1000,
         "use_pixel_dimming": 1,
         "value": {
             "high": 65535,
-            "low": 513,
+            "low": 2100,
             "off": 0
         }
     }
