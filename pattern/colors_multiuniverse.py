@@ -79,7 +79,7 @@ class ColorsMultiuninverse(pattern.Pattern):
                 hue, saturation, value_low
             )
 
-    def _calculate_step(self, universe):
+    def _calculate_step(self, universe=False):
         """Calculate single step."""
         # pattern.Pattern._calculate_step(self)
         # available attributes:
@@ -98,6 +98,9 @@ class ColorsMultiuninverse(pattern.Pattern):
         #
         # self.colors_rgb_high
         # self.colors_rgb_low
+
+        if not universe:
+            universe = self.config_global['universe']['output']
 
         if universe == self.config_global['universe']['output']:
             self.update_config()
