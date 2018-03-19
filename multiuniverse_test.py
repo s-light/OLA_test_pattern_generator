@@ -63,7 +63,7 @@ class OLAPattern(OLAThread):
                 'low': 256,
                 'off': 0,
             },
-            'pattern_name': 'stop',
+            'pattern_name': 'run',
             'channel_count': 512,
             'pixel_count': 170,
             'repeate_count': 4,
