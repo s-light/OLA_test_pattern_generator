@@ -23,6 +23,7 @@ import pkgutil
 import collections
 import array
 import struct
+import colorsys
 
 import configdict
 
@@ -213,6 +214,46 @@ def calculate_16bit_values(value, mode_16bit=False):
     #     high_byte = value
     return high_byte, low_byte
 
+
+def calculate_16bit_values_as_dict(value, mode_16bit=False):
+    """
+    Calculate the low and high part representations of value.
+
+    returns these as dict
+    """
+    high_byte, low_byte = calculate_16bit_values_as_dict(value, mode_16bit)
+    result = {
+        'high': high_byte,
+        'low': low_byte,
+    }
+    return result
+
+
+def hsv_01_to_rgb_16bit(hue, saturation, value, mode_16bit):
+    """
+    Convert hsv 0-1 floating values to rgb 16bit representations.
+
+    and returns this as dict with named attributes.
+    """
+    r, g, b = colorsys.hsv_to_rgb(hue, saturation, value)
+
+    rgb16bit = {
+        'red': calculate_16bit_values_as_dict(
+            map_01_to_16bit(r),
+            mode_16bit
+        ),
+        'green': calculate_16bit_values_as_dict(
+            map_01_to_16bit(g),
+            mode_16bit
+        ),
+        'blue': calculate_16bit_values_as_dict(
+            map_01_to_16bit(b),
+            mode_16bit
+        )
+    }
+    return rgb16bit
+
+
 ##########################################
 # classes
 
@@ -274,6 +315,11 @@ class Pattern(object):
         low_byte = 0
         high_byte, low_byte = calculate_16bit_values(value, self.mode_16bit)
         return high_byte, low_byte
+
+    def _hsv_01_to_rgb_16bit(self, hue, saturation, value):
+        """Calculate the low and high part representations of value."""
+        rgb16bit = hsv_01_to_rgb_16bit(hue, saturation, value, self.mode_16bit)
+        return rgb16bit
 
     def _calculate_step(self):
         """Calculate single step."""

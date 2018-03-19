@@ -15,9 +15,11 @@ rainbow pattern.
 """
 
 
-import pattern
+import sys
 import array
 import colorsys
+
+import pattern
 
 ##########################################
 # globals
@@ -119,17 +121,21 @@ class Rainbow(pattern.Pattern):
             # print("hue: {}".format(hue))
             # print("value: {}".format(value))
 
-            r, g, b = colorsys.hsv_to_rgb(hue, saturation, value)
+            rgb = self._hsv_01_to_rgb_16bit(
+                hue, saturation, value
+            )
 
-            r_hb, r_lb = self._calculate_16bit_values(
-                pattern.map_01_to_16bit(r)
-            )
-            g_hb, g_lb = self._calculate_16bit_values(
-                pattern.map_01_to_16bit(g)
-            )
-            b_hb, b_lb = self._calculate_16bit_values(
-                pattern.map_01_to_16bit(b)
-            )
+            # r, g, b = colorsys.hsv_to_rgb(hue, saturation, value)
+            #
+            # r_hb, r_lb = self._calculate_16bit_values(
+            #     pattern.map_01_to_16bit(r)
+            # )
+            # g_hb, g_lb = self._calculate_16bit_values(
+            #     pattern.map_01_to_16bit(g)
+            # )
+            # b_hb, b_lb = self._calculate_16bit_values(
+            #     pattern.map_01_to_16bit(b)
+            # )
 
             for repeate_index in range(0, self.repeate_count):
                 pixel_offset = (
@@ -155,21 +161,22 @@ class Rainbow(pattern.Pattern):
 
                 # set colors to pixel:
                 if self.mode_16bit:
-                    data_output[local_pixel_index + 0] = r_hb
-                    data_output[local_pixel_index + 1] = r_lb
-                    data_output[local_pixel_index + 2] = g_hb
-                    data_output[local_pixel_index + 3] = g_lb
-                    data_output[local_pixel_index + 4] = b_hb
-                    data_output[local_pixel_index + 5] = b_lb
+                    data_output[local_pixel_index + 0] = rgb['red']['high']
+                    data_output[local_pixel_index + 1] = rgb['red']['low']
+                    data_output[local_pixel_index + 2] = rgb['green']['high']
+                    data_output[local_pixel_index + 3] = rgb['green']['low']
+                    data_output[local_pixel_index + 4] = rgb['blue']['high']
+                    data_output[local_pixel_index + 5] = rgb['blue']['low']
                     # we have no values for white...
                     # data_output[local_pixel_index + 6] = b_hb
                     # data_output[local_pixel_index + 7] = b_lb
                 else:
-                    data_output[local_pixel_index + 0] = r_hb
-                    data_output[local_pixel_index + 1] = g_hb
-                    data_output[local_pixel_index + 2] = b_hb
+                    data_output[local_pixel_index + 0] = rgb['red']['high']
+                    data_output[local_pixel_index + 1] = rgb['green']['high']
+                    data_output[local_pixel_index + 2] = rgb['blue']['high']
 
         return data_output
+
 
 ##########################################
 if __name__ == '__main__':
