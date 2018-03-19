@@ -16,6 +16,7 @@ color multi universe pattern.
 
 import sys
 import array
+import colorsys
 
 import pattern
 
@@ -59,10 +60,13 @@ class ColorsMultiuninverse(pattern.Pattern):
             start_universe,
             start_universe + self.config_global['universe']['count']
         )
+        # print("universe_list:{}".format(universe_list))
 
-        hue_step = 360 / self.config_global['universe']['count']
+        hue_step = 1.0 / self.config_global['universe']['count']
+        # print("hue_step:{}".format(hue_step))
 
         for universe in universe_list:
+            # print("universe:{}".format(universe))
             hue = hue_step * (universe - start_universe)
             saturation = 1
             value_high = pattern.map_16bit_to_01(self.values['high'])
@@ -72,12 +76,30 @@ class ColorsMultiuninverse(pattern.Pattern):
             #     'saturation': saturation,
             #     'value': value,
             # }
+            # print(
+            #     "hue:{}, "
+            #     "saturation:{}, "
+            #     "value_high:{}".format(
+            #         hue,
+            #         saturation,
+            #         value_high
+            #     )
+            # )
             self.colors_rgb_high[universe] = self._hsv_01_to_rgb_16bit(
                 hue, saturation, value_high
             )
             self.colors_rgb_low[universe] = self._hsv_01_to_rgb_16bit(
                 hue, saturation, value_low
             )
+        # debug output
+        # print(
+        #     "resulting arrays:\n"
+        #     " colors_rgb_high:{}\n"
+        #     " colors_rgb_low:{}".format(
+        #         self.colors_rgb_high,
+        #         self.colors_rgb_low
+        #     )
+        # )
 
     def _calculate_step(self, universe=False):
         """Calculate single step."""
