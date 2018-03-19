@@ -15,10 +15,9 @@ color multi universe pattern.
 """
 
 import sys
-import colorsys
 import array
 
-from pattern import Pattern
+import pattern
 
 ##########################################
 # globals
@@ -32,7 +31,7 @@ from pattern import Pattern
 # classes
 
 
-class ColorsMultiuninverse(Pattern):
+class ColorsMultiuninverse(pattern.Pattern):
     """ColorsMultiuninverse Pattern Class."""
 
     def __init__(self, config, config_global):
@@ -46,10 +45,39 @@ class ColorsMultiuninverse(Pattern):
         # python2 syntax
         # super(Pattern, self).__init__()
         # explicit call
-        Pattern.__init__(self, config, config_global)
+        pattern.Pattern.__init__(self, config, config_global)
 
         # inits for this pattern
         self.strobe_state = False
+        self.colors = self.config['colors']
+        self.colors_rgb_high = {}
+        self.colors_rgb_low = {}
+
+    def _update_colors(self):
+        start_universe = self.config_global['universe']['output']
+        universe_list = range(
+            start_universe,
+            start_universe + self.config_global['universe']['count']
+        )
+
+        hue_step = 360 / self.config_global['universe']['count']
+
+        for universe in universe_list:
+            hue = hue_step * (universe - start_universe)
+            saturation = 1
+            value_high = pattern.map_16bit_to_01(self.values['high'])
+            value_low = pattern.map_16bit_to_01(self.values['low'])
+            # self.colors[universe] = {
+            #     'hue': hue,
+            #     'saturation': saturation,
+            #     'value': value,
+            # }
+            self.colors_rgb_high[universe] = self._hsv_01_to_rgb_16bit(
+                hue, saturation, value_high
+            )
+            self.colors_rgb_high[universe] = self._hsv_01_to_rgb_16bit(
+                hue, saturation, value_low
+            )
 
     def _calculate_step(self, universe):
         """Calculate single step."""
@@ -67,9 +95,13 @@ class ColorsMultiuninverse(Pattern):
         # self.values['low']
         # self.values['high']
         # self.config_global[]
+        #
+        # self.colors_rgb_high
+        # self.colors_rgb_low
 
         if universe == self.config_global['universe']['output']:
             self.update_config()
+            self._update_colors()
             # toggle strobe_state
             self.strobe_state = not self.strobe_state
 
@@ -83,55 +115,24 @@ class ColorsMultiuninverse(Pattern):
         # fill array with meaningfull data according to the pattern :-)
         # .....
 
-        value_off_hb, value_off_lb = self._calculate_16bit_values(
-            self.values['off']
-        )
-        value_low_hb, value_low_lb = self._calculate_16bit_values(
-            self.values['low']
-        )
-        value_high_hb, value_high_lb = self._calculate_16bit_values(
-            self.values['high']
-        )
+        color = self.colors_rgb_high[universe]
+        if not self.strobe_state:
+            color = self.colors_rgb_low[universe]
 
-        # calculate device_count
-        device_count = self.channel_count / 12
-
-        # get value set
-        channel_values = {}
-        if self.strobe_state:
-            channel_values = self.config["list"][0]
+        if self.mode_16bit:
+            data_output.append(color['red']['high'])
+            data_output.append(color['red']['low'])
+            data_output.append(color['green']['high'])
+            data_output.append(color['green']['low'])
+            data_output.append(color['blue']['high'])
+            data_output.append(color['blue']['low'])
         else:
-            channel_values = self.config["list"][1]
+            data_output.append(color['red']['high'])
+            data_output.append(color['green']['high'])
+            data_output.append(color['blue']['high'])
 
-        # for devices generate pattern
-        for index in range(0, device_count):
-            # for channel_id, channel_value in channel_values.items():
-            # for index in range(0, len(channel_values)):
-            #     channel_id = str(index)
-            #     channel_value = channel_values[channel_id]
-            #     print("ch{}:{}".format(channel_id, channel_value))
-            #     data_output.append(channel_value)
-            for channel_index, channel_value in enumerate(channel_values):
-                # print("ch{}:{}".format(channel_index, channel_value))
-                # print(channel_value)
-                high_byte = value_off_hb
-                low_byte = value_off_lb
-
-                if channel_value is -1:
-                    high_byte = value_off_hb
-                    low_byte = value_off_lb
-                if channel_value is 0:
-                    high_byte = value_low_hb
-                    low_byte = value_low_lb
-                elif channel_value is 1:
-                    high_byte = value_high_hb
-                    low_byte = value_high_lb
-
-                if self.mode_16bit:
-                    data_output.append(high_byte)
-                    data_output.append(low_byte)
-                else:
-                    data_output.append(high_byte)
+        # copy for all pixels
+        data_output *= self.pixel_count
 
         return data_output
 
