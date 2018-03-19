@@ -176,6 +176,42 @@ class OLAPattern(OLAThread):
         # explicit call
         OLAThread.ola_connected(self)
 
+    def _handle_repeat(self, channels):
+        """Handle all pattern repeating things."""
+        # this does not work. we have to use the pixel information.
+        # otherwiese color-order will get mixed up..
+        # pixel_count = self.config['system']['pixel_count']
+        repeate_count = self.config['system']['repeate_count']
+        repeate_snake = self.config['system']['repeate_snake']
+        channels_count = len(channels)
+        # print("pixel_count:", pixel_count)
+        # print("repeate_snake:", repeate_snake)
+        # print("repeate_count:", repeate_count)
+
+        if repeate_count > 0:
+            for repeate_index in range(1, repeate_count):
+                # print("repeate_index:", repeate_index)
+                # normal direction
+                # = snake forward
+                pixel_range = range(0, channels_count)
+                # if repeate_snake and ((repeate_index % 2) > 0):
+                if repeate_snake:
+                    # print("repeate_snake:", repeate_snake)
+                    if ((repeate_index % 2) > 0):
+                        # print("(repeate_index % 2):", (repeate_index % 2))
+                        # snake back
+                        pixel_range = range(channels_count - 1, -1, -1)
+                # print("pixel_range:", pixel_range)
+                for channel_index in pixel_range:
+                    # print("append:", channel_index)
+                    try:
+                        value = channels[channel_index]
+                    except Exception as e:
+                        print('error:', e)
+                    else:
+                        channels.append(value)
+        return channels
+
     def _apply_global_dimmer(self, channels):
         """Apply the global dimmer factor."""
         # print("")
@@ -245,6 +281,14 @@ class OLAPattern(OLAThread):
             self.config['system']['update_interval'],
             self._calculate_step
         )
+        # print(
+        #     "self.config['system']['update_interval']",
+        #     self.config['system']['update_interval']
+        # )
+        # print(
+        #     "self.update_interval",
+        #     self.update_interval
+        # )
 
         # pattern_name = 'strobe'
         # pattern_name = 'channelcheck'
@@ -262,6 +306,29 @@ class OLAPattern(OLAThread):
         #     print("pattern_name: {}".format(pattern_name))
 
         if pattern_name:
+            # if pattern_name in self.pattern:
+            #     # calculate channel values for pattern
+            #     channels = self.pattern[pattern_name]._calculate_step()
+            #     # print(42 * '*')
+            #     # temp_channel_len = len(channels)
+            #     # print('channels len', len(channels))
+            #     # print('channels', channels)
+            #     # channels_rep = self._handle_repeat(channels)
+            #     # print('channels_rep len', len(channels_rep))
+            #     # print('channels_rep', channels_rep)
+            #     # print("channels len: {:5>}; {:5>}".format(
+            #     #     temp_channel_len,
+            #     #     len(channels)
+            #     # ))
+            #     if self.config['system']['use_pixel_dimming']:
+            #         channels = self._apply_pixel_dimmer(channels)
+            #     else:
+            #         channels = self._apply_global_dimmer(channels)
+            #     # send frame
+            #     self.dmx_send_frame(
+            #         self.config['universe']['output'],
+            #         channels
+            #     )
             if pattern_name is "run":
                 start_universe = self.config['system']['universe']['output']
                 universe_list = range(
@@ -879,9 +946,12 @@ def main():
 
     ##########################################
     # commandline arguments
+    # filename_default = "./pattern.json"
+    # pattern_name_default = "channelcheck"
     filename_default = "./multiuniverse_test.json"
 
     parser = argparse.ArgumentParser(
+        # description="generate patterns - output with olad"
         description="generate test output for multiple universe"
     )
     parser.add_argument(
@@ -892,6 +962,13 @@ def main():
         ),
         metavar='FILENAME',
         default=filename_default
+    )
+    parser.add_argument(
+        "-p",
+        "--pattern",
+        help="start with given pattern",
+        metavar='PATTERN_NAME'
+        # default=pattern_name_default
     )
     parser.add_argument(
         "-i",
