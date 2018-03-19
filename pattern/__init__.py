@@ -221,7 +221,7 @@ def calculate_16bit_values_as_dict(value, mode_16bit=False):
 
     returns these as dict
     """
-    high_byte, low_byte = calculate_16bit_values_as_dict(value, mode_16bit)
+    high_byte, low_byte = calculate_16bit_values(value, mode_16bit)
     result = {
         'high': high_byte,
         'low': low_byte,

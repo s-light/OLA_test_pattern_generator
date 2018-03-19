@@ -1,0 +1,29 @@
+{
+    "pattern": {
+        "colors": {},
+        "update_interval": 5000
+    },
+    "system": {
+        "channel_count": 512,
+        "color_channels": [
+            "red",
+            "green",
+            "blue"
+        ],
+        "global_dimmer": 65535,
+        "mode_16bit": false,
+        "pattern_name": "stop",
+        "pixel_count": 170,
+        "universe": {
+            "count": 1,
+            "output": 1
+        },
+        "update_interval": 500,
+        "use_pixel_dimming": false,
+        "value": {
+            "high": 1000,
+            "low": 256,
+            "off": 0
+        }
+    }
+}

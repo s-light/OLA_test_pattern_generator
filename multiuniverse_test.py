@@ -30,7 +30,7 @@ from configdict import ConfigDict
 from olathreaded import OLAThread
 # from olathreaded import OLAThread_States
 
-import pattern
+from pattern.colors_multiuniverse import ColorsMultiuninverse
 
 version = """19.03.2018 12:15 stefan"""
 
@@ -53,6 +53,7 @@ class OLAPattern(OLAThread):
         'system': {
             # 'update_interval': 30,
             'update_interval': 500,
+            'pattern_interval': 5000,
             'mode_16bit': False,
             'use_pixel_dimming': False,
             'global_dimmer': 65535,
@@ -64,6 +65,8 @@ class OLAPattern(OLAThread):
             'pattern_name': 'stop',
             'channel_count': 512,
             'pixel_count': 170,
+            'repeate_count': 4,
+            'repeate_snake': True,
             "color_channels": [
                 "red",
                 "green",
@@ -153,7 +156,9 @@ class OLAPattern(OLAThread):
         if self.verbose:
             print("init patterns:")
 
-        self.pattern = pattern.PatternStrobeUniverse(
+        self.pattern_list = []
+
+        self.pattern = ColorsMultiuninverse(
             self.config['pattern'],
             self.config['system']
         )
@@ -308,8 +313,8 @@ def parse_ui__pattern_interval(user_input):
                 pattern_interval_new
             )
             print("set pattern_interval to {}.".format(
-                my_pattern.config['pattern']
-                ['update_interval']
+                my_pattern.config['system']
+                ['pattern_interval']
             ))
 
 
@@ -373,6 +378,55 @@ def parse_ui__pixel_count(user_input):
             )
             print("set pixel_count to {}.".format(
                 my_pattern.config['system']['pixel_count']
+            ))
+
+
+def parse_ui__repeate_count(user_input):
+    """Parse repeate count."""
+    # try to extract repeate count
+    start_index = user_input.find(':')
+    if start_index > -1:
+        value_new = \
+            user_input[start_index + 1:]
+        try:
+            value_new = \
+                int(value_new)
+        except Exception as e:
+            print("input not valid. ({})".format(e))
+        else:
+            my_pattern.config['system']['repeate_count'] = (
+                value_new
+            )
+            print("set repeate_count to {}.".format(
+                my_pattern.config['system']['repeate_count']
+            ))
+
+
+def parse_ui__repeate_snake(user_input):
+    """Parse repeate snake."""
+    # try to extract repeate_snake
+    start_index = user_input.find(':')
+    if start_index > -1:
+        mode_value_new = \
+            user_input[start_index + 1:]
+        try:
+            try:
+                mode_value_new = int(mode_value_new)
+            except Exception as e:
+                if mode_value_new.startswith("True"):
+                    mode_value_new = True
+                else:
+                    mode_value_new = False
+            else:
+                mode_value_new = bool(mode_value_new)
+        except Exception as e:
+            print("input not valid. ({})".format(e))
+        else:
+            my_pattern.config['system']['repeate_snake'] = (
+                mode_value_new
+            )
+            print("set repeate_snake to {}.".format(
+                my_pattern.config['system']['repeate_snake']
             ))
 
 
@@ -482,6 +536,32 @@ def parse_ui__use_pixel_dimming(user_input):
             ))
 
 
+def parse_ui__pattern_id(user_input):
+    """Parse pattern id."""
+    # check for integer
+    try:
+        pattern_index = int(user_input)
+    except ValueError as e:
+        print("input not valid. ({})".format(e))
+    else:
+        # print("my_pattern.pattern_list.count = {}".format(
+        #     len(pattern_list)
+        # ))
+
+        if (
+            (pattern_index > 0) and
+            (pattern_index <= len(my_pattern.pattern_list))
+        ):
+            my_pattern.config['system']['pattern_name'] = (
+                my_pattern.pattern_list[pattern_index - 1]
+            )
+            print("switched to {}.".format(
+                my_pattern.pattern_list[pattern_index - 1]
+            ))
+        else:
+            print("not a valid index.")
+
+
 def parse_ui__pattern_stop(user_input):
     """Parse pattern_stop."""
     my_pattern.config['system']['pattern_state'] = 'stop'
@@ -532,6 +612,16 @@ parser_functions = {
         "info": "set pixel count",
         "example": "{pixel_count}",
         "func": parse_ui__pixel_count,
+    },
+    "rc": {
+        "info": "set repeate count",
+        "example": "{repeate_count}",
+        "func": parse_ui__repeate_count,
+    },
+    "rs": {
+        "info": "set repeate snake",
+        "example": "{repeate_snake}",
+        "func": parse_ui__repeate_snake,
     },
     "mo": {
         "info": "set mode_16bit",
@@ -590,6 +680,7 @@ parser_functions_order = [
     "r",
     "ui",
     "uo",
+    "uc",
     "pc",
     "rc",
     "rs",
@@ -656,8 +747,8 @@ def generate_parser_message():
                         my_pattern.config['system']['update_interval']
                     ),
                     pixel_count=my_pattern.config['system']['pixel_count'],
-                    # repeate_count=my_pattern.config['system']['repeate_count'],
-                    # repeate_snake=my_pattern.config['system']['repeate_snake'],
+                    repeate_count=my_pattern.config['system']['repeate_count'],
+                    repeate_snake=my_pattern.config['system']['repeate_snake'],
                     universe_output=(
                         my_pattern.config['system']['universe']['output']
                     ),
