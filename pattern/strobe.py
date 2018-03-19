@@ -14,6 +14,8 @@ strobe pattern.
         ~ all fine :-)
 """
 
+import sys
+
 
 from pattern import Pattern
 import array
@@ -169,6 +171,7 @@ class Strobe(Pattern):
         self.strobe_state = not self.strobe_state
 
         return data_output
+
 
 ##########################################
 if __name__ == '__main__':
