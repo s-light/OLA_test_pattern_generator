@@ -55,6 +55,7 @@ class ColorsMultiuninverse(pattern.Pattern):
         self.colors_rgb_low = {}
 
     def _update_colors(self):
+        # print("_update_colors")
         start_universe = self.config_global['universe']['output']
         universe_list = range(
             start_universe,
@@ -67,7 +68,12 @@ class ColorsMultiuninverse(pattern.Pattern):
 
         for universe in universe_list:
             # print("universe:{}".format(universe))
-            hue = hue_step * (universe - start_universe)
+            hue_section = (universe - start_universe)
+            # hue = hue_step * hue_section
+            hue = (hue_step * hue_section) + (0.5 * (hue_section % 2))
+            if hue > 1:
+                hue = hue - 1
+            # hue = random.random(0, 1)
             saturation = 1
             value_high = pattern.map_16bit_to_01(self.values['high'])
             value_low = pattern.map_16bit_to_01(self.values['low'])
@@ -76,6 +82,7 @@ class ColorsMultiuninverse(pattern.Pattern):
             #     'saturation': saturation,
             #     'value': value,
             # }
+            # print("hue:{}".format(hue))
             # print(
             #     "hue:{}, "
             #     "saturation:{}, "
@@ -127,8 +134,6 @@ class ColorsMultiuninverse(pattern.Pattern):
         if universe == self.config_global['universe']['output']:
             self.update_config()
             self._update_colors()
-            # toggle strobe_state
-            self.strobe_state = not self.strobe_state
 
         # prepare temp array
         data_output = array.array('B')
@@ -173,6 +178,14 @@ class ColorsMultiuninverse(pattern.Pattern):
 
         # copy for all pixels
         data_output *= self.pixel_count
+
+        # toggle strobe_state after last universe
+        if (
+            universe ==
+            self.config_global['universe']['output'] +
+            self.config_global['universe']['count'] - 1
+        ):
+            self.strobe_state = not self.strobe_state
 
         return data_output
 
