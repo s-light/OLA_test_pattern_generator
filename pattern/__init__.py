@@ -16,6 +16,7 @@ pattern base class.
 # https://docs.python.org/2.7/howto/pyporting.html#division
 from __future__ import division
 
+import sys
 import importlib
 import os
 import pkgutil
@@ -304,15 +305,16 @@ class Pattern(object):
         # .....
         return data_output
 
+
 ##########################################
 if __name__ == '__main__':
 
-    print(42*'*')
+    print(42 * '*')
     print('Python Version: ' + sys.version)
-    print(42*'*')
+    print(42 * '*')
     print(__doc__)
-    print(42*'*')
+    print(42 * '*')
     print("This Module has no stand alone functionality.")
-    print(42*'*')
+    print(42 * '*')
 
     ##########################################

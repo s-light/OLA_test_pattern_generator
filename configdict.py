@@ -315,11 +315,11 @@ class ConfigDict():
 ##########################################
 if __name__ == '__main__':
 
-    print(42*'*')
+    print(42 * '*')
     print('Python Version: ' + sys.version)
-    print(42*'*')
+    print(42 * '*')
     print(__doc__)
-    print(42*'*')
+    print(42 * '*')
 
     # parse arguments
     filename = "test.json"
@@ -366,9 +366,9 @@ if __name__ == '__main__':
     try:
         raw_input(
             "\n\n" +
-            42*'*' +
+            42 * '*' +
             "\nhit a key to stop the mapper\n" +
-            42*'*' +
+            42 * '*' +
             "\n\n"
         )
     except KeyboardInterrupt:

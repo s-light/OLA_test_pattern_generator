@@ -297,7 +297,7 @@ class OLAPattern(OLAThread):
             if pattern_name in self.pattern:
                 # calculate channel values for pattern
                 channels = self.pattern[pattern_name]._calculate_step()
-                # print(42*'*')
+                # print(42 * '*')
                 # temp_channel_len = len(channels)
                 # print('channels len', len(channels))
                 # print('channels', channels)

@@ -158,12 +158,12 @@ class Static(pattern.Pattern):
 ##########################################
 if __name__ == '__main__':
     import sys
-    print(42*'*')
+    print(42 * '*')
     print('Python Version: ' + sys.version)
-    print(42*'*')
+    print(42 * '*')
     print(__doc__)
-    print(42*'*')
+    print(42 * '*')
     print("This Module has now stand alone functionality.")
-    print(42*'*')
+    print(42 * '*')
 
     ##########################################
