@@ -19,13 +19,13 @@
         "repeate_count": 4,
         "repeate_snake": true,
         "universe": {
-            "count": 3,
+            "count": 21,
             "output": 1
         },
-        "update_interval": 2000,
+        "update_interval": 1000,
         "use_pixel_dimming": false,
         "value": {
-            "high": 65535,
+            "high": 6000,
             "low": 256,
             "off": 0
         }
