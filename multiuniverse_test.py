@@ -295,7 +295,7 @@ class OLAPattern(OLAThread):
         # pattern_name = 'strobe'
         # pattern_name = 'channelcheck'
         pattern_name = self.config['system']['pattern_name']
-
+        # print("pattern_name: {}".format(pattern_name))
         # if self.verbose:
         #     print("config: {}".format(
         #         json.dumps(
@@ -308,6 +308,7 @@ class OLAPattern(OLAThread):
         #     print("pattern_name: {}".format(pattern_name))
 
         if pattern_name:
+            # print("pattern_name valid")
             # if pattern_name in self.pattern:
             #     # calculate channel values for pattern
             #     channels = self.pattern[pattern_name]._calculate_step()
@@ -331,7 +332,16 @@ class OLAPattern(OLAThread):
             #         self.config['universe']['output'],
             #         channels
             #     )
-            if pattern_name is "run":
+            # print(
+            #     "pattern_name: {} "
+            #     "pattern_name is run?: '{}' "
+            #     "".format(
+            #         pattern_name,
+            #         (pattern_name.startswith("run"))
+            #     )
+            # )
+            if pattern_name.startswith("run"):
+                # print("calc..")
                 start_universe = self.config['system']['universe']['output']
                 universe_list = range(
                     start_universe,
