@@ -178,6 +178,13 @@ def map_16bit_to_01(value):
     return result
 
 
+def map_16bit_to_8bit(value):
+    """Map value from 0-65535 range to 0-255 range."""
+    if not (0 <= value < 65535):
+        value = min(max(value, 0), 65535)
+    return value & 255
+
+
 def calculate_16bit_parts(value):
     """Calculate the low and high part representations of value."""
     if not (0 <= value < 65535):

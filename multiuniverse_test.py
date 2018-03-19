@@ -30,6 +30,7 @@ from configdict import ConfigDict
 from olathreaded import OLAThread
 # from olathreaded import OLAThread_States
 
+import pattern
 from pattern.colors_multiuniverse import ColorsMultiuninverse
 
 version = """19.03.2018 12:15 stefan"""
@@ -238,7 +239,8 @@ class OLAPattern(OLAThread):
         # print("global_dimmer_16bit", global_dimmer_16bit)
         # 65535 = 255
         #  gd   = gd8
-        global_dimmer_8bit = 255 * global_dimmer_16bit / 65535
+        # global_dimmer_8bit = 255 * global_dimmer_16bit / 65535
+        global_dimmer_8bit = pattern.map_16bit_to_8bit(global_dimmer_16bit)
         # print("global_dimmer_8bit", global_dimmer_8bit)
         # global_dimmer_norm = 1.0 * global_dimmer_16bit / 65535
         # print("global_dimmer_norm", global_dimmer_norm)

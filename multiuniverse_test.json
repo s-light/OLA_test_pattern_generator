@@ -15,18 +15,18 @@
         "mode_16bit": false,
         "pattern_interval": 5000,
         "pattern_name": "run",
-        "pixel_count": 170,
+        "pixel_count": 18,
         "repeate_count": 4,
         "repeate_snake": true,
         "universe": {
-            "count": 21,
+            "count": 32,
             "output": 1
         },
         "update_interval": 1000,
-        "use_pixel_dimming": false,
+        "use_pixel_dimming": 1,
         "value": {
-            "high": 6000,
-            "low": 256,
+            "high": 65535,
+            "low": 513,
             "off": 0
         }
     }
