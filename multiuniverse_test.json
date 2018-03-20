@@ -22,10 +22,10 @@
             "count": 12,
             "output": 1
         },
-        "update_interval": 25,
+        "update_interval": 1000,
         "use_pixel_dimming": 1,
         "value": {
-            "high": 40000,
+            "high": 5000,
             "low": 2100,
             "off": 0
         }
