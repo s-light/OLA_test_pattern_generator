@@ -196,8 +196,8 @@
         "pattern_name": "colors_multiuniverse",
         "pattern_running": true,
         "pixel_count": 36,
-        "repeate_count": 4,
-        "repeate_snake": true,
+        "repeat_count": 4,
+        "repeat_snake": true,
         "universe": {
             "count": 20,
             "output": 1

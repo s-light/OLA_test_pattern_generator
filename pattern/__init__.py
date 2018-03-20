@@ -294,8 +294,8 @@ class Pattern(object):
         self.channel_count = self.config_global['channel_count']
         self.pixel_count = self.config_global['pixel_count']
         self.pixel_index_max = self.pixel_count - 1
-        self.repeate_count = self.config_global['repeate_count']
-        self.repeate_snake = self.config_global['repeate_snake']
+        self.repeat_count = self.config_global['repeat_count']
+        self.repeat_snake = self.config_global['repeat_snake']
 
         self.update_interval = self.config_global['update_interval']
         self.mode_16bit = self.config_global['mode_16bit']
@@ -313,8 +313,8 @@ class Pattern(object):
             self.pixel_count *
             self.color_channels_count
         )
-        if self.repeate_count > 0:
-            self.total_channel_count *= self.repeate_count
+        if self.repeat_count > 0:
+            self.total_channel_count *= self.repeat_count
 
     def _calculate_16bit_values(self, value):
         """Calculate the low and high part representations of value."""
@@ -335,8 +335,8 @@ class Pattern(object):
         # global things (readonly)
         # self.channel_count
         # self.pixel_count
-        # self.repeate_count
-        # self.repeate_snake
+        # self.repeat_count
+        # self.repeat_snake
         # self.color_channels
         # self.update_interval
         # self.mode_16bit

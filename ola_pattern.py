@@ -49,8 +49,8 @@ class OLAPattern(OLAThread):
             'pattern_name': 'colors_multiuniverse',
             'channel_count': 512,
             'pixel_count': 170,
-            'repeate_count': 4,
-            'repeate_snake': True,
+            'repeat_count': 4,
+            'repeat_snake': True,
             "color_channels": [
                 "red",
                 "green",
@@ -179,22 +179,22 @@ class OLAPattern(OLAThread):
         # this does not work. we have to use the pixel information.
         # otherwiese color-order will get mixed up..
         # pixel_count = self.config['system']['pixel_count']
-        repeate_count = self.config['system']['repeate_count']
-        repeate_snake = self.config['system']['repeate_snake']
+        repeat_count = self.config['system']['repeat_count']
+        repeat_snake = self.config['system']['repeat_snake']
         channels_count = len(channels)
         # print("pixel_count:", pixel_count)
-        # print("repeate_snake:", repeate_snake)
-        # print("repeate_count:", repeate_count)
+        # print("repeat_snake:", repeat_snake)
+        # print("repeat_count:", repeat_count)
 
-        if repeate_count > 0:
-            for repeate_index in range(1, repeate_count):
+        if repeat_count > 0:
+            for repeate_index in range(1, repeat_count):
                 # print("repeate_index:", repeate_index)
                 # normal direction
                 # = snake forward
                 pixel_range = range(0, channels_count)
-                # if repeate_snake and ((repeate_index % 2) > 0):
-                if repeate_snake:
-                    # print("repeate_snake:", repeate_snake)
+                # if repeat_snake and ((repeate_index % 2) > 0):
+                if repeat_snake:
+                    # print("repeat_snake:", repeat_snake)
                     if ((repeate_index % 2) > 0):
                         # print("(repeate_index % 2):", (repeate_index % 2))
                         # snake back

@@ -137,7 +137,7 @@ def parse_ui__pixel_count(user_input):
             ))
 
 
-def parse_ui__repeate_count(user_input):
+def parse_ui__repeat_count(user_input):
     """Parse repeate count."""
     # try to extract repeate count
     start_index = user_input.find(':')
@@ -150,17 +150,17 @@ def parse_ui__repeate_count(user_input):
         except Exception as e:
             print("input not valid. ({})".format(e))
         else:
-            my_pattern.config['system']['repeate_count'] = (
+            my_pattern.config['system']['repeat_count'] = (
                 value_new
             )
-            print("set repeate_count to {}.".format(
-                my_pattern.config['system']['repeate_count']
+            print("set repeat_count to {}.".format(
+                my_pattern.config['system']['repeat_count']
             ))
 
 
-def parse_ui__repeate_snake(user_input):
+def parse_ui__repeat_snake(user_input):
     """Parse repeate snake."""
-    # try to extract repeate_snake
+    # try to extract repeat_snake
     start_index = user_input.find(':')
     if start_index > -1:
         mode_value_new = \
@@ -178,11 +178,11 @@ def parse_ui__repeate_snake(user_input):
         except Exception as e:
             print("input not valid. ({})".format(e))
         else:
-            my_pattern.config['system']['repeate_snake'] = (
+            my_pattern.config['system']['repeat_snake'] = (
                 mode_value_new
             )
-            print("set repeate_snake to {}.".format(
-                my_pattern.config['system']['repeate_snake']
+            print("set repeat_snake to {}.".format(
+                my_pattern.config['system']['repeat_snake']
             ))
 
 
@@ -379,13 +379,13 @@ parser_functions = {
     },
     "rc": {
         "info": "set repeate count",
-        "example": "{repeate_count}",
-        "func": parse_ui__repeate_count,
+        "example": "{repeat_count}",
+        "func": parse_ui__repeat_count,
     },
     "rs": {
         "info": "set repeate snake",
-        "example": "{repeate_snake}",
-        "func": parse_ui__repeate_snake,
+        "example": "{repeat_snake}",
+        "func": parse_ui__repeat_snake,
     },
     "mo": {
         "info": "set mode_16bit",
@@ -526,8 +526,8 @@ def generate_parser_message():
                         my_pattern.config['system']['update_interval']
                     ),
                     pixel_count=my_pattern.config['system']['pixel_count'],
-                    repeate_count=my_pattern.config['system']['repeate_count'],
-                    repeate_snake=my_pattern.config['system']['repeate_snake'],
+                    repeat_count=my_pattern.config['system']['repeat_count'],
+                    repeat_snake=my_pattern.config['system']['repeat_snake'],
                     universe_output=(
                         my_pattern.config['system']['universe']['output']
                     ),
@@ -566,8 +566,8 @@ def generate_parser_message():
     #     ),
     #     update_interval=my_pattern.config['system']['update_interval'],
     #     pixel_count=my_pattern.config['system']['pixel_count'],
-    #     repeate_count=my_pattern.config['system']['repeate_count'],
-    #     repeate_snake=my_pattern.config['system']['repeate_snake'],
+    #     repeat_count=my_pattern.config['system']['repeat_count'],
+    #     repeat_snake=my_pattern.config['system']['repeat_snake'],
     #     universe_output=my_pattern.config['system']['universe']['output'],
     #     mode_16bit=my_pattern.config['system']['mode_16bit'],
     #     vhigh=my_pattern.config['system']['value']['high'],

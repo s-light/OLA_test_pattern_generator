@@ -179,7 +179,7 @@ class Gradient_Integer(pattern.Pattern):
         local_pixel_index = pixel_offset + (
             pixel_index * color_channels_count
         )
-        if self.repeate_snake:
+        if self.repeat_snake:
             # every odd index
             if ((repeate_index % 2) > 0):
                 # total_pixel_channel_count = (
@@ -201,7 +201,7 @@ class Gradient_Integer(pattern.Pattern):
         color_channels_count
     ):
 
-        for repeate_index in range(0, self.repeate_count):
+        for repeate_index in range(0, self.repeat_count):
             local_pixel_index = self._calculate_repeat_pixel_index(
                 pixel_index,
                 repeate_index,
@@ -322,8 +322,8 @@ class Gradient_Integer(pattern.Pattern):
         # global things (readonly)
         # self.channel_count
         # self.pixel_count
-        # self.repeate_count
-        # self.repeate_snake
+        # self.repeat_count
+        # self.repeat_snake
         # self.color_channels
         # self.update_interval
         # self.mode_16bit
@@ -355,7 +355,7 @@ class Gradient_Integer(pattern.Pattern):
         total_channel_count = (
             self.pixel_count *
             color_channels_count *
-            self.repeate_count
+            self.repeat_count
         )
 
         for index in range(0, total_channel_count):

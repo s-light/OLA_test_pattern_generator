@@ -95,8 +95,8 @@ class Strobe(Pattern):
         # global things (readonly)
         # self.channel_count
         # self.pixel_count
-        # self.repeate_count
-        # self.repeate_snake
+        # self.repeat_count
+        # self.repeat_snake
         # self.color_channels
         # self.update_interval
         # self.mode_16bit
