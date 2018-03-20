@@ -304,7 +304,7 @@ class Gradient(pattern.Pattern):
             )
             # print("1:", data_output)
 
-    def _calculate_step(self):
+    def _calculate_step(self, universe):
         """Calculate single step."""
         # pattern.Pattern._calculate_step(self)
         # available attributes:

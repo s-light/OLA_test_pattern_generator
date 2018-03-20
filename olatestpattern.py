@@ -296,7 +296,7 @@ class OLAPattern(OLAThread):
                 # send frame
                 self.dmx_send_frame(universe, channels)
 
-    def _calculate_step(self):
+    def _calculate_step(self, universe):
         """Generate test pattern."""
         # register new event (for correct timing as first thing.)
         self.wrapper.AddEvent(

@@ -108,7 +108,7 @@ class ColorsMultiuninverse(pattern.Pattern):
         #     )
         # )
 
-    def _calculate_step(self, universe=False):
+    def _calculate_step(self, universe):
         """Calculate single step."""
         # pattern.Pattern._calculate_step(self)
         # available attributes:

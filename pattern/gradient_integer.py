@@ -314,7 +314,7 @@ class Gradient_Integer(pattern.Pattern):
             )
             # print("1:", data_output)
 
-    def _calculate_step(self):
+    def _calculate_step(self, universe):
         """Calculate single step."""
         # prepare temp array
         data_output = array.array('B')

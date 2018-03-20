@@ -49,7 +49,7 @@ class Rainbow(pattern.Pattern):
         # explicit call
         pattern.Pattern.__init__(self, config, config_global)
 
-    def _calculate_step(self):
+    def _calculate_step(self, universe):
         """Calculate single step."""
         # pattern.Pattern._calculate_step(self)
         # available attributes:

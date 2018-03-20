@@ -328,7 +328,7 @@ class Pattern(object):
         rgb16bit = hsv_01_to_rgb_16bit(hue, saturation, value, self.mode_16bit)
         return rgb16bit
 
-    def _calculate_step(self):
+    def _calculate_step(self, universe):
         """Calculate single step."""
         # pattern.Pattern._calculate_step(self)
         # available attributes:
