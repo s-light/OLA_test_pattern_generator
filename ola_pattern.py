@@ -244,7 +244,8 @@ class OLAPattern(OLAThread):
         # print("")
         # print(len(channels))
         # print(channels)
-        for i in range(0, len(channels), 4):
+        new_length = (len(channels) / 3) * 4
+        for i in range(0, new_length, 4):
             channels.insert(i, global_dimmer_8bit)
             # channels.insert(i + (i * 3), global_dimmer_8bit)
         # print(len(channels))
