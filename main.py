@@ -8,6 +8,7 @@ ola test pattern generator.
 """
 
 
+# import os
 import sys
 import time
 # import array
@@ -15,10 +16,10 @@ import time
 import signal
 import argparse
 # import re
-# import readline
 
 from ola_pattern import OLAPattern
 from userinput import request_userinput
+from readline_history import setup_readline_history
 
 version = """20.03.2018 12:00 stefan"""
 
@@ -617,7 +618,6 @@ def generate_menu_message():
 
 ##########################################
 
-
 def handle_interactive():
     """Handle all interactive running."""
     # wait for user to hit key.
@@ -631,7 +631,7 @@ def handle_interactive():
 def main():
     """Main handling."""
     print(42 * '*')
-    print('Python Version: ' + sys.version)
+    print("Python Version: " + sys.version)
     print(42 * '*')
 
     ##########################################
@@ -678,6 +678,8 @@ def main():
         print(42 * '*')
         print(__doc__)
         print(42 * '*')
+
+    setup_readline_history()
 
     # init flag_run
     global flag_run_global
