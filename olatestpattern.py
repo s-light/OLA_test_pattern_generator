@@ -173,7 +173,7 @@ class OLAPattern(OLAThread):
         if self.verbose:
             print("init patterns:")
 
-        # self.pattern_list = pattern.load_all_submodules()
+        self.pattern_list = pattern.load_all_submodules()
 
         # init all patterns:
         self.pattern = {}

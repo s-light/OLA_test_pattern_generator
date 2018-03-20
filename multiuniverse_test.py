@@ -31,6 +31,7 @@ from olathreaded import OLAThread
 # from olathreaded import OLAThread_States
 
 import pattern
+from pattern.colors_multiuniverse import ColorsMultiuninverse
 
 version = """20.03.2018 12:00 stefan"""
 
@@ -173,10 +174,12 @@ class OLAPattern(OLAThread):
         if self.verbose:
             print("init patterns:")
 
+        pattern_name = 'colors_multiuniverse'
+        pattern_class = ColorsMultiuninverse
+        self.pattern_list = [pattern_name]
+
         # init all patterns:
         self.pattern = {}
-        pattern_class = pattern.colors_multiuniverse.ColorsMultiuninverse
-        pattern_name = 'colors_multiuniverse'
         self.add_pattern(pattern_name, pattern_class)
 
     def ola_connected(self):
