@@ -198,7 +198,7 @@
         "repeat_count": 4,
         "repeat_snake": true,
         "universe": {
-            "count": 12,
+            "count": 32,
             "output": 1
         },
         "update_interval": 1000,
