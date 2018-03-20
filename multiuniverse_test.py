@@ -22,7 +22,7 @@ import time
 import signal
 import argparse
 # import re
-import readline
+# import readline
 import json
 
 
@@ -31,9 +31,8 @@ from olathreaded import OLAThread
 # from olathreaded import OLAThread_States
 
 import pattern
-from pattern.colors_multiuniverse import ColorsMultiuninverse
 
-version = """19.03.2018 12:15 stefan"""
+version = """20.03.2018 12:00 stefan"""
 
 
 ##########################################
@@ -63,7 +62,7 @@ class OLAPattern(OLAThread):
                 'low': 256,
                 'off': 0,
             },
-            'pattern_name': 'run',
+            'pattern_name': 'colors_multiuniverse',
             'channel_count': 512,
             'pixel_count': 170,
             'repeate_count': 4,
@@ -79,8 +78,16 @@ class OLAPattern(OLAThread):
             },
         },
         'pattern': {
-            'update_interval': 5000,
-            'colors': {},
+            'channelcheck': {},
+            'rainbow': {},
+            'gradient': {},
+            'gradient_integer': {},
+            'strobe': {},
+            'static': {},
+            'colors_multiuniverse': {
+              'update_interval': 5000,
+              'colors': {},
+            },
         },
     }
 
@@ -150,19 +157,27 @@ class OLAPattern(OLAThread):
         #     self.config['system']['value']['high']
         # )
 
+    def add_pattern(self, pattern_name, pattern_class):
+        """Add (create) pattern object to internal pattern list."""
+        if pattern_name not in self.config['pattern']:
+            self.config['pattern'][pattern_name] = {}
+        self.pattern[pattern_name] = pattern_class(
+            self.config['pattern'][pattern_name],
+            self.config['system']
+        )
+
     def init_patterns(self):
-        """Load and initialize multi universe pattern."""
+        """Load and initialize all available patterns."""
         ##########################################
         # load patterns
         if self.verbose:
             print("init patterns:")
 
-        self.pattern_list = []
-
-        self.pattern = ColorsMultiuninverse(
-            self.config['pattern'],
-            self.config['system']
-        )
+        # init all patterns:
+        self.pattern = {}
+        pattern_class = pattern.colors_multiuniverse.ColorsMultiuninverse
+        pattern_name = 'colors_multiuniverse'
+        self.add_pattern(pattern_name, pattern_class)
 
     def ola_connected(self):
         """Register update event callback and switch to running mode."""
@@ -254,27 +269,29 @@ class OLAPattern(OLAThread):
         # print(channels)
         return channels
 
-    def _send_universe(self, universe):
+    def _send_universe(self, pattern_name, universe):
         """Send one universe of data."""
-        # calculate channel values for pattern
-        channels = self.pattern._calculate_step(universe)
-        # print(42 * '*')
-        # temp_channel_len = len(channels)
-        # print('channels len', len(channels))
-        # print('channels', channels)
-        # channels_rep = self._handle_repeat(channels)
-        # print('channels_rep len', len(channels_rep))
-        # print('channels_rep', channels_rep)
-        # print("channels len: {:5>}; {:5>}".format(
-        #     temp_channel_len,
-        #     len(channels)
-        # ))
-        if self.config['system']['use_pixel_dimming']:
-            channels = self._apply_pixel_dimmer(channels)
-        else:
-            channels = self._apply_global_dimmer(channels)
-        # send frame
-        self.dmx_send_frame(universe, channels)
+        if pattern_name:
+            if pattern_name in self.pattern:
+                # calculate channel values for pattern
+                channels = self.pattern[pattern_name]._calculate_step(universe)
+                # print(42 * '*')
+                # temp_channel_len = len(channels)
+                # print('channels len', len(channels))
+                # print('channels', channels)
+                # channels_rep = self._handle_repeat(channels)
+                # print('channels_rep len', len(channels_rep))
+                # print('channels_rep', channels_rep)
+                # print("channels len: {:5>}; {:5>}".format(
+                #     temp_channel_len,
+                #     len(channels)
+                # ))
+                if self.config['system']['use_pixel_dimming']:
+                    channels = self._apply_pixel_dimmer(channels)
+                else:
+                    channels = self._apply_global_dimmer(channels)
+                # send frame
+                self.dmx_send_frame(universe, channels)
 
     def _calculate_step(self):
         """Generate test pattern."""
@@ -308,47 +325,13 @@ class OLAPattern(OLAThread):
         #     print("pattern_name: {}".format(pattern_name))
 
         if pattern_name:
-            # print("pattern_name valid")
-            # if pattern_name in self.pattern:
-            #     # calculate channel values for pattern
-            #     channels = self.pattern[pattern_name]._calculate_step()
-            #     # print(42 * '*')
-            #     # temp_channel_len = len(channels)
-            #     # print('channels len', len(channels))
-            #     # print('channels', channels)
-            #     # channels_rep = self._handle_repeat(channels)
-            #     # print('channels_rep len', len(channels_rep))
-            #     # print('channels_rep', channels_rep)
-            #     # print("channels len: {:5>}; {:5>}".format(
-            #     #     temp_channel_len,
-            #     #     len(channels)
-            #     # ))
-            #     if self.config['system']['use_pixel_dimming']:
-            #         channels = self._apply_pixel_dimmer(channels)
-            #     else:
-            #         channels = self._apply_global_dimmer(channels)
-            #     # send frame
-            #     self.dmx_send_frame(
-            #         self.config['universe']['output'],
-            #         channels
-            #     )
-            # print(
-            #     "pattern_name: {} "
-            #     "pattern_name is run?: '{}' "
-            #     "".format(
-            #         pattern_name,
-            #         (pattern_name.startswith("run"))
-            #     )
-            # )
-            if pattern_name.startswith("run"):
-                # print("calc..")
-                start_universe = self.config['system']['universe']['output']
-                universe_list = range(
-                    start_universe,
-                    start_universe + self.config['system']['universe']['count']
-                )
-                for universe in universe_list:
-                    self._send_universe(universe)
+            start_universe = self.config['system']['universe']['output']
+            universe_list = range(
+                start_universe,
+                start_universe + self.config['system']['universe']['count']
+            )
+            for universe in universe_list:
+                self._send_universe(pattern_name, universe)
 
 
 ##########################################
@@ -647,12 +630,6 @@ def parse_ui__pattern_stop(user_input):
     print("stopped.")
 
 
-def parse_ui__pattern_run(user_input):
-    """Parse pattern_run."""
-    my_pattern.config['system']['pattern_name'] = 'run'
-    print("running.")
-
-
 def parse_ui__quit(user_input):
     """Parse quit."""
     flag_run = False
@@ -742,11 +719,6 @@ parser_functions = {
         "example": None,
         "func": parse_ui__pattern_stop,
     },
-    "r": {
-        "info": "run pattern generator 'r'",
-        "example": None,
-        "func": parse_ui__pattern_run,
-    },
     "sc": {
         "info": "save config 'sc'",
         "example": None,
@@ -756,8 +728,8 @@ parser_functions = {
 
 parser_functions_order = [
     "s",
-    "r",
     "ui",
+    # "pi",
     "uo",
     "uc",
     "pc",
@@ -794,8 +766,8 @@ def handle_userinput(user_input):
         flag_run_temp = parser_func(user_input)
         if flag_run_temp is False:
             flag_run = False
-    # else:
-    #     parse_ui__pattern_id(user_input)
+    else:
+        parse_ui__pattern_id(user_input)
     return flag_run
 
 

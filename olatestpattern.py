@@ -22,8 +22,9 @@ import time
 import signal
 import argparse
 # import re
-import readline
+# import readline
 import json
+
 
 from configdict import ConfigDict
 from olathreaded import OLAThread
@@ -31,7 +32,7 @@ from olathreaded import OLAThread
 
 import pattern
 
-version = """22.01.2018 20:00 stefan"""
+version = """20.03.2018 12:00 stefan"""
 
 
 ##########################################
@@ -45,7 +46,6 @@ version = """22.01.2018 20:00 stefan"""
 ##########################################
 # classes
 
-
 class OLAPattern(OLAThread):
     """Class that extends on OLAThread and generates the patterns."""
 
@@ -53,7 +53,7 @@ class OLAPattern(OLAThread):
         'system': {
             # 'update_interval': 30,
             'update_interval': 500,
-            # 'update_interval': 250,
+            'pattern_interval': 5000,
             'mode_16bit': False,
             'use_pixel_dimming': False,
             'global_dimmer': 65535,
@@ -62,9 +62,9 @@ class OLAPattern(OLAThread):
                 'low': 256,
                 'off': 0,
             },
-            'pattern_name': 'channelcheck',
+            'pattern_name': 'colors_multiuniverse',
             'channel_count': 512,
-            'pixel_count': 42,
+            'pixel_count': 170,
             'repeate_count': 4,
             'repeate_snake': True,
             "color_channels": [
@@ -72,9 +72,10 @@ class OLAPattern(OLAThread):
                 "green",
                 "blue",
             ],
-        },
-        'universe': {
-            'output': 1,
+            'universe': {
+                'output': 1,
+                'count': 1,
+            },
         },
         'pattern': {
             'channelcheck': {},
@@ -83,6 +84,10 @@ class OLAPattern(OLAThread):
             'gradient_integer': {},
             'strobe': {},
             'static': {},
+            'colors_multiuniverse': {
+              'update_interval': 5000,
+              'colors': {},
+            },
         },
     }
 
@@ -129,7 +134,7 @@ class OLAPattern(OLAThread):
 
         # this does not work. the link to main config is lost..
         # self.update_interval = self.config['system']['update_interval']
-        # self.universe = self.config['universe']['output']
+        # self.universe = self.config['system']['universe']['output']
         # self.channel_count = 512
         # self.channel_count = 50
         # self.channel_count = self.config['system']['channel_count']
@@ -152,6 +157,15 @@ class OLAPattern(OLAThread):
         #     self.config['system']['value']['high']
         # )
 
+    def add_pattern(self, pattern_name, pattern_class):
+        """Add (create) pattern object to internal pattern list."""
+        if pattern_name not in self.config['pattern']:
+            self.config['pattern'][pattern_name] = {}
+        self.pattern[pattern_name] = pattern_class(
+            self.config['pattern'][pattern_name],
+            self.config['system']
+        )
+
     def init_patterns(self):
         """Load and initialize all available patterns."""
         ##########################################
@@ -159,19 +173,14 @@ class OLAPattern(OLAThread):
         if self.verbose:
             print("init patterns:")
 
-        self.pattern_list = pattern.load_all_submodules()
+        # self.pattern_list = pattern.load_all_submodules()
 
         # init all patterns:
         self.pattern = {}
         for pattern_class in pattern.Pattern.__subclasses__():
             full_module_name = pattern_class.__module__
             pattern_name = full_module_name.replace("pattern.", "")
-            if pattern_name not in self.config['pattern']:
-                self.config['pattern'][pattern_name] = {}
-            self.pattern[pattern_name] = pattern_class(
-                self.config['pattern'][pattern_name],
-                self.config['system']
-            )
+            self.add_pattern(pattern_name, pattern_class)
 
     def ola_connected(self):
         """Register update event callback and switch to running mode."""
@@ -248,7 +257,8 @@ class OLAPattern(OLAThread):
         # print("global_dimmer_16bit", global_dimmer_16bit)
         # 65535 = 255
         #  gd   = gd8
-        global_dimmer_8bit = 255 * global_dimmer_16bit / 65535
+        # global_dimmer_8bit = 255 * global_dimmer_16bit / 65535
+        global_dimmer_8bit = pattern.map_16bit_to_8bit(global_dimmer_16bit)
         # print("global_dimmer_8bit", global_dimmer_8bit)
         # global_dimmer_norm = 1.0 * global_dimmer_16bit / 65535
         # print("global_dimmer_norm", global_dimmer_norm)
@@ -261,6 +271,30 @@ class OLAPattern(OLAThread):
         # print(len(channels))
         # print(channels)
         return channels
+
+    def _send_universe(self, pattern_name, universe):
+        """Send one universe of data."""
+        if pattern_name:
+            if pattern_name in self.pattern:
+                # calculate channel values for pattern
+                channels = self.pattern[pattern_name]._calculate_step(universe)
+                # print(42 * '*')
+                # temp_channel_len = len(channels)
+                # print('channels len', len(channels))
+                # print('channels', channels)
+                # channels_rep = self._handle_repeat(channels)
+                # print('channels_rep len', len(channels_rep))
+                # print('channels_rep', channels_rep)
+                # print("channels len: {:5>}; {:5>}".format(
+                #     temp_channel_len,
+                #     len(channels)
+                # ))
+                if self.config['system']['use_pixel_dimming']:
+                    channels = self._apply_pixel_dimmer(channels)
+                else:
+                    channels = self._apply_global_dimmer(channels)
+                # send frame
+                self.dmx_send_frame(universe, channels)
 
     def _calculate_step(self):
         """Generate test pattern."""
@@ -281,7 +315,7 @@ class OLAPattern(OLAThread):
         # pattern_name = 'strobe'
         # pattern_name = 'channelcheck'
         pattern_name = self.config['system']['pattern_name']
-
+        # print("pattern_name: {}".format(pattern_name))
         # if self.verbose:
         #     print("config: {}".format(
         #         json.dumps(
@@ -294,29 +328,13 @@ class OLAPattern(OLAThread):
         #     print("pattern_name: {}".format(pattern_name))
 
         if pattern_name:
-            if pattern_name in self.pattern:
-                # calculate channel values for pattern
-                channels = self.pattern[pattern_name]._calculate_step()
-                # print(42 * '*')
-                # temp_channel_len = len(channels)
-                # print('channels len', len(channels))
-                # print('channels', channels)
-                # channels_rep = self._handle_repeat(channels)
-                # print('channels_rep len', len(channels_rep))
-                # print('channels_rep', channels_rep)
-                # print("channels len: {:5>}; {:5>}".format(
-                #     temp_channel_len,
-                #     len(channels)
-                # ))
-                if self.config['system']['use_pixel_dimming']:
-                    channels = self._apply_pixel_dimmer(channels)
-                else:
-                    channels = self._apply_global_dimmer(channels)
-                # send frame
-                self.dmx_send_frame(
-                    self.config['universe']['output'],
-                    channels
-                )
+            start_universe = self.config['system']['universe']['output']
+            universe_list = range(
+                start_universe,
+                start_universe + self.config['system']['universe']['count']
+            )
+            for universe in universe_list:
+                self._send_universe(pattern_name, universe)
 
 
 ##########################################
@@ -343,6 +361,28 @@ def parse_ui__update_interval(user_input):
             ))
 
 
+def parse_ui__pattern_interval(user_input):
+    """Parse patern interval."""
+    # try to extract new update interval value
+    start_index = user_input.find(':')
+    if start_index > -1:
+        pattern_interval_new = \
+            user_input[start_index + 1:]
+        try:
+            pattern_interval_new = \
+                int(pattern_interval_new)
+        except Exception as e:
+            print("input not valid. ({})".format(e))
+        else:
+            my_pattern.config['system']['pattern_interval'] = (
+                pattern_interval_new
+            )
+            print("set pattern_interval to {}.".format(
+                my_pattern.config['system']
+                ['pattern_interval']
+            ))
+
+
 def parse_ui__universe_value(user_input):
     """Parse universe value."""
     # try to extract universe value
@@ -356,11 +396,32 @@ def parse_ui__universe_value(user_input):
         except Exception as e:
             print("input not valid. ({})".format(e))
         else:
-            my_pattern.config['universe']['output'] = (
+            my_pattern.config['system']['universe']['output'] = (
                 universe_output_new
             )
             print("set universe_output to {}.".format(
-                my_pattern.config['universe']['output']
+                my_pattern.config['system']['universe']['output']
+            ))
+
+
+def parse_ui__universe_count(user_input):
+    """Parse universe count."""
+    # try to extract universe count
+    start_index = user_input.find(':')
+    if start_index > -1:
+        universe_count_new = \
+            user_input[start_index + 1:]
+        try:
+            universe_count_new = \
+                int(universe_count_new)
+        except Exception as e:
+            print("input not valid. ({})".format(e))
+        else:
+            my_pattern.config['system']['universe']['count'] = (
+                universe_count_new
+            )
+            print("set universe_count to {}.".format(
+                my_pattern.config['system']['universe']['count']
             ))
 
 
@@ -591,10 +652,20 @@ parser_functions = {
         "example": "{update_interval} ({update_frequency}Hz)",
         "func": parse_ui__update_interval,
     },
+    "pi": {
+        "info": "update interval",
+        "example": "{update_interval} ({update_frequency}Hz)",
+        "func": parse_ui__update_interval,
+    },
     "uo": {
         "info": "set universe output",
         "example": "{universe_output}",
         "func": parse_ui__universe_value,
+    },
+    "uc": {
+        "info": "set universe count",
+        "example": "{universe_count}",
+        "func": parse_ui__universe_count,
     },
     "pc": {
         "info": "set pixel count",
@@ -661,7 +732,9 @@ parser_functions = {
 parser_functions_order = [
     "s",
     "ui",
+    # "pi",
     "uo",
+    "uc",
     "pc",
     "rc",
     "rs",
@@ -730,7 +803,12 @@ def generate_parser_message():
                     pixel_count=my_pattern.config['system']['pixel_count'],
                     repeate_count=my_pattern.config['system']['repeate_count'],
                     repeate_snake=my_pattern.config['system']['repeate_snake'],
-                    universe_output=my_pattern.config['universe']['output'],
+                    universe_output=(
+                        my_pattern.config['system']['universe']['output']
+                    ),
+                    universe_count=(
+                        my_pattern.config['system']['universe']['count']
+                    ),
                     mode_16bit=my_pattern.config['system']['mode_16bit'],
                     vhigh=my_pattern.config['system']['value']['high'],
                     vlow=my_pattern.config['system']['value']['low'],
@@ -765,7 +843,7 @@ def generate_parser_message():
     #     pixel_count=my_pattern.config['system']['pixel_count'],
     #     repeate_count=my_pattern.config['system']['repeate_count'],
     #     repeate_snake=my_pattern.config['system']['repeate_snake'],
-    #     universe_output=my_pattern.config['universe']['output'],
+    #     universe_output=my_pattern.config['system']['universe']['output'],
     #     mode_16bit=my_pattern.config['system']['mode_16bit'],
     #     vhigh=my_pattern.config['system']['value']['high'],
     #     vlow=my_pattern.config['system']['value']['low'],
@@ -800,6 +878,8 @@ def generate_menu_message():
     )
     return message
 
+
+##########################################
 
 def request_userinput(message):
     """Request userinput."""
@@ -897,13 +977,14 @@ def main():
         print(42 * '*')
 
     # init flag_run
-    flag_run = False
+    global flag_run_global
+    flag_run_global = False
 
     # helper
     def _exit_helper(signal, frame):
         """Stop loop."""
-        global flag_run
-        flag_run = False
+        global flag_run_global
+        flag_run_global = False
 
     # setup termination and interrupt handling:
     signal.signal(signal.SIGINT, _exit_helper)
@@ -923,13 +1004,13 @@ def main():
     # if not interactive
     else:
         # just wait
-        flag_run = True
+        flag_run_global = True
         try:
-            while flag_run:
-                time.sleep(1)
+            while flag_run_global:
+                time.sleep(5)
         except KeyboardInterrupt:
             print("\nstop script.")
-            flag_run = False
+            flag_run_global = False
     # blocks untill thread has joined.
     my_pattern.stop_ola()
 
