@@ -202,7 +202,7 @@
             "count": 20,
             "output": 1
         },
-        "update_interval": 1000,
+        "update_interval": 20,
         "use_pixel_dimming": 1,
         "value": {
             "high": 5000,
