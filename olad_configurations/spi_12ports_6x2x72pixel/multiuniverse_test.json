@@ -190,7 +190,7 @@
             "green",
             "blue"
         ],
-        "global_dimmer": 50,
+        "global_dimmer": 65535,
         "mode_16bit": false,
         "pattern_interval": 5000,
         "pattern_name": "colors_multiuniverse",
