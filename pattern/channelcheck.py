@@ -48,7 +48,7 @@ class Channelcheck(pattern.Pattern):
         # inits for this pattern
         self.channel_current = 0
 
-    def _calculate_step(self):
+    def _calculate_step(self, universe):
         """Calculate single step."""
         # pattern.Pattern._calculate_step(self)
         # available attributes:

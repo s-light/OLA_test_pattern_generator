@@ -88,7 +88,7 @@ class Strobe(Pattern):
         # inits for this pattern
         self.strobe_state = False
 
-    def _calculate_step(self):
+    def _calculate_step(self, universe):
         """Calculate single step."""
         # pattern.Pattern._calculate_step(self)
         # available attributes:

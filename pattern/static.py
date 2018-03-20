@@ -89,7 +89,7 @@ class Static(pattern.Pattern):
             data_output.append(high_byte)
         data_output *= channel_count_for_pixel
 
-    def _calculate_step(self):
+    def _calculate_step(self, universe):
         """Calculate single step."""
         # pattern.Pattern._calculate_step(self)
         # available attributes:
