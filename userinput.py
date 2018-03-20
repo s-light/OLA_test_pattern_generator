@@ -9,6 +9,7 @@ import sys
 def request_userinput(message, handle_userinput):
     """Request userinput."""
     flag_run = True
+    # handle different python versions:
     try:
         if sys.version_info.major >= 3:
             # python3
