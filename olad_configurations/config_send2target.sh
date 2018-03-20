@@ -17,3 +17,4 @@ cp -v $1target_config/* $remote_target_config
 # copy to remote device
 echo -e "${LIME}copy to remote target${NC}"
 scp -v $remote_target_config* "light@arietta.local:/home/light/.ola/"
+echo -e "${LIME}done :-)${NC}"
