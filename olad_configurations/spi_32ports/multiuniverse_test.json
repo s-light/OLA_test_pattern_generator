@@ -1,0 +1,212 @@
+{
+    "path_to_config": "./olad_configurations/spi_12ports_6x2x72pixel",
+    "pattern": {
+        "channelcheck": {
+            "x": 42
+        },
+        "colors": {},
+        "colors_multiuniverse": {
+            "colors": {},
+            "update_interval": 5000
+        },
+        "gradient": {
+            "cycle_duration": 10,
+            "position_current": 0,
+            "stops": [
+                {
+                    "blue": 1,
+                    "green": 1,
+                    "position": 0,
+                    "red": 1
+                },
+                {
+                    "blue": 0,
+                    "green": 0,
+                    "position": 0.3,
+                    "red": 1
+                },
+                {
+                    "blue": 0,
+                    "green": 1,
+                    "position": 0.7,
+                    "red": 0
+                },
+                {
+                    "blue": 1,
+                    "green": 0,
+                    "position": 1,
+                    "red": 0
+                }
+            ],
+            "type": "channel"
+        },
+        "gradient2": {
+            "cycle_duration": 10,
+            "position_current": 0,
+            "stops": [
+                {
+                    "blue": 1,
+                    "green": 1,
+                    "position": 0,
+                    "red": 1
+                },
+                {
+                    "blue": 0,
+                    "green": 0,
+                    "position": 0.3,
+                    "red": 1
+                },
+                {
+                    "blue": 0,
+                    "green": 1,
+                    "position": 0.7,
+                    "red": 0
+                },
+                {
+                    "blue": 1,
+                    "green": 0,
+                    "position": 1,
+                    "red": 0
+                }
+            ],
+            "type": "channel"
+        },
+        "gradient_8bit": {
+            "cycle_duration": 10,
+            "position_current": 0,
+            "stops": [
+                {
+                    "blue": 1,
+                    "green": 1,
+                    "position": 0,
+                    "red": 1
+                },
+                {
+                    "blue": 0,
+                    "green": 0,
+                    "position": 0.3,
+                    "red": 1
+                },
+                {
+                    "blue": 0,
+                    "green": 1,
+                    "position": 0.7,
+                    "red": 0
+                },
+                {
+                    "blue": 1,
+                    "green": 0,
+                    "position": 1,
+                    "red": 0
+                }
+            ],
+            "type": "channel"
+        },
+        "gradient_integer": {
+            "cycle_duration": 10000,
+            "position_current": 0,
+            "stops": [
+                {
+                    "blue": 65535,
+                    "green": 65535,
+                    "position": 0,
+                    "red": 65535
+                },
+                {
+                    "blue": 0,
+                    "green": 0,
+                    "position": 300000,
+                    "red": 65535
+                },
+                {
+                    "blue": 0,
+                    "green": 65535,
+                    "position": 700000,
+                    "red": 0
+                },
+                {
+                    "blue": 65535,
+                    "green": 0,
+                    "position": 1000000,
+                    "red": 0
+                }
+            ],
+            "type": "channel"
+        },
+        "rainbow": {
+            "cycle_duration": 10,
+            "position_current": 0
+        },
+        "static": {
+            "channels": []
+        },
+        "strobe": {
+            "list": [
+                [
+                    1,
+                    -1,
+                    -1,
+                    -1,
+                    -1,
+                    1,
+                    -1,
+                    -1,
+                    -1,
+                    -1,
+                    1,
+                    -1,
+                    -1,
+                    -1,
+                    -1,
+                    1
+                ],
+                [
+                    0,
+                    -1,
+                    -1,
+                    -1,
+                    -1,
+                    0,
+                    -1,
+                    -1,
+                    -1,
+                    -1,
+                    0,
+                    -1,
+                    -1,
+                    -1,
+                    -1,
+                    0
+                ]
+            ],
+            "xxx": 0
+        },
+        "update_interval": 5000
+    },
+    "system": {
+        "channel_count": 512,
+        "color_channels": [
+            "red",
+            "green",
+            "blue"
+        ],
+        "global_dimmer": 65535,
+        "mode_16bit": false,
+        "pattern_interval": 5000,
+        "pattern_name": "colors_multiuniverse",
+        "pixel_count": 128,
+        "repeat_count": 4,
+        "repeate_snake": true,
+        "universe": {
+            "count": 12,
+            "output": 1
+        },
+        "update_interval": 1000,
+        "use_pixel_dimming": 1,
+        "value": {
+            "high": 5000,
+            "low": 2100,
+            "off": 0
+        }
+    }
+}
