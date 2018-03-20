@@ -11,7 +11,7 @@
         },
         "gradient": {
             "cycle_duration": 10,
-            "position_current": 0,
+            "position_current": 0.5999999999999999,
             "stops": [
                 {
                     "blue": 1,
@@ -194,11 +194,12 @@
         "mode_16bit": false,
         "pattern_interval": 5000,
         "pattern_name": "colors_multiuniverse",
+        "pattern_running": true,
         "pixel_count": 72,
         "repeat_count": 4,
         "repeat_snake": true,
         "universe": {
-            "count": 12,
+            "count": 20,
             "output": 1
         },
         "update_interval": 1000,

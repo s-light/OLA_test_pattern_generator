@@ -1,5 +1,5 @@
 {
-    "path_to_config": "./olad_configurations/spi_12ports_6x2x72pixel",
+    "path_to_config": "./olad_configurations/spi_20ports_sum1003pixel",
     "pattern": {
         "channelcheck": {
             "x": 42
@@ -194,11 +194,12 @@
         "mode_16bit": false,
         "pattern_interval": 5000,
         "pattern_name": "colors_multiuniverse",
-        "pixel_count": 72,
+        "pattern_running": true,
+        "pixel_count": 128,
         "repeat_count": 4,
         "repeat_snake": true,
         "universe": {
-            "count": 12,
+            "count": 20,
             "output": 1
         },
         "update_interval": 1000,
