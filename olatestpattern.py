@@ -62,6 +62,7 @@ class OLAPattern(OLAThread):
                 'low': 256,
                 'off': 0,
             },
+            'pattern_running': True,
             'pattern_name': 'colors_multiuniverse',
             'channel_count': 512,
             'pixel_count': 170,
@@ -84,10 +85,7 @@ class OLAPattern(OLAThread):
             'gradient_integer': {},
             'strobe': {},
             'static': {},
-            'colors_multiuniverse': {
-              'update_interval': 5000,
-              'colors': {},
-            },
+            'colors_multiuniverse': {},
         },
     }
 
@@ -145,10 +143,6 @@ class OLAPattern(OLAThread):
             print("--> finished.")
             print("config: {}".format(self.config))
 
-        self.strobe_state = False
-
-        self.channel_current = 0
-
         # high and low values:
         # value_low_hb, value_low_lb = self.calculate_16bit_values(
         #     self.config['system']['value']['low']
@@ -173,7 +167,9 @@ class OLAPattern(OLAThread):
         if self.verbose:
             print("init patterns:")
 
-        self.pattern_list = pattern.load_all_submodules()
+        self.pattern_list = []
+        self.pattern_list.append('stop')
+        self.pattern_list.extend(pattern.load_all_submodules())
 
         # init all patterns:
         self.pattern = {}
@@ -312,8 +308,7 @@ class OLAPattern(OLAThread):
         #     self.update_interval
         # )
 
-        # pattern_name = 'strobe'
-        # pattern_name = 'channelcheck'
+        running_state = self.config['system']['pattern_running']
         pattern_name = self.config['system']['pattern_name']
         # print("pattern_name: {}".format(pattern_name))
         # if self.verbose:
@@ -326,15 +321,15 @@ class OLAPattern(OLAThread):
         #         )
         #     ))
         #     print("pattern_name: {}".format(pattern_name))
-
-        if pattern_name:
-            start_universe = self.config['system']['universe']['output']
-            universe_list = range(
-                start_universe,
-                start_universe + self.config['system']['universe']['count']
-            )
-            for universe in universe_list:
-                self._send_universe(pattern_name, universe)
+        if running_state:
+            if pattern_name:
+                start_universe = self.config['system']['universe']['output']
+                universe_list = range(
+                    start_universe,
+                    start_universe + self.config['system']['universe']['count']
+                )
+                for universe in universe_list:
+                    self._send_universe(pattern_name, universe)
 
 
 ##########################################
@@ -614,23 +609,37 @@ def parse_ui__pattern_id(user_input):
         # ))
 
         if (
-            (pattern_index > 0) and
+            (pattern_index >= 0) and
             (pattern_index <= len(my_pattern.pattern_list))
         ):
             my_pattern.config['system']['pattern_name'] = (
-                my_pattern.pattern_list[pattern_index - 1]
+                my_pattern.pattern_list[pattern_index]
             )
             print("switched to {}.".format(
-                my_pattern.pattern_list[pattern_index - 1]
+                my_pattern.pattern_list[pattern_index]
             ))
         else:
             print("not a valid index.")
 
 
-def parse_ui__pattern_stop(user_input):
-    """Parse pattern_stop."""
-    my_pattern.config['system']['pattern_name'] = 'stop'
-    print("stopped.")
+def parse_ui__pattern_freez(user_input):
+    """Parse pattern freez."""
+    my_pattern.config['system']['pattern_running'] = False
+    print("freezed.")
+
+
+def parse_ui__pattern_run(user_input):
+    """Parse pattern run."""
+    my_pattern.config['system']['pattern_running'] = True
+    print("running.")
+
+
+def parse_ui__pattern_run_toggle(user_input):
+    """Parse pattern run toggle."""
+    my_pattern.config['system']['pattern_running'] = (
+        not my_pattern.config['system']['pattern_running']
+    )
+    print("toggled: {}".format(my_pattern.config['system']['pattern_running']))
 
 
 def parse_ui__quit(user_input):
@@ -717,20 +726,38 @@ parser_functions = {
         "example": None,
         "func": parse_ui__quit,
     },
-    "s": {
-        "info": "stop pattern generator 's'",
+    "f": {
+        "info": "freez pattern generator 'f'",
         "example": None,
-        "func": parse_ui__pattern_stop,
+        "func": parse_ui__pattern_freez,
+    },
+    "r": {
+        "info": "run pattern generator 'r'",
+        "example": None,
+        "func": parse_ui__pattern_run,
+    },
+    "t": {
+        "info": "toggle running pattern generator 't'",
+        "example": None,
+        "func": parse_ui__pattern_run_toggle,
     },
     "sc": {
         "info": "save config 'sc'",
         "example": None,
         "func": parse_ui__save_config,
     },
+    "-": {
+        "info": "",
+        "example": None,
+        "func": None,
+    },
 }
 
 parser_functions_order = [
-    "s",
+    "f",
+    "r",
+    "t",
+    "-",
     "ui",
     # "pi",
     "uo",
@@ -739,11 +766,13 @@ parser_functions_order = [
     "rc",
     "rs",
     "mo",
+    "-",
     "vh",
     "vl",
     "vo",
     "gd",
     "pd",
+    "-",
     "sc",
     "q",
 ]
@@ -853,6 +882,17 @@ def generate_parser_message():
     return parser_message
 
 
+def generate_pattern_running_state():
+    """Build String for menu message/info."""
+    message = ""
+    running_state = my_pattern.config['system']['pattern_running']
+    if running_state:
+        message = "  running\n"
+    else:
+        message = "  freezed\n"
+    return message
+
+
 def generate_menu_message():
     """Build String for menu message/info."""
     pattern_list = ""
@@ -863,14 +903,14 @@ def generate_menu_message():
         selected = ' '
         if my_pattern.config['system']['pattern_name'] == value:
             selected = '>'
-        pattern_list += " {}'{}' {}\n".format(selected, index + 1, value)
+        pattern_list += " {}'{}' {}\n".format(selected, index, value)
 
     message = (
         "\n" +
         42 * '*' + "\n"
         "select pattern: \n" +
         pattern_list +
-        "  's': stop\n"
+        generate_pattern_running_state() +
         "set option: \n" +
         generate_parser_message() +
         42 * '*' + "\n"

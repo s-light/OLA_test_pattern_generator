@@ -16,7 +16,7 @@ color multi universe pattern.
 
 import sys
 import array
-import colorsys
+# import colorsys
 
 import pattern
 
