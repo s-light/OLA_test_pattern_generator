@@ -49,7 +49,7 @@ set option:
   'f': freez pattern generator 'f'
   'r': run pattern generator 'r'
   't': toggle running pattern generator 't'
-  '-': 
+  '-':
   'ui': update interval 'ui:1000 (1.0Hz)'
   'uo': set universe output 'uo:1'
   'uc': set universe count 'uc:12'
@@ -73,3 +73,11 @@ waiting for olad....
 get client
 run ola wrapper.
 ```
+
+## create new pattern
+to create a new pattern use one of the existing ones and copy it as a blue-print.
+all files in the `pattern/` sub-folder that have a subclass of the Pattern class defined
+will be considered.
+
+in this class there is a function called `_calculate_step` - these will be called for every universe once every `update_interval` round.
+it has to return a `array.array('B')` array with the values to write to ola.
