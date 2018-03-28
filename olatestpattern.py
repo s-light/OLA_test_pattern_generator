@@ -1,1 +1,0 @@
-/home/stefan/mydata/github/OLA_test_pattern_generator/main.py

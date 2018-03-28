@@ -22,11 +22,10 @@ Description=pattern generator service
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/python2 /home/light/OLA_test_pattern_generator/olatestpattern.py -c /home/light/OLA_test_pattern_generator/pattern.json
+ExecStart=/usr/bin/python2 /home/light/OLA_test_pattern_generator/main.py -c /home/light/OLA_test_pattern_generator/pattern.json
 StandardOutput=null
 # if process exits (with fail or success) restart it.
 Restart=always
 
 [Install]
 WantedBy=multi-user.target
-Alias=device_manager.service
